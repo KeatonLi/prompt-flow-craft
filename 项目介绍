@@ -1,0 +1,27 @@
+# Prompt Flow Craft - AI 提示词生成平台
+
+## 项目概述
+基于 KIMI K2 模型的智能 AI 提示词生成网站，采用前后端分离架构。
+
+## 项目架构
+✅ **前后端分离架构**
+- 后端：Java + Maven + Spring Boot + Spring WebFlux
+- 前端：Vue 3 + Vite + Element Plus
+- API 通信：RESTful API + CORS 跨域支持
+- 独立部署：前后端可独立部署和扩展
+
+## 核心功能
+- 智能表单收集用户需求
+- 基于 KIMI K2 模型生成高质量提示词
+- 支持多种输出格式和个性化配置
+- 响应式设计，支持多设备访问
+
+## 技术配置
+- **AI 模型**：月之暗面 KIMI K2
+- **Base URL**：https://api.moonshot.cn/v1
+- **调用方式**：遵循 OpenAI 标准接口
+
+## 部署方式
+- **后端服务**：http://localhost:8080
+- **前端服务**：http://localhost:3000
+- **生产部署**：支持独立部署到不同服务器

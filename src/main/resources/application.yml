@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: prompt-flow-craft
+  
+  # 数据库配置
+  datasource:
+    url: jdbc:mysql://111.231.107.210:13306/prompt?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: prompt
+    password: promptSQL
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  
+  # JPA配置
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+# Qwen API 配置 (通义千问)
+qwen:
+  api:
+    # 阿里云百炼平台 API Key，请替换为你的实际 API Key
+    key: sk-578776279dc0424ea0029ff77efbadd7
+    # 阿里云百炼平台 API 地址
+    base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+    # 模型选择：
+    # qwen-turbo: 最便宜，输入0.0003元/千tokens，输出0.0006元/千tokens
+    # qwen-plus: 性价比高，输入0.0008元/千tokens，输出0.002元/千tokens  
+    # qwen-max: 最强性能，输入0.0112元/千tokens，输出0.0448元/千tokens
+    # qwen-long: 超长文本，输入0.0005元/千tokens，输出0.002元/千tokens
+    model: qwen-turbo-2025-07-15
+    temperature: 0.7
+    max-tokens: 2000
+
+logging:
+  level:
+    com.promptflow: DEBUG
+    org.springframework.ai: DEBUG

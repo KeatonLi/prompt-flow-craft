@@ -1,0 +1,255 @@
+# 编译产物
+target/
+dist/
+build/
+out/
+
+# 依赖目录
+node_modules/
+.pnp
+.pnp.js
+
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# 运行时数据
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 覆盖率目录
+coverage/
+*.lcov
+
+# nyc 测试覆盖率
+.nyc_output
+
+# Grunt 中间存储
+.grunt
+
+# Bower 依赖目录
+bower_components
+
+# node-waf 配置
+.lock-wscript
+
+# 编译的二进制插件
+build/Release
+
+# 依赖目录
+node_modules/
+jspm_packages/
+
+# Snowpack 依赖目录
+web_modules/
+
+# TypeScript 缓存
+*.tsbuildinfo
+
+# 可选的 npm 缓存目录
+.npm
+
+# 可选的 eslint 缓存
+.eslintcache
+
+# 可选的 stylelint 缓存
+.stylelintcache
+
+# Microbundle 缓存
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# 可选的 REPL 历史
+.node_repl_history
+
+# npm 打包的输出
+*.tgz
+
+# Yarn 完整性文件
+.yarn-integrity
+
+# dotenv 环境变量文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# parcel-bundler 缓存
+.cache
+.parcel-cache
+
+# Next.js 构建输出
+.next
+
+# Nuxt.js 构建/生成输出
+.nuxt
+dist
+
+# Gatsby 文件
+.cache/
+public
+
+# Vuepress 构建输出
+.vuepress/dist
+
+# Serverless 目录
+.serverless/
+
+# FuseBox 缓存
+.fusebox/
+
+# DynamoDB Local 文件
+.dynamodb/
+
+# TernJS 端口文件
+.tern-port
+
+# Stores VSCode 版本用于测试
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Java 相关
+*.class
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
+
+# Mac
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+
+# 临时文件
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# 应用特定
+# Spring Boot
+spring.log
+
+# Vite
+.vite
+
+# 部署相关
+.vercel
+.netlify
+
+# 数据库
+*.db
+*.sqlite
+*.sqlite3
+
+# 配置文件（如果包含敏感信息）
+# application-prod.yml
+# application-dev.yml
+
+# 备份文件
+*.bak
+*.backup
+
+# 压缩文件
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# 系统文件
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
