@@ -83,6 +83,11 @@ web_modules/
 .env.test.local
 .env.production.local
 
+# 部署配置文件（包含敏感信息）
+deploy.config
+*.config
+!*.config.example
+
 # parcel-bundler 缓存
 .cache
 .parcel-cache
