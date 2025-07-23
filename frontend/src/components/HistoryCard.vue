@@ -1,14 +1,10 @@
 <template>
-  <el-card class="history-card" shadow="hover">
+  <el-card class="history-card" shadow="hover" @click="toggleExpanded">
     <div class="card-header">
       <div class="card-title">
-        <el-tooltip 
-          :content="history.taskDescription || '无标题'"
-          placement="top"
-          :disabled="!isTextOverflow(history.taskDescription)"
-        >
-          <el-text truncated>{{ history.taskDescription || '无标题' }}</el-text>
-        </el-tooltip>
+        <el-text :class="{ 'expanded': isExpanded }">
+          {{ history.taskDescription || '无标题' }}
+        </el-text>
       </div>
       <div class="card-time">
         {{ formatTime(history.createdAt) }}
@@ -31,20 +27,17 @@
         </el-tag>
       </div>
       
-      <div class="card-preview">
-        <el-tooltip 
-          :content="history.generatedPrompt"
-          placement="bottom"
-          :disabled="!isTextOverflow(history.generatedPrompt)"
-        >
-          <el-text truncated :line-clamp="2">
-            {{ history.generatedPrompt }}
-          </el-text>
-        </el-tooltip>
+      <div class="card-preview" :class="{ 'expanded': isExpanded }">
+        <el-text :class="{ 'expanded': isExpanded }">
+          {{ history.generatedPrompt }}
+        </el-text>
+        <div v-if="!isExpanded && isTextOverflow(history.generatedPrompt)" class="expand-hint">
+          点击展开更多...
+        </div>
       </div>
     </div>
     
-    <div class="card-actions">
+    <div class="card-actions" @click.stop>
       <el-button size="small" type="primary" @click="$emit('reuse', history)">
         <el-icon><RefreshRight /></el-icon>
         复用
@@ -64,6 +57,11 @@ export default {
     history: {
       type: Object,
       required: true
+    }
+  },
+  data() {
+    return {
+      isExpanded: false
     }
   },
   methods: {
@@ -151,6 +149,10 @@ export default {
       if (!text) return false
       // 简单判断：如果文本长度超过30个字符，则认为可能溢出
       return text.length > 30
+    },
+    
+    toggleExpanded() {
+      this.isExpanded = !this.isExpanded
     }
   }
 }
@@ -216,6 +218,12 @@ export default {
   text-overflow: ellipsis;
   white-space: nowrap;
   word-break: break-all;
+}
+
+.card-title :deep(.el-text.expanded) {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .card-time {
@@ -285,6 +293,28 @@ export default {
   word-break: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-preview.expanded {
+  max-height: none;
+}
+
+.card-preview.expanded :deep(.el-text) {
+  display: block;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+.expand-hint {
+  font-size: 12px;
+  color: #999;
+  margin-top: 8px;
+  font-style: italic;
+  text-align: center;
 }
 
 .card-actions {

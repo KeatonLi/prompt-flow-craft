@@ -150,14 +150,7 @@
           </div>
         </template>
         <div class="result-content">
-          <el-tooltip 
-            :content="result"
-            placement="top"
-            :disabled="!isTextOverflow(result)"
-            :show-after="500"
-          >
-            <pre>{{ result }}</pre>
-          </el-tooltip>
+          <pre>{{ result }}</pre>
         </div>
       </el-card>
     </div>
@@ -235,12 +228,51 @@ export default {
     
     async copyToClipboard() {
       try {
-        await navigator.clipboard.writeText(this.result)
-        this.$message.success('已复制到剪贴板')
+        // 优先使用现代的 Clipboard API
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(this.result)
+          this.$message.success('已复制到剪贴板')
+          return
+        }
+        
+        // 降级方案：使用传统的 execCommand 方法
+        const textArea = document.createElement('textarea')
+        textArea.value = this.result
+        textArea.style.position = 'fixed'
+        textArea.style.left = '-999999px'
+        textArea.style.top = '-999999px'
+        document.body.appendChild(textArea)
+        textArea.focus()
+        textArea.select()
+        
+        const successful = document.execCommand('copy')
+        document.body.removeChild(textArea)
+        
+        if (successful) {
+          this.$message.success('已复制到剪贴板')
+        } else {
+          throw new Error('execCommand failed')
+        }
       } catch (error) {
         console.error('复制失败:', error)
-        this.$message.error('复制失败，请手动复制')
+        // 最后的降级方案：选中文本让用户手动复制
+        this.selectResultText()
+        this.$message.error('自动复制失败，已为您选中文本，请使用 Ctrl+C (或 Cmd+C) 手动复制')
       }
+    },
+    
+    selectResultText() {
+      // 选中结果文本
+      this.$nextTick(() => {
+        const preElement = document.querySelector('.result-content pre')
+        if (preElement) {
+          const range = document.createRange()
+          range.selectNodeContents(preElement)
+          const selection = window.getSelection()
+          selection.removeAllRanges()
+          selection.addRange(range)
+        }
+      })
     },
     
     clearResult() {
@@ -286,7 +318,8 @@ export default {
   min-height: calc(100vh - 144px);
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   margin-left: 420px;
   transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }

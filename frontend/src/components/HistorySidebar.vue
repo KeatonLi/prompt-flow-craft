@@ -76,6 +76,10 @@
       title="历史记录详情"
       width="600px"
       :destroy-on-close="true"
+      center
+      :z-index="9999"
+      :modal="true"
+      :append-to-body="true"
     >
       <div v-if="selectedHistory" class="detail-content">
         <div class="detail-section">
@@ -665,6 +669,32 @@ body {
 
 .history-sidebar:not(.collapsed) + #app {
   margin-right: 300px;
+}
+
+/* 弹窗样式优化 */
+:deep(.el-dialog) {
+  z-index: 9999 !important;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
+}
+
+:deep(.el-overlay) {
+  z-index: 9998 !important;
+}
+
+:deep(.el-dialog__wrapper) {
+  z-index: 9999 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 @media (max-width: 768px) {
