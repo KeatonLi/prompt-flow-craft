@@ -2,7 +2,13 @@
   <el-card class="history-card" shadow="hover">
     <div class="card-header">
       <div class="card-title">
-        <el-text truncated>{{ history.taskDescription || '无标题' }}</el-text>
+        <el-tooltip 
+          :content="history.taskDescription || '无标题'"
+          placement="top"
+          :disabled="!isTextOverflow(history.taskDescription)"
+        >
+          <el-text truncated>{{ history.taskDescription || '无标题' }}</el-text>
+        </el-tooltip>
       </div>
       <div class="card-time">
         {{ formatTime(history.createdAt) }}
@@ -26,9 +32,15 @@
       </div>
       
       <div class="card-preview">
-        <el-text truncated :line-clamp="2">
-          {{ history.generatedPrompt }}
-        </el-text>
+        <el-tooltip 
+          :content="history.generatedPrompt"
+          placement="bottom"
+          :disabled="!isTextOverflow(history.generatedPrompt)"
+        >
+          <el-text truncated :line-clamp="2">
+            {{ history.generatedPrompt }}
+          </el-text>
+        </el-tooltip>
       </div>
     </div>
     
@@ -133,6 +145,12 @@ export default {
         'very_long': '非常详细'
       }
       return labels[value] || value
+    },
+    
+    isTextOverflow(text) {
+      if (!text) return false
+      // 简单判断：如果文本长度超过30个字符，则认为可能溢出
+      return text.length > 30
     }
   }
 }
@@ -159,7 +177,7 @@ export default {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, #7dd3a0 0%, #a8e6cf 50%, #88d8a3 100%);
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #2563eb 100%);
   opacity: 0.6;
   transition: opacity 0.3s ease;
 }
@@ -193,6 +211,11 @@ export default {
   font-size: 15px;
   color: #333333;
   line-height: 1.4;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  word-break: break-all;
 }
 
 .card-time {
@@ -253,7 +276,15 @@ export default {
   background: #f8f9fa;
   padding: 12px;
   border-radius: 10px;
-  border-left: 2px solid #7dd3a0;
+  border-left: 2px solid #3b82f6;
+  max-height: 60px;
+  overflow: hidden;
+}
+
+.card-preview :deep(.el-text) {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .card-actions {
@@ -271,13 +302,13 @@ export default {
 }
 
 .card-actions :deep(.el-button--primary) {
-  background: #7dd3a0;
+  background: #3b82f6;
   border: none;
   color: white;
 }
 
 .card-actions :deep(.el-button--primary:hover) {
-  background: #6bc98a;
+  background: #2563eb;
   transform: translateY(-1px);
 }
 
@@ -289,8 +320,8 @@ export default {
 
 .card-actions :deep(.el-button:not(.el-button--primary):hover) {
   background: #ffffff;
-  border-color: #7dd3a0;
-  color: #7dd3a0;
+  border-color: #3b82f6;
+  color: #3b82f6;
   transform: translateY(-1px);
 }
 </style>

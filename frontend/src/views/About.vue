@@ -166,7 +166,7 @@ export default {
 <style scoped>
 .about {
   min-height: calc(100vh - 140px);
-  background: linear-gradient(135deg, #f0f9f4 0%, #d4edda 100%);
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
 }
 
 .container {
@@ -182,20 +182,20 @@ export default {
 
 .hero-icon {
   font-size: 4rem;
-  color: #7dd3a0;
+  color: #3b82f6;
   margin-bottom: 20px;
 }
 
 .hero-title {
   font-size: 3rem;
-  color: #2d5a3d;
+  color: #1e293b;
   margin-bottom: 15px;
   font-weight: 700;
 }
 
 .hero-subtitle {
   font-size: 1.3rem;
-  color: #5a7c65;
+  color: #64748b;
   margin: 0;
 }
 
@@ -237,7 +237,7 @@ export default {
 }
 
 .feature-list .el-icon {
-  color: #67c23a;
+  color: #3b82f6;
   font-size: 1.1rem;
 }
 

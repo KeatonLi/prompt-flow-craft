@@ -28,12 +28,6 @@
     <el-footer class="app-footer">
       <div class="footer-content">
         <p>&copy; 2024 Prompt Flow Craft. 让AI更懂你的想法，创造无限可能</p>
-        <div class="tech-stack">
-          <el-tag size="small" type="info">智能创作</el-tag>
-          <el-tag size="small" type="success">专业品质</el-tag>
-          <el-tag size="small" type="warning">高效便捷</el-tag>
-          <el-tag size="small" type="danger">持续创新</el-tag>
-        </div>
       </div>
     </el-footer>
   </div>
@@ -53,14 +47,14 @@ export default {
 }
 
 .app-header {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  color: #2d5a3d;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(24px);
+  color: #1e293b;
   padding: 0;
-  height: 60px;
-  line-height: 60px;
-  box-shadow: 0 4px 20px rgba(168, 230, 207, 0.15), 0 2px 8px rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid rgba(168, 230, 207, 0.2);
+  height: 72px;
+  line-height: 72px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
   position: relative;
   z-index: 100;
 }
@@ -78,15 +72,16 @@ export default {
 .logo {
   display: flex;
   align-items: center;
-  font-size: 20px;
-  font-weight: bold;
-  color: #2d5a3d;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: -0.025em;
 }
 
 .logo .el-icon {
-  margin-right: 8px;
-  font-size: 24px;
-  background: linear-gradient(135deg, #7dd3a0 0%, #a8e6cf 100%);
+  margin-right: 12px;
+  font-size: 28px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -98,24 +93,26 @@ export default {
 }
 
 .header-menu .el-menu-item {
-  color: #2d5a3d;
+  color: #64748b;
   border-bottom: 2px solid transparent;
   font-weight: 500;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px;
+  margin: 0 4px;
 }
 
 .header-menu .el-menu-item:hover,
 .header-menu .el-menu-item.is-active {
-  background: rgba(125, 211, 160, 0.1);
-  border-bottom-color: #7dd3a0;
-  color: #2d5a3d;
-  border-radius: 8px 8px 0 0;
+  background: rgba(59, 130, 246, 0.08);
+  border-bottom-color: #3b82f6;
+  color: #1e293b;
+  transform: translateY(-1px);
 }
 
 .app-main {
   flex: 1;
   padding: 0;
-  background: linear-gradient(135deg, #f8fdfa 0%, #f0f9f4 50%, #e8f5e8 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
   position: relative;
   overflow: hidden;
 }
@@ -127,19 +124,19 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 20% 80%, rgba(168, 230, 207, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(125, 211, 160, 0.1) 0%, transparent 50%),
-              radial-gradient(circle at 40% 40%, rgba(168, 230, 207, 0.05) 0%, transparent 50%);
+  background: radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
+              radial-gradient(circle at 40% 40%, rgba(139, 92, 246, 0.02) 0%, transparent 50%);
   pointer-events: none;
 }
 
 .app-footer {
-  background: linear-gradient(135deg, #4a7c59 0%, #2d5a3d 100%);
-  color: white;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: #e2e8f0;
   text-align: center;
-  padding: 25px;
-  box-shadow: 0 -4px 20px rgba(168, 230, 207, 0.2), 0 -2px 8px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
+  padding: 32px;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.05), 0 -4px 16px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(20px);
   position: relative;
 }
 

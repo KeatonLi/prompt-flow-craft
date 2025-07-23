@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <HistorySidebar @reuse-history="handleReuseHistory" />
+    <HistorySidebar ref="historySidebar" @reuse-history="handleReuseHistory" />
     <div class="container">
       <div class="header">
         <h1 class="title">
@@ -8,6 +8,17 @@
           AI 提示词生成器
         </h1>
         <p class="subtitle">让AI更懂你的想法，一键生成专业级提示词</p>
+        <div class="action-buttons">
+          <el-button 
+            type="primary" 
+            :icon="Clock" 
+            @click="toggleHistorySidebar"
+            class="history-toggle-btn"
+            size="large"
+          >
+            <span>历史记录</span>
+          </el-button>
+        </div>
       </div>
 
       <el-card class="form-card" shadow="hover">
@@ -139,7 +150,14 @@
           </div>
         </template>
         <div class="result-content">
-          <pre>{{ result }}</pre>
+          <el-tooltip 
+            :content="result"
+            placement="top"
+            :disabled="!isTextOverflow(result)"
+            :show-after="500"
+          >
+            <pre>{{ result }}</pre>
+          </el-tooltip>
         </div>
       </el-card>
     </div>
@@ -149,11 +167,13 @@
 <script>
 import { generatePromptAPI } from '../api/prompt'
 import HistorySidebar from '../components/HistorySidebar.vue'
+import { Clock } from '@element-plus/icons-vue'
 
 export default {
   name: 'Home',
   components: {
-    HistorySidebar
+    HistorySidebar,
+    Clock
   },
   data() {
     return {
@@ -228,6 +248,11 @@ export default {
       this.$message.info('已清空结果')
     },
     
+    toggleHistorySidebar() {
+      // 通过ref访问HistorySidebar组件并切换其显示状态
+      this.$refs.historySidebar?.toggleSidebar()
+    },
+    
     handleReuseHistory(historyData) {
       // 复用历史记录到表单
       this.formData = {
@@ -239,12 +264,18 @@ export default {
         tone: historyData.tone || '',
         length: historyData.length || ''
       };
-      this.$message.success('已加载历史记录');
+      // this.$message.success('已加载历史记录');
       
       // 滚动到表单顶部
       this.$nextTick(() => {
         this.$refs.promptForm.$el.scrollIntoView({ behavior: 'smooth' });
       });
+    },
+    
+    isTextOverflow(text) {
+      if (!text) return false
+      // 简单判断：如果文本长度超过100个字符，则认为可能溢出
+      return text.length > 100
     }
   }
 }
@@ -252,10 +283,12 @@ export default {
 
 <style scoped>
 .home {
-  min-height: calc(100vh - 140px);
-  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 50%, #ffffff 100%);
+  min-height: calc(100vh - 144px);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
   position: relative;
   overflow: hidden;
+  margin-left: 420px;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .home::before {
@@ -265,7 +298,7 @@ export default {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(168, 230, 207, 0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
   animation: float 20s ease-in-out infinite;
   pointer-events: none;
 }
@@ -277,17 +310,30 @@ export default {
 }
 
 .container {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 60px 30px;
+  padding: 40px 40px;
   transition: all 0.3s ease;
   position: relative;
   z-index: 1;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+  .home {
+    margin-left: 0;
+  }
   .container {
-    padding: 30px 15px;
+    max-width: 100%;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .home {
+    margin-left: 0;
+  }
+  .container {
+    padding: 16px;
   }
 }
 
@@ -295,6 +341,38 @@ export default {
   text-align: center;
   margin-bottom: 50px;
   animation: fadeInUp 0.8s ease-out;
+}
+
+.action-buttons {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.history-toggle-btn {
+  font-size: 16px;
+  padding: 16px 32px;
+  border-radius: 16px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border: 2px solid #e2e8f0;
+  color: #475569;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(12px);
+}
+
+.history-toggle-btn:hover {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border-color: #3b82f6;
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.25), 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.history-toggle-btn:active {
+  transform: translateY(-1px);
 }
 
 @keyframes fadeInUp {
@@ -309,23 +387,23 @@ export default {
 }
 
 .title {
-  font-size: 3rem;
-  background: linear-gradient(135deg, #2d5a3d 0%, #4a7c59 50%, #7dd3a0 100%);
+  font-size: 3.25rem;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #3b82f6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  gap: 20px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 
 .title-icon {
-  font-size: 3rem;
-  background: linear-gradient(135deg, #7dd3a0 0%, #a8e6cf 100%);
+  font-size: 3.5rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -338,19 +416,20 @@ export default {
 }
 
 .subtitle {
-  font-size: 1.2rem;
-  color: #5a7c65;
+  font-size: 1.375rem;
+  color: #64748b;
   margin: 0;
-  font-weight: 400;
+  font-weight: 500;
   opacity: 0.9;
 }
 
 .form-card {
   margin-bottom: 40px;
-  border: none;
-  border-radius: 20px;
-  background: #ffffff;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   animation: slideInUp 0.6s ease-out 0.2s both;
 }
@@ -422,17 +501,22 @@ export default {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #7dd3a0 0%, #a8e6cf 50%, #88d8a3 100%);
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 50%, #2563eb 100%);
 }
 
 .result-content pre {
   margin: 0;
   white-space: pre-wrap;
   word-wrap: break-word;
+  word-break: break-word;
+  overflow-wrap: break-word;
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
   line-height: 1.7;
   color: #555555;
   font-size: 0.95rem;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 0;
 }
 
 :deep(.el-form-item) {
@@ -461,8 +545,8 @@ export default {
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 3px rgba(125, 211, 160, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08);
-  border-color: #7dd3a0;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #3b82f6;
   background: #ffffff;
 }
 
@@ -502,14 +586,14 @@ export default {
 }
 
 :deep(.el-button--primary) {
-  background: #7dd3a0;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   border: none;
   border-radius: 12px;
-  padding: 14px 32px;
+  padding: 16px 36px;
   font-size: 16px;
   font-weight: 600;
   color: white;
-  box-shadow: 0 4px 12px rgba(125, 211, 160, 0.3), 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25), 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
@@ -527,9 +611,9 @@ export default {
 }
 
 :deep(.el-button--primary:hover) {
-  background: #6bc98a;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(125, 211, 160, 0.4), 0 3px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35), 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 :deep(.el-button--primary:hover::before) {
@@ -538,26 +622,26 @@ export default {
 
 :deep(.el-button--primary:active) {
   transform: translateY(0) scale(0.98);
-  box-shadow: 0 2px 8px rgba(125, 211, 160, 0.3), 0 1px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25), 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 :deep(.el-button--small) {
   border-radius: 10px;
-  padding: 8px 16px;
-  font-size: 13px;
+  padding: 10px 18px;
+  font-size: 14px;
   font-weight: 500;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  background: #f8f9fa;
-  border: 1px solid rgba(230, 230, 230, 0.6);
-  color: #666666;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  color: #64748b;
 }
 
 :deep(.el-button--small:hover) {
   transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
-  background: #ffffff;
-  border-color: #7dd3a0;
-  color: #7dd3a0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  border-color: #3b82f6;
+  color: #3b82f6;
 }
 </style>
