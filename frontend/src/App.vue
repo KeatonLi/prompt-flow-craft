@@ -7,15 +7,10 @@
           <el-icon><Magic /></el-icon>
           <span>Prompt Flow Craft</span>
         </div>
-        <el-menu
-          :default-active="$route.path"
-          class="header-menu"
-          mode="horizontal"
-          router
-        >
-          <el-menu-item index="/">首页</el-menu-item>
-          <el-menu-item index="/about">关于</el-menu-item>
-        </el-menu>
+        <nav class="header-nav">
+          <router-link to="/" class="nav-item" :class="{ active: $route.path === '/' }">首页</router-link>
+          <router-link to="/about" class="nav-item" :class="{ active: $route.path === '/about' }">关于</router-link>
+        </nav>
       </div>
     </el-header>
 
@@ -87,22 +82,28 @@ export default {
   background-clip: text;
 }
 
-.header-menu {
-  background: transparent;
-  border: none;
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.header-menu .el-menu-item {
+.nav-item {
   color: #64748b;
+  text-decoration: none;
+  padding: 12px 16px;
   border-bottom: 2px solid transparent;
   font-weight: 500;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 8px;
-  margin: 0 4px;
+  display: flex;
+  align-items: center;
+  height: 72px;
+  box-sizing: border-box;
 }
 
-.header-menu .el-menu-item:hover,
-.header-menu .el-menu-item.is-active {
+.nav-item:hover,
+.nav-item.active {
   background: rgba(59, 130, 246, 0.08);
   border-bottom-color: #3b82f6;
   color: #1e293b;
