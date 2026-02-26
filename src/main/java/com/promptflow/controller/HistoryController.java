@@ -341,7 +341,7 @@ public class HistoryController {
     public ResponseEntity<Map<String, Object>> classifyPrompt(@PathVariable Long id) {
         try {
             Optional<PromptCache> promptOpt = promptHistoryService.getHistoryById(id);
-            if (promptOpt.isEmpty()) {
+            if (promptOpt.isPresent()) {
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
                 errorResponse.put("message", "记录不存在");

@@ -22,19 +22,19 @@ public class PromptGenerationService {
     @Autowired
     private PromptCacheService promptCacheService;
     
-    @Value("${qwen.api.key}")
+    @Value("${api.key}")
     private String apiKey;
     
-    @Value("${qwen.api.base-url}")
+    @Value("${api.base-url}")
     private String baseUrl;
     
-    @Value("${qwen.api.model}")
+    @Value("${api.model}")
     private String model;
     
-    @Value("${qwen.api.temperature}")
+    @Value("${api.temperature}")
     private double temperature;
     
-    @Value("${qwen.api.max-tokens}")
+    @Value("${api.max-tokens}")
     private int maxTokens;
     
     public PromptGenerationService() {

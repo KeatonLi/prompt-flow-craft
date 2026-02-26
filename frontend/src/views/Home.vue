@@ -160,13 +160,14 @@
 <script>
 import { generatePromptAPI } from '../api/prompt'
 import HistorySidebar from '../components/HistorySidebar.vue'
-import { Clock } from '@element-plus/icons-vue'
+import { Clock, MagicStick } from '@element-plus/icons-vue'
 
 export default {
   name: 'Home',
   components: {
     HistorySidebar,
-    Clock
+    Clock,
+    MagicStick
   },
   data() {
     return {

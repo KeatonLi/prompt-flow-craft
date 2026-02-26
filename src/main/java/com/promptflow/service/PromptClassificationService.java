@@ -45,13 +45,13 @@ public class PromptClassificationService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Value("${qwen.api.key}")
+    @Value("${api.key}")
     private String apiKey;
 
-    @Value("${qwen.api.base-url}")
+    @Value("${api.base-url}")
     private String baseUrl;
 
-    @Value("${qwen.api.model}")
+    @Value("${api.model}")
     private String model;
 
     private final WebClient webClient;

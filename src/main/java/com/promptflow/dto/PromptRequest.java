@@ -4,13 +4,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PromptRequest {
     
-    @JsonProperty("task_description")
+    @JsonProperty("taskDescription")
     private String taskDescription;
     
-    @JsonProperty("target_audience")
+    @JsonProperty("targetAudience")
     private String targetAudience;
     
-    @JsonProperty("output_format")
+    @JsonProperty("outputFormat")
     private String outputFormat;
     
     @JsonProperty("constraints")
