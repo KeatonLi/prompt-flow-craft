@@ -15,11 +15,14 @@ import java.util.Optional;
 @Service
 @Transactional
 public class PromptCacheService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(PromptCacheService.class);
-    
+
     @Autowired
     private PromptCacheRepository promptCacheRepository;
+
+    @Autowired
+    private PromptClassificationService classificationService;
     
     /**
      * 根据请求参数查找缓存的结果
@@ -73,9 +76,17 @@ public class PromptCacheService {
             cache.setRequestHash(requestHash);
             cache.setHitCount(0);
             
-            promptCacheRepository.save(cache);
+            PromptCache savedCache = promptCacheRepository.save(cache);
             logger.info("成功保存到缓存，哈希: {}", requestHash);
-            
+
+            // 异步执行自动分类和打标签
+            try {
+                logger.info("开始自动分类和打标签，promptId: {}", savedCache.getId());
+                classificationService.autoClassifyAndTag(savedCache);
+            } catch (Exception e) {
+                logger.error("自动分类失败，不影响主流程", e);
+            }
+
         } catch (Exception e) {
             logger.error("保存缓存时发生错误", e);
             // 缓存保存失败不应该影响主流程，所以只记录日志

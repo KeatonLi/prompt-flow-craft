@@ -150,7 +150,7 @@ EOF
 # 上传文件到服务器
 upload_files() {
     echo -e "${BLUE}上传文件到服务器...${NC}"
-    
+
     # 清理服务器上的旧文件
     echo -e "${YELLOW}清理服务器上的旧文件...${NC}"
     ssh -i "${SSH_KEY_PATH/#\~/$HOME}" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" << 'EOF'
@@ -160,26 +160,26 @@ rm -f backend.jar
 rm -rf frontend-dist
 echo "旧文件清理完成"
 EOF
-    
+
     # 上传后端JAR文件
     echo -e "${YELLOW}上传后端文件...${NC}"
     scp -i "${SSH_KEY_PATH/#\~/$HOME}" -P "$SERVER_PORT" \
         "target/prompt-flow-craft-1.0.0.jar" \
         "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/backend.jar"
-    
+
     # 上传前端文件
     echo -e "${YELLOW}上传前端文件...${NC}"
     scp -i "${SSH_KEY_PATH/#\~/$HOME}" -P "$SERVER_PORT" -r \
         "frontend/dist" \
         "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/frontend-dist"
-    
+
     echo -e "${GREEN}文件上传完成${NC}"
 }
 
 # 启动服务
 start_services() {
     echo -e "${BLUE}启动服务...${NC}"
-    
+
     ssh -i "${SSH_KEY_PATH/#\~/$HOME}" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" << 'EOF'
 set -e
 cd /opt/prompt-flow-craft
@@ -275,8 +275,8 @@ show_info() {
     echo -e "  健康检查: ${BLUE}http://$SERVER_HOST:8080/api/health${NC}"
     echo ""
     echo -e "${YELLOW}服务管理:${NC}"
-    echo -e "  查看后端日志: ${BLUE}ssh -i $SSH_KEY_PATH -p $SERVER_PORT $SERVER_USER@$SERVER_HOST 'tail -f $REMOTE_DIR/backend.log'${NC}"
-    echo -e "  查看前端日志: ${BLUE}ssh -i $SSH_KEY_PATH -p $SERVER_PORT $SERVER_USER@$SERVER_HOST 'tail -f $REMOTE_DIR/frontend.log'${NC}"
+    echo -e "  查看后端日志: ${BLUE}ssh -i $SSH_KEY_PATH -p $SERVER_PORT $SERVER_USER@$SERVER_HOST 'tail -n 500 $REMOTE_DIR/backend.log'${NC}"
+    echo -e "  查看前端日志: ${BLUE}ssh -i $SSH_KEY_PATH -p $SERVER_PORT $SERVER_USER@$SERVER_HOST 'tail -n 500 $REMOTE_DIR/frontend.log'${NC}"
     echo -e "  重新部署: ${BLUE}./deploy.sh${NC}"
     echo -e "${GREEN}========================================${NC}"
 }

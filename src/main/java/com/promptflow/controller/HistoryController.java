@@ -1,7 +1,8 @@
 package com.promptflow.controller;
 
-import com.promptflow.dto.HistoryResponse;
+import com.promptflow.dto.*;
 import com.promptflow.entity.PromptCache;
+import com.promptflow.service.PromptClassificationService;
 import com.promptflow.service.PromptHistoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,17 +14,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/history")
 @CrossOrigin
 public class HistoryController {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(HistoryController.class);
-    
+
     @Autowired
     private PromptHistoryService promptHistoryService;
+
+    @Autowired
+    private PromptClassificationService classificationService;
     
     /**
      * 获取所有历史记录
@@ -150,5 +155,236 @@ public class HistoryController {
             promptCache.getCreatedAt(),
             promptCache.getHitCount()
         );
+    }
+
+    // ==================== 新增分类和标签相关接口 ====================
+
+    /**
+     * 分页查询历史记录（支持筛选）
+     */
+    @PostMapping("/page")
+    public ResponseEntity<Map<String, Object>> getHistoryPage(@RequestBody HistoryQueryRequest request) {
+        try {
+            PagedResult<PromptCache> result = promptHistoryService.getHistoryPage(request);
+            List<HistoryResponse> responseList = result.getList().stream()
+                .map(this::convertToHistoryResponse)
+                .collect(Collectors.toList());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", responseList);
+            response.put("total", result.getTotal());
+            response.put("totalPages", result.getTotalPages());
+            response.put("page", result.getPage());
+            response.put("size", result.getSize());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("分页查询历史记录失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "分页查询历史记录失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 根据分类查询历史记录
+     */
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<Map<String, Object>> getHistoryByCategory(@PathVariable Long categoryId) {
+        try {
+            List<PromptCache> historyList = promptHistoryService.getHistoryByCategory(categoryId);
+            List<HistoryResponse> responseList = historyList.stream()
+                .map(this::convertToHistoryResponse)
+                .collect(Collectors.toList());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", responseList);
+            response.put("total", responseList.size());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("根据分类查询历史记录失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "根据分类查询历史记录失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 获取收藏的提示词
+     */
+    @GetMapping("/favorites")
+    public ResponseEntity<Map<String, Object>> getFavoritePrompts(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
+        try {
+            PagedResult<PromptCache> result = promptHistoryService.getFavoritePromptsPage(page, size);
+            List<HistoryResponse> responseList = result.getList().stream()
+                .map(this::convertToHistoryResponse)
+                .collect(Collectors.toList());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", responseList);
+            response.put("total", result.getTotal());
+            response.put("totalPages", result.getTotalPages());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("获取收藏提示词失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "获取收藏提示词失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 切换收藏状态
+     */
+    @PostMapping("/{id}/favorite")
+    public ResponseEntity<Map<String, Object>> toggleFavorite(@PathVariable Long id) {
+        try {
+            boolean success = promptHistoryService.toggleFavorite(id);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", success);
+            response.put("message", success ? "操作成功" : "记录不存在");
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("切换收藏状态失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "切换收藏状态失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 更新提示词分类
+     */
+    @PutMapping("/{id}/category")
+    public ResponseEntity<Map<String, Object>> updateCategory(
+            @PathVariable Long id,
+            @RequestParam Long categoryId) {
+        try {
+            boolean success = promptHistoryService.updateCategory(id, categoryId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", success);
+            response.put("message", success ? "分类更新成功" : "记录不存在");
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("更新分类失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "更新分类失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 删除历史记录
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> deleteHistory(@PathVariable Long id) {
+        try {
+            boolean success = promptHistoryService.deleteHistory(id);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", success);
+            response.put("message", success ? "删除成功" : "记录不存在");
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("删除历史记录失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "删除历史记录失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 批量删除历史记录
+     */
+    @PostMapping("/batch-delete")
+    public ResponseEntity<Map<String, Object>> batchDeleteHistory(@RequestBody List<Long> ids) {
+        try {
+            int count = promptHistoryService.batchDeleteHistory(ids);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "成功删除 " + count + " 条记录");
+            response.put("deletedCount", count);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("批量删除历史记录失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "批量删除历史记录失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 手动触发单条提示词分类
+     */
+    @PostMapping("/{id}/classify")
+    public ResponseEntity<Map<String, Object>> classifyPrompt(@PathVariable Long id) {
+        try {
+            Optional<PromptCache> promptOpt = promptHistoryService.getHistoryById(id);
+            if (promptOpt.isEmpty()) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "记录不存在");
+                return ResponseEntity.notFound().build();
+            }
+
+            ClassificationResult result = classificationService.autoClassifyAndTag(promptOpt.get());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", result);
+            response.put("message", "分类完成");
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("分类提示词失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "分类提示词失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 批量处理未分类的提示词
+     */
+    @PostMapping("/batch-classify")
+    public ResponseEntity<Map<String, Object>> batchClassifyPrompts(
+            @RequestParam(value = "batchSize", defaultValue = "10") int batchSize) {
+        try {
+            classificationService.batchClassifyUnTaggedPrompts(batchSize);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "批量分类任务已启动，处理数量: " + batchSize);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("批量分类失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "批量分类失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
     }
 }

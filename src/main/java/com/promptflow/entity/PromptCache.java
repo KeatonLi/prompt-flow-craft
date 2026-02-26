@@ -2,7 +2,9 @@ package com.promptflow.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "prompt_cache")
@@ -47,7 +49,37 @@ public class PromptCache {
     
     @Column(name = "hit_count")
     private Integer hitCount = 0;
-    
+
+    @Column(name = "category_id")
+    private Long categoryId;
+
+    @Column(name = "is_favorite")
+    private Boolean isFavorite = false;
+
+    @Column(name = "is_auto_tagged")
+    private Boolean isAutoTagged = false;
+
+    @Column(name = "ai_tags", columnDefinition = "JSON")
+    private String aiTags;
+
+    @Column(name = "usage_scenario", length = 200)
+    private String usageScenario;
+
+    @Column(name = "effectiveness_score")
+    private Integer effectivenessScore;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id", insertable = false, updatable = false)
+    private PromptCategory category;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "prompt_tag_relation",
+        joinColumns = @JoinColumn(name = "prompt_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<PromptTag> tags = new HashSet<>();
+
     public PromptCache() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -167,7 +199,81 @@ public class PromptCache {
         this.hitCount = (this.hitCount == null ? 0 : this.hitCount) + 1;
         this.updatedAt = LocalDateTime.now();
     }
-    
+
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public Boolean getIsFavorite() {
+        return isFavorite;
+    }
+
+    public void setIsFavorite(Boolean isFavorite) {
+        this.isFavorite = isFavorite;
+    }
+
+    public Boolean getIsAutoTagged() {
+        return isAutoTagged;
+    }
+
+    public void setIsAutoTagged(Boolean isAutoTagged) {
+        this.isAutoTagged = isAutoTagged;
+    }
+
+    public String getAiTags() {
+        return aiTags;
+    }
+
+    public void setAiTags(String aiTags) {
+        this.aiTags = aiTags;
+    }
+
+    public String getUsageScenario() {
+        return usageScenario;
+    }
+
+    public void setUsageScenario(String usageScenario) {
+        this.usageScenario = usageScenario;
+    }
+
+    public Integer getEffectivenessScore() {
+        return effectivenessScore;
+    }
+
+    public void setEffectivenessScore(Integer effectivenessScore) {
+        this.effectivenessScore = effectivenessScore;
+    }
+
+    public PromptCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(PromptCategory category) {
+        this.category = category;
+    }
+
+    public Set<PromptTag> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<PromptTag> tags) {
+        this.tags = tags;
+    }
+
+    // 便捷方法：添加标签
+    public void addTag(PromptTag tag) {
+        this.tags.add(tag);
+    }
+
+    // 便捷方法：移除标签
+    public void removeTag(PromptTag tag) {
+        this.tags.remove(tag);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
