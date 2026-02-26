@@ -1,10 +1,8 @@
 <template>
-  <el-card class="history-card" shadow="hover" @click="toggleExpanded">
+  <div class="history-card" @click="toggleExpanded">
     <div class="card-header">
-      <div class="card-title">
-        <el-text :class="{ 'expanded': isExpanded }">
-          {{ history.taskDescription || '无标题' }}
-        </el-text>
+      <div class="card-title" :class="{ 'expanded': isExpanded }">
+        {{ history.taskDescription || '无标题' }}
       </div>
       <div class="card-time">
         {{ formatTime(history.createdAt) }}
@@ -27,10 +25,10 @@
         </el-tag>
       </div>
       
-      <div class="card-preview" :class="{ 'expanded': isExpanded }">
-        <el-text :class="{ 'expanded': isExpanded }">
-          {{ history.generatedPrompt }}
-        </el-text>
+      <div class="card-preview" :class="{ 'expanded': isExpanded }" @click.stop="toggleExpanded">
+        <div class="preview-text" :class="{ 'expanded': isExpanded }">
+          {{ history.generatedPrompt || '暂无生成内容' }}
+        </div>
         <div v-if="!isExpanded && isTextOverflow(history.generatedPrompt)" class="expand-hint">
           点击展开更多...
         </div>
@@ -47,12 +45,18 @@
         详情
       </el-button>
     </div>
-  </el-card>
+  </div>
 </template>
 
 <script>
+import { RefreshRight, View } from '@element-plus/icons-vue'
+
 export default {
   name: 'HistoryCard',
+  components: {
+    RefreshRight,
+    View
+  },
   props: {
     history: {
       type: Object,
@@ -164,12 +168,12 @@ export default {
   border-radius: 12px;
   border: 1px solid rgba(230, 230, 230, 0.4);
   background: #ffffff;
-  backdrop-filter: blur(10px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   overflow: hidden;
   position: relative;
+  padding: 16px;
 }
 
 .history-card::before {
@@ -198,7 +202,7 @@ export default {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 12px;
-  padding: 16px 20px 12px;
+  padding-bottom: 12px;
   border-bottom: 1px solid rgba(240, 240, 240, 0.6);
   background: rgba(250, 250, 250, 0.5);
 }
@@ -206,9 +210,6 @@ export default {
 .card-title {
   flex: 1;
   margin-right: 12px;
-}
-
-.card-title :deep(.el-text) {
   font-weight: 600;
   font-size: 15px;
   color: #333333;
@@ -220,7 +221,7 @@ export default {
   word-break: break-all;
 }
 
-.card-title :deep(.el-text.expanded) {
+.card-title.expanded {
   white-space: normal;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -238,7 +239,6 @@ export default {
 
 .card-content {
   margin-bottom: 16px;
-  padding: 16px 20px;
   background: #ffffff;
 }
 
@@ -289,7 +289,7 @@ export default {
   overflow: hidden;
 }
 
-.card-preview :deep(.el-text) {
+.preview-text {
   word-break: break-word;
   overflow-wrap: break-word;
   hyphens: auto;
@@ -297,16 +297,18 @@ export default {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  white-space: pre-wrap;
 }
 
 .card-preview.expanded {
   max-height: none;
 }
 
-.card-preview.expanded :deep(.el-text) {
+.preview-text.expanded {
   display: block;
   -webkit-line-clamp: unset;
   overflow: visible;
+  white-space: pre-wrap;
 }
 
 .expand-hint {
@@ -321,6 +323,9 @@ export default {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+  padding-top: 12px;
+  border-top: 1px solid rgba(240, 240, 240, 0.6);
+  margin-top: 8px;
 }
 
 .card-actions :deep(.el-button) {

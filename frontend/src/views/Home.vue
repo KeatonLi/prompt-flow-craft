@@ -4,7 +4,7 @@
     <div class="container">
       <div class="header">
         <h1 class="title">
-          <el-icon class="title-icon"><Magic /></el-icon>
+          <el-icon class="title-icon"><MagicStick /></el-icon>
           AI 提示词生成器
         </h1>
         <p class="subtitle">让AI更懂你的想法，一键生成专业级提示词</p>
@@ -125,7 +125,7 @@
               @click="generatePrompt"
               style="width: 100%"
             >
-              <el-icon><Magic /></el-icon>
+              <el-icon><MagicStick /></el-icon>
               {{ loading ? '生成中...' : '生成提示词' }}
             </el-button>
           </el-form-item>
@@ -158,16 +158,18 @@
 </template>
 
 <script>
-import { generatePromptAPI } from '../api/prompt'
+import { promptApi } from '@/api/prompt'
 import HistorySidebar from '../components/HistorySidebar.vue'
-import { Clock, MagicStick } from '@element-plus/icons-vue'
+import { Clock, MagicStick, DocumentCopy, Delete } from '@element-plus/icons-vue'
 
 export default {
   name: 'Home',
   components: {
     HistorySidebar,
     Clock,
-    MagicStick
+    MagicStick,
+    DocumentCopy,
+    Delete
   },
   data() {
     return {
@@ -209,15 +211,9 @@ export default {
         if (!valid) return
 
         this.loading = true
-        const response = await generatePromptAPI(this.formData)
+        const generatedPrompt = await promptApi.generate(this.formData)
         
-        // 检查响应是否成功
-        if (response.success) {
-          this.result = response.generated_prompt
-        } else {
-          throw new Error(response.message || '生成失败')
-        }
-        
+        this.result = generatedPrompt
         this.$message.success('提示词生成成功！')
       } catch (error) {
         console.error('生成提示词失败:', error)

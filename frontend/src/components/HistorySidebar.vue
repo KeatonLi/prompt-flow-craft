@@ -4,12 +4,16 @@
       <div class="header-content">
         <h3 v-if="isOpen">历史记录</h3>
         <el-button
-          :icon="isOpen ? 'ArrowLeft' : 'ArrowRight'"
           circle
           size="small"
           @click="toggleSidebar"
           class="toggle-btn"
-        />
+        >
+          <el-icon>
+            <ArrowLeft v-if="isOpen" />
+            <ArrowRight v-else />
+          </el-icon>
+        </el-button>
       </div>
     </div>
 
@@ -148,13 +152,18 @@
 </template>
 
 <script>
-import { getRecentHistory, searchHistory } from '@/api/history'
+import { historyApi } from '@/api/history'
 import HistoryCard from './HistoryCard.vue'
+import { Search, Clock, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
 export default {
   name: 'HistorySidebar',
   components: {
-    HistoryCard
+    HistoryCard,
+    Search,
+    Clock,
+    ArrowLeft,
+    ArrowRight
   },
   data() {
     return {
@@ -178,14 +187,16 @@ export default {
     async loadHistory() {
       this.loading = true
       try {
-        const response = await getRecentHistory(this.limit)
-        if (response.success) {
-          this.historyList = response.data
-          this.displayedHistory = this.historyList.slice(0, this.pageSize)
-          this.totalCount = this.historyList.length
-          this.currentPage = 1
-        }
+        console.log('开始加载历史记录...')
+        const data = await historyApi.getRecent(this.limit)
+        console.log('获取到的历史记录数据:', data)
+        this.historyList = data || []
+        this.displayedHistory = this.historyList.slice(0, this.pageSize)
+        this.totalCount = this.historyList.length
+        this.currentPage = 1
+        console.log('displayedHistory:', this.displayedHistory)
       } catch (error) {
+        console.error('加载历史记录失败:', error)
         this.$message.error('加载历史记录失败')
       } finally {
         this.loading = false
@@ -196,14 +207,13 @@ export default {
       if (this.searchKeyword.trim()) {
         this.loading = true
         try {
-          const response = await searchHistory(this.searchKeyword.trim())
-          if (response.success) {
-            this.historyList = response.data
-            this.displayedHistory = this.historyList.slice(0, this.pageSize)
-            this.totalCount = response.total
-            this.currentPage = 1
-          }
+          const data = await historyApi.search(this.searchKeyword.trim())
+          this.historyList = data || []
+          this.displayedHistory = this.historyList.slice(0, this.pageSize)
+          this.totalCount = this.historyList.length
+          this.currentPage = 1
         } catch (error) {
+          console.error('搜索失败:', error)
           this.$message.error('搜索失败')
         } finally {
           this.loading = false
