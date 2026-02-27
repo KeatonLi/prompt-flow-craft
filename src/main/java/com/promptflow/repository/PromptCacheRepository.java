@@ -84,12 +84,6 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     List<PromptCache> findByCategoryIdOrderByCreatedAtDesc(Long categoryId);
 
     /**
-     * 查询收藏的提示词（分页）- 已废弃，使用点赞功能替代
-     */
-    @Deprecated
-    Page<PromptCache> findByIsFavoriteTrueOrderByCreatedAtDesc(Pageable pageable);
-
-    /**
      * 根据点赞数查询提示词（分页）
      */
     @Query("SELECT p FROM PromptCache p ORDER BY p.likeCount DESC, p.createdAt DESC")
@@ -130,6 +124,11 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
      */
     @Query("SELECT p.categoryId, COUNT(p) FROM PromptCache p WHERE p.categoryId IS NOT NULL GROUP BY p.categoryId")
     List<Object[]> countByCategory();
+
+    /**
+     * 统计有点赞的记录数量
+     */
+    long countByLikeCountGreaterThan(int likeCount);
 
     /**
      * 查询需要自动打标签的提示词（未打过标签的）

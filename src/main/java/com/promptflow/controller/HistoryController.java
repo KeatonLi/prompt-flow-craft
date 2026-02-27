@@ -87,7 +87,7 @@ public class HistoryController {
      * 根据ID获取历史记录详情
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getHistoryById(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> getHistoryById(@PathVariable("id") Long id) {
         try {
             Optional<PromptCache> historyOptional = promptHistoryService.getHistoryById(id);
             
@@ -234,7 +234,7 @@ public class HistoryController {
      * 根据分类查询历史记录
      */
     @GetMapping("/category/{categoryId}")
-    public ResponseEntity<Map<String, Object>> getHistoryByCategory(@PathVariable Long categoryId) {
+    public ResponseEntity<Map<String, Object>> getHistoryByCategory(@PathVariable("categoryId") Long categoryId) {
         try {
             List<PromptCache> historyList = promptHistoryService.getHistoryByCategory(categoryId);
             List<HistoryResponse> responseList = historyList.stream()
@@ -289,7 +289,7 @@ public class HistoryController {
      * 点赞提示词
      */
     @PostMapping("/{id}/like")
-    public ResponseEntity<Map<String, Object>> likePrompt(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> likePrompt(@PathVariable("id") Long id) {
         try {
             boolean success = promptHistoryService.likePrompt(id);
 
@@ -311,7 +311,7 @@ public class HistoryController {
      * 取消点赞提示词
      */
     @PostMapping("/{id}/unlike")
-    public ResponseEntity<Map<String, Object>> unlikePrompt(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> unlikePrompt(@PathVariable("id") Long id) {
         try {
             boolean success = promptHistoryService.unlikePrompt(id);
 
@@ -334,7 +334,7 @@ public class HistoryController {
      */
     @PutMapping("/{id}/category")
     public ResponseEntity<Map<String, Object>> updateCategory(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestParam Long categoryId) {
         try {
             boolean success = promptHistoryService.updateCategory(id, categoryId);
@@ -357,7 +357,7 @@ public class HistoryController {
      * 删除历史记录
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> deleteHistory(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> deleteHistory(@PathVariable("id") Long id) {
         try {
             boolean success = promptHistoryService.deleteHistory(id);
 
@@ -402,7 +402,7 @@ public class HistoryController {
      * 手动触发单条提示词分类
      */
     @PostMapping("/{id}/classify")
-    public ResponseEntity<Map<String, Object>> classifyPrompt(@PathVariable Long id) {
+    public ResponseEntity<Map<String, Object>> classifyPrompt(@PathVariable("id") Long id) {
         try {
             Optional<PromptCache> promptOpt = promptHistoryService.getHistoryById(id);
             if (!promptOpt.isPresent()) {

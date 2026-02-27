@@ -8,9 +8,6 @@ import com.promptflow.repository.PromptCategoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -138,11 +135,9 @@ public class CategoryController {
         long totalCount = promptCacheRepository.count();
         stats.put("totalCount", totalCount);
         
-        // 统计收藏数量
-        Pageable pageable = PageRequest.of(0, 1);
-        Page<PromptCache> favoritePage = promptCacheRepository.findByIsFavoriteTrueOrderByCreatedAtDesc(pageable);
-        long favoriteCount = favoritePage.getTotalElements();
-        stats.put("favoriteCount", favoriteCount);
+        // 统计有点赞的数量
+        long likeCount = promptCacheRepository.countByLikeCountGreaterThan(0);
+        stats.put("favoriteCount", likeCount);
         
         return ApiResponse.success(stats);
     }
