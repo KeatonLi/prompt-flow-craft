@@ -1,5 +1,6 @@
 package com.promptflow.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 
@@ -32,6 +33,7 @@ public class PromptTag {
     private LocalDateTime createdAt;
 
     @ManyToMany(mappedBy = "tags")
+    @JsonIgnore
     private Set<PromptCache> prompts = new HashSet<>();
 
     // 默认构造函数

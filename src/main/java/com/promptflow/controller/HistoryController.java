@@ -2,8 +2,10 @@ package com.promptflow.controller;
 
 import com.promptflow.dto.*;
 import com.promptflow.entity.PromptCache;
+import com.promptflow.entity.PromptCategory;
 import com.promptflow.service.PromptClassificationService;
 import com.promptflow.service.PromptHistoryService;
+import com.promptflow.util.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,7 +144,7 @@ public class HistoryController {
      * 将PromptCache实体转换为HistoryResponse DTO
      */
     private HistoryResponse convertToHistoryResponse(PromptCache promptCache) {
-        return new HistoryResponse(
+        HistoryResponse response = new HistoryResponse(
             promptCache.getId(),
             promptCache.getTaskDescription(),
             promptCache.getTargetAudience(),
@@ -155,6 +157,53 @@ public class HistoryController {
             promptCache.getCreatedAt(),
             promptCache.getHitCount()
         );
+        
+        // 设置扩展字段
+        response.setCategoryId(promptCache.getCategoryId());
+        response.setIsFavorite(promptCache.getIsFavorite());
+        response.setIsAutoTagged(promptCache.getIsAutoTagged());
+        response.setUsageScenario(promptCache.getUsageScenario());
+        response.setEffectivenessScore(promptCache.getEffectivenessScore());
+        
+        // 设置分类信息
+        if (promptCache.getCategory() != null) {
+            PromptCategory category = promptCache.getCategory();
+            response.setCategory(new HistoryResponse.CategoryResponse(
+                category.getId(),
+                category.getName(),
+                category.getIcon(),
+                category.getColor()
+            ));
+        }
+        
+        // 设置AI标签
+        if (promptCache.getAiTags() != null && !promptCache.getAiTags().isEmpty()) {
+            try {
+                response.setAiTags(JsonUtil.parseStringList(promptCache.getAiTags()));
+            } catch (Exception e) {
+                // 如果解析失败，使用空列表
+                response.setAiTags(List.of());
+            }
+        } else {
+            response.setAiTags(List.of());
+        }
+        
+        // 设置标签信息
+        if (promptCache.getTags() != null && !promptCache.getTags().isEmpty()) {
+            List<HistoryResponse.TagResponse> tagResponses = promptCache.getTags().stream()
+                .map(tag -> new HistoryResponse.TagResponse(
+                    tag.getId(),
+                    tag.getName(),
+                    tag.getColor(),
+                    tag.getUsageCount()
+                ))
+                .collect(Collectors.toList());
+            response.setTags(tagResponses);
+        } else {
+            response.setTags(List.of());
+        }
+        
+        return response;
     }
 
     // ==================== 新增分类和标签相关接口 ====================
@@ -341,7 +390,7 @@ public class HistoryController {
     public ResponseEntity<Map<String, Object>> classifyPrompt(@PathVariable Long id) {
         try {
             Optional<PromptCache> promptOpt = promptHistoryService.getHistoryById(id);
-            if (promptOpt.isPresent()) {
+            if (!promptOpt.isPresent()) {
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
                 errorResponse.put("message", "记录不存在");

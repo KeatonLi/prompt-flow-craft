@@ -2,13 +2,16 @@ package com.promptflow.controller;
 
 import com.promptflow.dto.ApiResponse;
 import com.promptflow.entity.PromptCategory;
+import com.promptflow.repository.PromptCacheRepository;
 import com.promptflow.repository.PromptCategoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -19,6 +22,9 @@ public class CategoryController {
 
     @Autowired
     private PromptCategoryRepository categoryRepository;
+
+    @Autowired
+    private PromptCacheRepository promptCacheRepository;
 
     /**
      * 获取所有分类
@@ -103,5 +109,35 @@ public class CategoryController {
                     return ApiResponse.<Void>success(null);
                 })
                 .orElse(ApiResponse.error(404, "分类不存在"));
+    }
+
+    /**
+     * 获取分类统计信息（各分类的提示词数量）
+     */
+    @GetMapping("/stats")
+    public ApiResponse<Map<String, Object>> getCategoryStats() {
+        logger.info("获取分类统计");
+        
+        Map<String, Object> stats = new HashMap<>();
+        
+        // 统计各分类的提示词数量
+        List<Object[]> categoryCounts = promptCacheRepository.countByCategory();
+        Map<Long, Long> countMap = new HashMap<>();
+        for (Object[] row : categoryCounts) {
+            Long categoryId = (Long) row[0];
+            Long count = (Long) row[1];
+            countMap.put(categoryId, count);
+        }
+        stats.put("categoryCounts", countMap);
+        
+        // 统计总数量
+        long totalCount = promptCacheRepository.count();
+        stats.put("totalCount", totalCount);
+        
+        // 统计收藏数量
+        long favoriteCount = promptCacheRepository.findByIsFavoriteTrueOrderByCreatedAtDesc().size();
+        stats.put("favoriteCount", favoriteCount);
+        
+        return ApiResponse.success(stats);
     }
 }

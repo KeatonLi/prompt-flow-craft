@@ -1,5 +1,6 @@
 package com.promptflow.controller;
 
+import com.promptflow.dto.ApiResponse;
 import com.promptflow.dto.PromptRequest;
 import com.promptflow.dto.PromptResponse;
 import com.promptflow.service.PromptGenerationService;
@@ -34,26 +35,26 @@ public class PromptController {
     }
     
     @PostMapping("/generate-prompt")
-    public ResponseEntity<PromptResponse> generatePrompt(@RequestBody PromptRequest request) {
+    public ResponseEntity<ApiResponse<String>> generatePrompt(@RequestBody PromptRequest request) {
         try {
             logger.info("Received prompt generation request: {}", request);
             
             // 验证请求
             if (request.getTaskDescription() == null || request.getTaskDescription().trim().isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(PromptResponse.error("任务描述不能为空"));
+                    .body(ApiResponse.error(400, "任务描述不能为空"));
             }
             
             String generatedPrompt = promptGenerationService.generatePrompt(request);
             
             logger.info("Successfully generated prompt for task: {}", request.getTaskDescription());
             
-            return ResponseEntity.ok(PromptResponse.success(generatedPrompt));
+            return ResponseEntity.ok(ApiResponse.success("提示词生成成功", generatedPrompt));
             
         } catch (Exception e) {
             logger.error("Error processing prompt generation request", e);
             return ResponseEntity.internalServerError()
-                .body(PromptResponse.error("生成提示词时发生错误: " + e.getMessage()));
+                .body(ApiResponse.error(500, "生成提示词时发生错误: " + e.getMessage()));
         }
     }
     

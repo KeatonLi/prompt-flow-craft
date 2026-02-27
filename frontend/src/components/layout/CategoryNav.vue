@@ -67,7 +67,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useCategoryStore, useTagStore, useHistoryStore } from '@/stores';
-import type { Category } from '@/types';
 
 const categoryStore = useCategoryStore();
 const tagStore = useTagStore();
@@ -76,22 +75,15 @@ const historyStore = useHistoryStore();
 const categories = computed(() => categoryStore.sortedCategories);
 const currentCategoryId = computed(() => categoryStore.currentCategoryId);
 const hotTags = computed(() => tagStore.hotTags.slice(0, 8));
-const totalCount = computed(() => historyStore.pagination.total);
-const favoriteCount = computed(() => historyStore.favoriteCount);
+
+// 使用 store 中的统计方法
+const totalCount = computed(() => categoryStore.totalCount);
+const favoriteCount = computed(() => categoryStore.favoriteCount);
 const showFavoritesOnly = computed(() => historyStore.queryParams.isFavorite === true);
 
-const categoryCounts = computed(() => {
-  const counts: Record<number, number> = {};
-  historyStore.records.forEach(record => {
-    if (record.categoryId) {
-      counts[record.categoryId] = (counts[record.categoryId] || 0) + 1;
-    }
-  });
-  return counts;
-});
-
+// 获取分类数量
 function getCategoryCount(categoryId: number): number {
-  return categoryCounts.value[categoryId] || 0;
+  return categoryStore.getCategoryCount(categoryId);
 }
 
 function selectCategory(id: number | null) {
@@ -118,6 +110,7 @@ function selectTag(tagId: number) {
 
 onMounted(() => {
   categoryStore.fetchCategories();
+  categoryStore.fetchCategoryStats(); // 获取分类统计
   tagStore.fetchHotTags();
 });
 </script>
@@ -172,6 +165,7 @@ onMounted(() => {
   text-align: left;
   font-size: 0.875rem;
   color: #475569;
+  position: relative;
 }
 
 .nav-item:hover {

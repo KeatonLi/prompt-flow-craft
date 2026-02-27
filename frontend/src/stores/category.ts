@@ -8,6 +8,13 @@ export const useCategoryStore = defineStore('category', () => {
   const categories = ref<Category[]>([]);
   const loading = ref(false);
   const currentCategoryId = ref<number | null>(null);
+  
+  // 分类统计
+  const categoryStats = ref({
+    categoryCounts: {} as Record<number, number>,
+    totalCount: 0,
+    favoriteCount: 0
+  });
 
   // Getters
   const sortedCategories = computed(() => {
@@ -21,6 +28,17 @@ export const useCategoryStore = defineStore('category', () => {
   const currentCategory = computed(() => {
     return categories.value.find(c => c.id === currentCategoryId.value) || null;
   });
+  
+  // 获取分类数量
+  const getCategoryCount = (id: number): number => {
+    return categoryStats.value.categoryCounts[id] || 0;
+  };
+  
+  // 获取总数量
+  const totalCount = computed(() => categoryStats.value.totalCount);
+  
+  // 获取收藏数量
+  const favoriteCount = computed(() => categoryStats.value.favoriteCount);
 
   // Actions
   async function fetchCategories() {
@@ -30,6 +48,16 @@ export const useCategoryStore = defineStore('category', () => {
       categories.value = data;
     } finally {
       loading.value = false;
+    }
+  }
+  
+  // 获取分类统计
+  async function fetchCategoryStats() {
+    try {
+      const data = await categoryApi.getStats();
+      categoryStats.value = data;
+    } catch (error) {
+      console.error('获取分类统计失败:', error);
     }
   }
 
@@ -53,7 +81,12 @@ export const useCategoryStore = defineStore('category', () => {
     sortedCategories,
     systemCategories,
     currentCategory,
+    categoryStats,
+    totalCount,
+    favoriteCount,
+    getCategoryCount,
     fetchCategories,
+    fetchCategoryStats,
     setCurrentCategory,
     getCategoryById,
     getCategoryColor

@@ -36,5 +36,19 @@ export const categoryApi = {
   delete(id: number): Promise<void> {
     return request.delete<ApiResponse<void>>(`/categories/${id}`)
       .then(() => undefined);
+  },
+
+  // 获取分类统计
+  getStats(): Promise<{
+    categoryCounts: Record<number, number>;
+    totalCount: number;
+    favoriteCount: number;
+  }> {
+    return request.get<ApiResponse<{
+      categoryCounts: Record<number, number>;
+      totalCount: number;
+      favoriteCount: number;
+    }>>('/categories/stats')
+      .then(res => res.data.data);
   }
 };
