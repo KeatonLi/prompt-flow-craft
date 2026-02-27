@@ -1,12 +1,16 @@
 package com.promptflow.controller;
 
 import com.promptflow.dto.ApiResponse;
+import com.promptflow.entity.PromptCache;
 import com.promptflow.entity.PromptCategory;
 import com.promptflow.repository.PromptCacheRepository;
 import com.promptflow.repository.PromptCategoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -135,7 +139,9 @@ public class CategoryController {
         stats.put("totalCount", totalCount);
         
         // 统计收藏数量
-        long favoriteCount = promptCacheRepository.findByIsFavoriteTrueOrderByCreatedAtDesc().size();
+        Pageable pageable = PageRequest.of(0, 1);
+        Page<PromptCache> favoritePage = promptCacheRepository.findByIsFavoriteTrueOrderByCreatedAtDesc(pageable);
+        long favoriteCount = favoritePage.getTotalElements();
         stats.put("favoriteCount", favoriteCount);
         
         return ApiResponse.success(stats);
