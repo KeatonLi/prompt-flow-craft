@@ -6,6 +6,12 @@
     </div>
 
     <div class="editor-form">
+      <div class="form-header">
+        <button class="btn btn-example" @click="loadExample">
+          <span>💡</span> 使用示例
+        </button>
+      </div>
+
       <div class="form-group">
         <label class="form-label">
           任务描述
@@ -15,6 +21,7 @@
           v-model="form.taskDescription"
           class="form-textarea"
           rows="4"
+          maxlength="500"
           placeholder="请详细描述您希望AI完成的任务，例如：写一篇关于人工智能发展趋势的文章..."
           @keydown.ctrl.enter="generate"
         />
@@ -79,6 +86,7 @@
           v-model="form.constraints"
           class="form-textarea"
           rows="2"
+          maxlength="200"
           placeholder="请输入任何约束条件或特殊要求..."
         />
       </div>
@@ -92,6 +100,7 @@
           v-model="form.examples"
           class="form-textarea"
           rows="2"
+          maxlength="200"
           placeholder="请提供参考示例..."
         />
       </div>
@@ -163,13 +172,27 @@ const cancelStream = ref<(() => void) | null>(null);
 
 const form = ref<PromptRequest>({
   taskDescription: '',
-  targetAudience: '',
-  outputFormat: '',
+  targetAudience: 'general',
+  outputFormat: 'text',
   constraints: '',
   examples: '',
-  tone: '',
-  length: ''
+  tone: 'professional',
+  length: 'short'
 });
+
+const defaultExample = {
+  taskDescription: '写一篇关于人工智能发展趋势的文章',
+  targetAudience: 'general',
+  outputFormat: 'text',
+  constraints: '需要包含最新的技术发展动态和未来展望',
+  examples: '',
+  tone: 'professional',
+  length: 'short'
+};
+
+function loadExample() {
+  form.value = { ...defaultExample };
+}
 
 const canGenerate = computed(() => {
   return form.value.taskDescription.length >= 10;
@@ -286,12 +309,12 @@ function cancelGeneration() {
 function reset() {
   form.value = {
     taskDescription: '',
-    targetAudience: '',
-    outputFormat: '',
+    targetAudience: 'general',
+    outputFormat: 'text',
     constraints: '',
     examples: '',
-    tone: '',
-    length: ''
+    tone: 'professional',
+    length: 'short'
   };
   result.value = '';
   displayedResult.value = '';
@@ -417,14 +440,46 @@ onUnmounted(() => {
 
 .editor-form {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 2px 4px -2px rgba(0, 0, 0, 0.05),
+    0 0 0 1px rgba(226, 232, 240, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.editor-form::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
 }
 
 .form-group {
   margin-bottom: 20px;
   position: relative;
+}
+
+.form-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.btn-example {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: white;
+  padding: 8px 16px;
+  font-size: 0.8rem;
+}
+
+.btn-example:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
 }
 
 .form-row {
@@ -454,11 +509,18 @@ onUnmounted(() => {
 .form-textarea,
 .form-select {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  transition: all 0.2s;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #f8fafc;
+  color: #334155;
+}
+
+.form-textarea:hover,
+.form-select:hover {
+  border-color: #cbd5e1;
   background: white;
 }
 
@@ -466,7 +528,8 @@ onUnmounted(() => {
 .form-select:focus {
   outline: none;
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: white;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1), 0 2px 8px rgba(59, 130, 246, 0.08);
 }
 
 .form-textarea {
@@ -492,36 +555,62 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  padding: 12px 24px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(white, transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.btn:hover::after {
+  opacity: 0.1;
+}
+
+.btn:active {
+  transform: scale(0.98);
 }
 
 .btn-primary {
-  background: #3b82f6;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #2563eb;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .btn-secondary {
-  background: #f3f4f6;
-  color: #374151;
+  background: white;
+  color: #475569;
+  border: 1px solid #e2e8f0;
 }
 
 .btn-secondary:hover {
-  background: #e5e7eb;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
 }
 
 .btn-sm {
@@ -548,21 +637,35 @@ onUnmounted(() => {
 .result-section {
   margin-top: 32px;
   background: white;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 10px -3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
-  animation: slideUp 0.4s ease-out;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 
+    0 20px 40px -12px rgba(0, 0, 0, 0.12),
+    0 0 0 1px rgba(226, 232, 240, 0.6);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.result-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6);
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(24px) scale(0.98);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -630,11 +733,25 @@ onUnmounted(() => {
 }
 
 .result-content {
-  background: #1e293b;
-  border-radius: 12px;
-  padding: 20px;
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  border-radius: 14px;
+  padding: 24px;
+  padding-top: 44px;
   max-height: 500px;
   overflow-y: auto;
+  position: relative;
+}
+
+.result-content::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 20px 0 0 #f59e0b, 40px 0 0 #22c55e;
 }
 
 .result-content pre {
