@@ -730,7 +730,7 @@ onMounted(() => {
   border-radius: 50%;
 }
 
-.param-dot.audience { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+.param-dot.audience { background: linear-gradient(135deg, #3b82f6, #2563eb); }
 .param-dot.format { background: linear-gradient(135deg, #10b981, #34d399); }
 .param-dot.tone { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
 .param-dot.length { background: linear-gradient(135deg, #ef4444, #f87171); }

@@ -457,7 +457,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+  background: linear-gradient(90deg, #3b82f6, #3b82f6, #3b82f6);
 }
 
 .form-group {
@@ -472,7 +472,7 @@ onUnmounted(() => {
 }
 
 .btn-example {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
   padding: 8px 16px;
   font-size: 0.8rem;
@@ -655,7 +655,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6);
+  background: linear-gradient(90deg, #3b82f6, #3b82f6, #3b82f6);
 }
 
 @keyframes slideUp {

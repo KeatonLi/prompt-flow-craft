@@ -305,7 +305,7 @@ const toggleRight = () => {
   padding: 24px;
   background: 
     radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
     linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   position: relative;
 }
