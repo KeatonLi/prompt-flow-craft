@@ -49,7 +49,7 @@ export interface PromptRecord {
   hitCount: number;
   categoryId?: number;
   category?: Category;
-  isFavorite: boolean;
+  likeCount: number;
   isAutoTagged: boolean;
   aiTags: string[];
   tags: Tag[];
@@ -71,9 +71,9 @@ export interface HistoryQueryRequest {
   page?: number;
   size?: number;
   categoryId?: number;
-  isFavorite?: boolean;
   keyword?: string;
   tagIds?: number[];
+  sortBy?: 'createdAt' | 'likeCount';
 }
 
 // 分类结果

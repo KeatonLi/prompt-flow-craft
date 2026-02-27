@@ -59,6 +59,14 @@
     
     <!-- 操作按钮 -->
     <div class="card-actions">
+      <button class="action-btn btn-like" :class="{ 'liked': isLiked }" @click.stop="handleLike">
+        <span class="btn-icon">
+          <svg viewBox="0 0 24 24" :fill="isLiked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </span>
+        <span class="btn-text">{{ likeCount > 0 ? likeCount : '点赞' }}</span>
+      </button>
       <button class="action-btn btn-reuse" @click.stop="handleReuse">
         <span class="btn-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -81,6 +89,8 @@
 </template>
 
 <script>
+import { historyApi } from '@/api/history';
+
 export default {
   name: 'HistoryCard',
   props: {
@@ -89,13 +99,27 @@ export default {
       required: true
     }
   },
+  data() {
+    return {
+      isLiked: false,
+      likeCount: 0,
+      liking: false
+    };
+  },
+  watch: {
+    history: {
+      immediate: true,
+      handler(newVal) {
+        this.likeCount = newVal?.likeCount || 0;
+      }
+    }
+  },
   methods: {
     formatTime(timestamp) {
       if (!timestamp) return ''
       const date = new Date(timestamp)
       const now = new Date()
       
-      // 如果是今天
       if (date.toDateString() === now.toDateString()) {
         return date.toLocaleTimeString('zh-CN', { 
           hour: '2-digit', 
@@ -103,14 +127,12 @@ export default {
         })
       }
       
-      // 如果是昨天
       const yesterday = new Date(now)
       yesterday.setDate(yesterday.getDate() - 1)
       if (date.toDateString() === yesterday.toDateString()) {
         return '昨天 '
       }
       
-      // 其他情况
       return date.toLocaleDateString('zh-CN', {
         month: 'short',
         day: 'numeric'
@@ -164,6 +186,27 @@ export default {
       if (!text) return ''
       if (text.length <= length) return text
       return text.slice(0, length) + '...'
+    },
+    
+    async handleLike() {
+      if (this.liking) return;
+      this.liking = true;
+      try {
+        if (this.isLiked) {
+          await historyApi.unlike(this.history.id);
+          this.likeCount = Math.max(0, this.likeCount - 1);
+          this.isLiked = false;
+        } else {
+          await historyApi.like(this.history.id);
+          this.likeCount = this.likeCount + 1;
+          this.isLiked = true;
+        }
+      } catch (error) {
+        console.error('点赞操作失败:', error);
+        this.$message.error('操作失败，请稍后重试');
+      } finally {
+        this.liking = false;
+      }
     },
     
     handleReuse() {
@@ -376,6 +419,30 @@ export default {
 .btn-icon svg {
   width: 100%;
   height: 100%;
+}
+
+/* 点赞按钮 */
+.btn-like {
+  background: white;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-like:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+.btn-like.liked {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border-color: #ef4444;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+}
+
+.btn-like.liked:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
 }
 
 /* 复用按钮 - 渐变蓝色 */

@@ -16,17 +16,17 @@
       <div class="filter-tabs">
         <button
           class="tab-btn"
-          :class="{ active: activeTab === 'all' }"
-          @click="setTab('all')"
+          :class="{ active: activeTab === 'recent' }"
+          @click="setTab('recent')"
         >
-          全部
+          最新
         </button>
         <button
           class="tab-btn"
-          :class="{ active: activeTab === 'favorite' }"
-          @click="setTab('favorite')"
+          :class="{ active: activeTab === 'popular' }"
+          @click="setTab('popular')"
         >
-          收藏
+          点赞排行
         </button>
       </div>
     </div>
@@ -64,7 +64,7 @@
       </button>
     </div>
 
-    <!-- 详情弹窗 - 自定义实现，居中显示 -->
+    <!-- 详情弹窗 -->
     <Teleport to="body">
       <Transition name="fade">
         <div v-if="detailVisible" class="modal-overlay" @click.self="closeDetail">
@@ -211,9 +211,10 @@
                     <span class="stat-value">{{ selectedRecord.hitCount }} 次</span>
                   </div>
                   <div class="stat-divider"></div>
-                  <div class="stat-item" v-if="selectedRecord.isFavorite">
-                    <span class="stat-icon">⭐</span>
-                    <span class="stat-label">已收藏</span>
+                  <div class="stat-item">
+                    <span class="stat-icon">❤️</span>
+                    <span class="stat-label">点赞</span>
+                    <span class="stat-value">{{ selectedRecord.likeCount || 0 }}</span>
                   </div>
                 </div>
               </div>
@@ -253,7 +254,7 @@ import MarkdownRender from '@/components/MarkdownRender.vue';
 const historyStore = useHistoryStore();
 
 const searchKeyword = ref('');
-const activeTab = ref<'all' | 'favorite'>('all');
+const activeTab = ref<'recent' | 'popular'>('recent');
 const loading = ref(false);
 const showBatchActions = ref(false);
 
@@ -284,10 +285,11 @@ const handleSearch = debounce(() => {
   historyStore.fetchRecords();
 }, 300);
 
-function setTab(tab: 'all' | 'favorite') {
+function setTab(tab: 'recent' | 'popular') {
   activeTab.value = tab;
+  const sortBy = tab === 'popular' ? 'likeCount' : 'createdAt';
   historyStore.setQueryParams({
-    isFavorite: tab === 'favorite' ? true : undefined,
+    sortBy: sortBy,
     page: 1
   });
   historyStore.fetchRecords();

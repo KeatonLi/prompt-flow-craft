@@ -7,7 +7,6 @@ export const historyApi = {
     return request.post<ApiResponse<any>>('/history/page', params)
       .then(res => {
         const result = res.data;
-        // 后端返回 data 字段包含列表，映射到前端的 list 字段
         return {
           list: result.data,
           total: result.total,
@@ -37,9 +36,9 @@ export const historyApi = {
       .then(res => res.data.data);
   },
 
-  // 获取收藏列表
-  getFavorites(page: number = 1, size: number = 20): Promise<PagedResult<PromptRecord>> {
-    return request.get<ApiResponse<PagedResult<PromptRecord>>>('/history/favorites', {
+  // 获取点赞数最高的提示词
+  getTopLiked(page: number = 1, size: number = 20): Promise<PagedResult<PromptRecord>> {
+    return request.get<ApiResponse<PagedResult<PromptRecord>>>('/history/top-liked', {
       params: { page, size }
     }).then(res => res.data.data);
   },
@@ -51,9 +50,15 @@ export const historyApi = {
     }).then(res => res.data.data);
   },
 
-  // 切换收藏状态
-  toggleFavorite(id: number): Promise<void> {
-    return request.post<ApiResponse<void>>(`/history/${id}/favorite`)
+  // 点赞提示词
+  like(id: number): Promise<void> {
+    return request.post<ApiResponse<void>>(`/history/${id}/like`)
+      .then(() => undefined);
+  },
+
+  // 取消点赞提示词
+  unlike(id: number): Promise<void> {
+    return request.post<ApiResponse<void>>(`/history/${id}/unlike`)
       .then(() => undefined);
   },
 

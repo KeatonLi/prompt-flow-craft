@@ -4,9 +4,7 @@ import { historyApi } from '@/api';
 import type { PromptRecord, PagedResult, HistoryQueryRequest } from '@/types';
 
 export const useHistoryStore = defineStore('history', () => {
-  // State
   const records = ref<PromptRecord[]>([]);
-  const favorites = ref<PromptRecord[]>([]);
   const loading = ref(false);
   const pagination = ref({
     page: 1,
@@ -18,25 +16,17 @@ export const useHistoryStore = defineStore('history', () => {
     page: 1,
     size: 20,
     categoryId: undefined,
-    isFavorite: undefined,
-    keyword: ''
+    keyword: '',
+    sortBy: 'createdAt'
   });
 
-  // Getters
   const filteredRecords = computed(() => {
     let result = [...records.value];
 
-    // 按分类筛选
     if (queryParams.value.categoryId) {
       result = result.filter(r => r.categoryId === queryParams.value.categoryId);
     }
 
-    // 按收藏筛选
-    if (queryParams.value.isFavorite !== undefined) {
-      result = result.filter(r => r.isFavorite === queryParams.value.isFavorite);
-    }
-
-    // 按关键词搜索
     if (queryParams.value.keyword) {
       const keyword = queryParams.value.keyword.toLowerCase();
       result = result.filter(r =>
@@ -48,15 +38,11 @@ export const useHistoryStore = defineStore('history', () => {
     return result;
   });
 
-  const favoriteCount = computed(() => favorites.value.length);
-
-  // Actions
   async function fetchRecords(params?: Partial<HistoryQueryRequest>) {
     loading.value = true;
     try {
       const mergedParams = { ...queryParams.value, ...params };
       const data: PagedResult<PromptRecord> = await historyApi.getPage(mergedParams);
-//       console.log(data);
       records.value = data.list;
       pagination.value = {
         page: data.page,
@@ -66,28 +52,6 @@ export const useHistoryStore = defineStore('history', () => {
       };
     } finally {
       loading.value = false;
-    }
-  }
-
-  async function fetchFavorites(page = 1, size = 20) {
-    try {
-      const data = await historyApi.getFavorites(page, size);
-      favorites.value = data.list;
-    } catch (error) {
-      console.error('Failed to fetch favorites:', error);
-    }
-  }
-
-  async function toggleFavorite(id: number) {
-    try {
-      await historyApi.toggleFavorite(id);
-      // 更新本地状态
-      const record = records.value.find(r => r.id === id);
-      if (record) {
-        record.isFavorite = !record.isFavorite;
-      }
-    } catch (error) {
-      console.error('Failed to toggle favorite:', error);
     }
   }
 
@@ -120,8 +84,8 @@ export const useHistoryStore = defineStore('history', () => {
       page: 1,
       size: 20,
       categoryId: undefined,
-      isFavorite: undefined,
-      keyword: ''
+      keyword: '',
+      sortBy: 'createdAt'
     };
   }
 
@@ -131,15 +95,11 @@ export const useHistoryStore = defineStore('history', () => {
 
   return {
     records,
-    favorites,
     loading,
     pagination,
     queryParams,
     filteredRecords,
-    favoriteCount,
     fetchRecords,
-    fetchFavorites,
-    toggleFavorite,
     deleteRecord,
     batchDelete,
     setQueryParams,
