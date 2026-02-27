@@ -31,15 +31,15 @@ CREATE INDEX idx_task_description ON prompt_cache(task_description(100));
 
 -- 扩展 prompt_cache 表，添加分类和标签相关字段
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS category_id BIGINT COMMENT '分类ID' AFTER hit_count;
-ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS is_favorite BOOLEAN DEFAULT FALSE COMMENT '是否收藏' AFTER category_id;
-ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS is_auto_tagged BOOLEAN DEFAULT FALSE COMMENT '是否自动打标签' AFTER is_favorite;
+ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS like_count INT DEFAULT 0 COMMENT '点赞数' AFTER category_id;
+ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS is_auto_tagged BOOLEAN DEFAULT FALSE COMMENT '是否自动打标签' AFTER like_count;
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS ai_tags JSON COMMENT 'AI识别的标签' AFTER is_auto_tagged;
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS usage_scenario VARCHAR(200) COMMENT '使用场景' AFTER ai_tags;
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS effectiveness_score INT COMMENT '效果评分(1-5)' AFTER usage_scenario;
 
 -- 新增索引
 CREATE INDEX IF NOT EXISTS idx_category_id ON prompt_cache(category_id);
-CREATE INDEX IF NOT EXISTS idx_is_favorite ON prompt_cache(is_favorite);
+CREATE INDEX IF NOT EXISTS idx_like_count ON prompt_cache(like_count);
 
 -- 创建分类表
 CREATE TABLE IF NOT EXISTS prompt_category (

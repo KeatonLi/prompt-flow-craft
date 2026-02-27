@@ -257,7 +257,7 @@ public class PromptClassificationService {
             "生成的提示词：%s\n\n" +
             "## 任务要求：\n" +
             "1. 选择最匹配的分类ID（只能选一个）\n" +
-            "2. 提取3-5个关键词作为标签（标签应该反映提示词的核心主题和用途）\n" +
+            "2. 精确提取3个关键词作为标签（只输出3个，不要多输出，标签应该反映提示词的核心主题和用途）\n" +
             "3. 给出置信度分数（0-1之间）\n\n" +
             "## 输出格式（必须严格遵循JSON格式）：\n" +
             "{\n" +
@@ -271,7 +271,7 @@ public class PromptClassificationService {
             prompt.getTargetAudience(),
             prompt.getOutputFormat(),
             prompt.getTone(),
-            prompt.getGeneratedPrompt().substring(0, Math.min(500, prompt.getGeneratedPrompt().length()))
+            prompt.getGeneratedPrompt().substring(0, Math.min(300, prompt.getGeneratedPrompt().length()))
         );
     }
 

@@ -23,7 +23,7 @@ public class HistoryResponse {
     // 扩展字段
     private Long categoryId;
     private CategoryResponse category;
-    private Boolean isFavorite;
+    private Integer likeCount;
     private Boolean isAutoTagged;
     private List<String> aiTags;
     private List<TagResponse> tags;
@@ -88,8 +88,8 @@ public class HistoryResponse {
     public CategoryResponse getCategory() { return category; }
     public void setCategory(CategoryResponse category) { this.category = category; }
 
-    public Boolean getIsFavorite() { return isFavorite; }
-    public void setIsFavorite(Boolean isFavorite) { this.isFavorite = isFavorite; }
+    public Integer getLikeCount() { return likeCount; }
+    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; }
 
     public Boolean getIsAutoTagged() { return isAutoTagged; }
     public void setIsAutoTagged(Boolean isAutoTagged) { this.isAutoTagged = isAutoTagged; }

@@ -8,12 +8,11 @@ public class HistoryQueryRequest {
     private int page = 1;
     private int size = 20;
     private Long categoryId;
-    private Boolean isFavorite;
     private String keyword;
+    private String sortBy = "createdAt";
 
     public HistoryQueryRequest() {}
 
-    // Getters and Setters
     public int getPage() {
         return page;
     }
@@ -38,19 +37,19 @@ public class HistoryQueryRequest {
         this.categoryId = categoryId;
     }
 
-    public Boolean getIsFavorite() {
-        return isFavorite;
-    }
-
-    public void setIsFavorite(Boolean isFavorite) {
-        this.isFavorite = isFavorite;
-    }
-
     public String getKeyword() {
         return keyword;
     }
 
     public void setKeyword(String keyword) {
         this.keyword = keyword;
+    }
+
+    public String getSortBy() {
+        return sortBy;
+    }
+
+    public void setSortBy(String sortBy) {
+        this.sortBy = sortBy;
     }
 }

@@ -158,14 +158,12 @@ public class HistoryController {
             promptCache.getHitCount()
         );
         
-        // 设置扩展字段
         response.setCategoryId(promptCache.getCategoryId());
-        response.setIsFavorite(promptCache.getIsFavorite());
+        response.setLikeCount(promptCache.getLikeCount());
         response.setIsAutoTagged(promptCache.getIsAutoTagged());
         response.setUsageScenario(promptCache.getUsageScenario());
         response.setEffectivenessScore(promptCache.getEffectivenessScore());
         
-        // 设置分类信息
         if (promptCache.getCategory() != null) {
             PromptCategory category = promptCache.getCategory();
             response.setCategory(new HistoryResponse.CategoryResponse(
@@ -176,19 +174,16 @@ public class HistoryController {
             ));
         }
         
-        // 设置AI标签
         if (promptCache.getAiTags() != null && !promptCache.getAiTags().isEmpty()) {
             try {
                 response.setAiTags(JsonUtil.parseStringList(promptCache.getAiTags()));
             } catch (Exception e) {
-                // 如果解析失败，使用空列表
                 response.setAiTags(List.of());
             }
         } else {
             response.setAiTags(List.of());
         }
         
-        // 设置标签信息
         if (promptCache.getTags() != null && !promptCache.getTags().isEmpty()) {
             List<HistoryResponse.TagResponse> tagResponses = promptCache.getTags().stream()
                 .map(tag -> new HistoryResponse.TagResponse(
@@ -206,10 +201,8 @@ public class HistoryController {
         return response;
     }
 
-    // ==================== 新增分类和标签相关接口 ====================
-
     /**
-     * 分页查询历史记录（支持筛选）
+     * 分页查询历史记录（支持筛选和排序）
      */
     @PostMapping("/page")
     public ResponseEntity<Map<String, Object>> getHistoryPage(@RequestBody HistoryQueryRequest request) {
@@ -264,14 +257,14 @@ public class HistoryController {
     }
 
     /**
-     * 获取收藏的提示词
+     * 获取点赞数最高的提示词
      */
-    @GetMapping("/favorites")
-    public ResponseEntity<Map<String, Object>> getFavoritePrompts(
+    @GetMapping("/top-liked")
+    public ResponseEntity<Map<String, Object>> getTopLikedPrompts(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "20") int size) {
         try {
-            PagedResult<PromptCache> result = promptHistoryService.getFavoritePromptsPage(page, size);
+            PagedResult<PromptCache> result = promptHistoryService.getTopLikedPromptsPage(page, size);
             List<HistoryResponse> responseList = result.getList().stream()
                 .map(this::convertToHistoryResponse)
                 .collect(Collectors.toList());
@@ -284,32 +277,54 @@ public class HistoryController {
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("获取收藏提示词失败", e);
+            logger.error("获取点赞数最高的提示词失败", e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", "获取收藏提示词失败: " + e.getMessage());
+            errorResponse.put("message", "获取点赞数最高的提示词失败: " + e.getMessage());
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
 
     /**
-     * 切换收藏状态
+     * 点赞提示词
      */
-    @PostMapping("/{id}/favorite")
-    public ResponseEntity<Map<String, Object>> toggleFavorite(@PathVariable Long id) {
+    @PostMapping("/{id}/like")
+    public ResponseEntity<Map<String, Object>> likePrompt(@PathVariable Long id) {
         try {
-            boolean success = promptHistoryService.toggleFavorite(id);
+            boolean success = promptHistoryService.likePrompt(id);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", success);
-            response.put("message", success ? "操作成功" : "记录不存在");
+            response.put("message", success ? "点赞成功" : "记录不存在");
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("切换收藏状态失败", e);
+            logger.error("点赞失败", e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
-            errorResponse.put("message", "切换收藏状态失败: " + e.getMessage());
+            errorResponse.put("message", "点赞失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 取消点赞提示词
+     */
+    @PostMapping("/{id}/unlike")
+    public ResponseEntity<Map<String, Object>> unlikePrompt(@PathVariable Long id) {
+        try {
+            boolean success = promptHistoryService.unlikePrompt(id);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", success);
+            response.put("message", success ? "取消点赞成功" : "记录不存在");
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("取消点赞失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "取消点赞失败: " + e.getMessage());
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }

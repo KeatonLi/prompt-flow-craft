@@ -53,8 +53,8 @@ public class PromptCache {
     @Column(name = "category_id")
     private Long categoryId;
 
-    @Column(name = "is_favorite")
-    private Boolean isFavorite = false;
+    @Column(name = "like_count")
+    private Integer likeCount = 0;
 
     @Column(name = "is_auto_tagged")
     private Boolean isAutoTagged = false;
@@ -208,12 +208,12 @@ public class PromptCache {
         this.categoryId = categoryId;
     }
 
-    public Boolean getIsFavorite() {
-        return isFavorite;
+    public Integer getLikeCount() {
+        return likeCount;
     }
 
-    public void setIsFavorite(Boolean isFavorite) {
-        this.isFavorite = isFavorite;
+    public void setLikeCount(Integer likeCount) {
+        this.likeCount = likeCount;
     }
 
     public Boolean getIsAutoTagged() {

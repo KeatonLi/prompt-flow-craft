@@ -80,20 +80,25 @@ public class PromptHistoryService {
         return promptCacheRepository.findByTaskDescriptionContaining(keyword.trim());
     }
 
-    // ==================== 新增分类和标签相关方法 ====================
-
     /**
-     * 分页查询历史记录（支持筛选）
+     * 分页查询历史记录（支持筛选和排序）
      */
     public PagedResult<PromptCache> getHistoryPage(HistoryQueryRequest request) {
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
-        Page<PromptCache> page = promptCacheRepository.findByFilters(
+        String sortBy = request.getSortBy();
+        Page<PromptCache> page;
+
+        if ("likeCount".equals(sortBy)) {
+            page = promptCacheRepository.findAllOrderByLikeCountDesc(pageable);
+        } else {
+            page = promptCacheRepository.findByFilters(
                 request.getCategoryId(),
-                request.getIsFavorite(),
                 request.getKeyword(),
+                sortBy,
                 pageable
-        );
+            );
+        }
 
         return new PagedResult<>(
                 page.getContent(),
@@ -112,18 +117,20 @@ public class PromptHistoryService {
     }
 
     /**
-     * 获取收藏的提示词
+     * 获取点赞数最高的提示词
      */
-    public List<PromptCache> getFavoritePrompts() {
-        return promptCacheRepository.findByIsFavoriteTrueOrderByCreatedAtDesc();
+    public List<PromptCache> getTopLikedPrompts(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        return promptCacheRepository.findByLikeCountGreaterThanZeroOrderByLikeCountDesc(pageable)
+            .getContent();
     }
 
     /**
-     * 分页获取收藏的提示词
+     * 分页获取点赞数最高的提示词
      */
-    public PagedResult<PromptCache> getFavoritePromptsPage(int page, int size) {
+    public PagedResult<PromptCache> getTopLikedPromptsPage(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<PromptCache> result = promptCacheRepository.findByIsFavoriteTrueOrderByCreatedAtDesc(pageable);
+        Page<PromptCache> result = promptCacheRepository.findByLikeCountGreaterThanZeroOrderByLikeCountDesc(pageable);
 
         return new PagedResult<>(
                 result.getContent(),
@@ -151,14 +158,32 @@ public class PromptHistoryService {
     }
 
     /**
-     * 切换收藏状态
+     * 点赞提示词
      */
     @Transactional
-    public boolean toggleFavorite(Long id) {
+    public boolean likePrompt(Long id) {
         return promptCacheRepository.findById(id)
                 .map(prompt -> {
-                    prompt.setIsFavorite(!Boolean.TRUE.equals(prompt.getIsFavorite()));
+                    Integer currentCount = prompt.getLikeCount();
+                    prompt.setLikeCount(currentCount == null ? 1 : currentCount + 1);
                     promptCacheRepository.save(prompt);
+                    return true;
+                })
+                .orElse(false);
+    }
+
+    /**
+     * 取消点赞提示词
+     */
+    @Transactional
+    public boolean unlikePrompt(Long id) {
+        return promptCacheRepository.findById(id)
+                .map(prompt -> {
+                    Integer currentCount = prompt.getLikeCount();
+                    if (currentCount != null && currentCount > 0) {
+                        prompt.setLikeCount(currentCount - 1);
+                        promptCacheRepository.save(prompt);
+                    }
                     return true;
                 })
                 .orElse(false);

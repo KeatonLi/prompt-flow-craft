@@ -84,14 +84,22 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     List<PromptCache> findByCategoryIdOrderByCreatedAtDesc(Long categoryId);
 
     /**
-     * 查询收藏的提示词（分页）
+     * 查询收藏的提示词（分页）- 已废弃，使用点赞功能替代
      */
+    @Deprecated
     Page<PromptCache> findByIsFavoriteTrueOrderByCreatedAtDesc(Pageable pageable);
 
     /**
-     * 查询收藏的提示词
+     * 根据点赞数查询提示词（分页）
      */
-    List<PromptCache> findByIsFavoriteTrueOrderByCreatedAtDesc();
+    @Query("SELECT p FROM PromptCache p ORDER BY p.likeCount DESC, p.createdAt DESC")
+    Page<PromptCache> findAllOrderByLikeCountDesc(Pageable pageable);
+
+    /**
+     * 查询点赞数大于0的提示词（分页）
+     */
+    @Query("SELECT p FROM PromptCache p WHERE p.likeCount > 0 ORDER BY p.likeCount DESC, p.createdAt DESC")
+    Page<PromptCache> findByLikeCountGreaterThanZeroOrderByLikeCountDesc(Pageable pageable);
 
     /**
      * 根据标签ID查询提示词（分页）
@@ -106,16 +114,15 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     Page<PromptCache> findByTagIds(@Param("tagIds") Set<Long> tagIds, Pageable pageable);
 
     /**
-     * 综合筛选查询（分类 + 收藏状态 + 关键词）
+     * 综合筛选查询（分类 + 关键词 + 排序方式）
      */
     @Query("SELECT p FROM PromptCache p WHERE " +
            "(:categoryId IS NULL OR p.categoryId = :categoryId) AND " +
-           "(:isFavorite IS NULL OR p.isFavorite = :isFavorite) AND " +
            "(:keyword IS NULL OR p.taskDescription LIKE %:keyword% OR p.generatedPrompt LIKE %:keyword%) " +
-           "ORDER BY p.createdAt DESC")
+           "ORDER BY CASE WHEN :sortBy = 'likeCount' THEN p.likeCount ELSE 0 END DESC, p.createdAt DESC")
     Page<PromptCache> findByFilters(@Param("categoryId") Long categoryId,
-                                    @Param("isFavorite") Boolean isFavorite,
                                     @Param("keyword") String keyword,
+                                    @Param("sortBy") String sortBy,
                                     Pageable pageable);
 
     /**
