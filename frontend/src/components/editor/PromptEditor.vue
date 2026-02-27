@@ -106,21 +106,29 @@
           <span v-else>🚀</span>
           {{ loading ? '生成中...' : '生成提示词' }}
         </button>
+        <button 
+          v-if="loading && cancelStream" 
+          class="btn btn-secondary" 
+          @click="cancelGeneration"
+        >
+          停止
+        </button>
         <button class="btn btn-secondary" @click="reset">
           重置
         </button>
       </div>
     </div>
 
-    <!-- 生成的结果展示 -->
-    <div v-if="result && result.trim()" class="result-section" key="result-section">
+    <!-- 生成的结果展示 - 流式展示 -->
+    <div v-if="showResult" class="result-section" key="result-section">
       <div class="result-header">
         <h3>
           <span class="result-icon">✨</span>
-          生成的提示词
+          {{ isStreaming ? '正在生成...' : '生成的提示词' }}
+          <span v-if="isStreaming" class="typing-cursor">|</span>
         </h3>
         <div class="result-actions">
-          <button class="btn btn-sm btn-copy" @click="copyResult">
+          <button class="btn btn-sm btn-copy" @click="copyResult" :disabled="isStreaming">
             <span>📋</span>
             复制
           </button>
@@ -131,14 +139,12 @@
         </div>
       </div>
       <div class="result-content">
-        <pre>{{ result }}</pre>
+        <pre>{{ displayedResult }}</pre>
       </div>
-    </div>
-    
-    <!-- 调试信息（开发时可用） -->
-    <div v-else-if="loading" class="loading-hint">
-      <div class="loading-spinner"></div>
-      <p>正在生成提示词，请稍候...</p>
+      <div v-if="isStreaming" class="stream-status">
+        <span class="stream-dot"></span>
+        <span>AI 正在思考中...</span>
+      </div>
     </div>
   </div>
 </template>
@@ -150,6 +156,10 @@ import type { PromptRequest, PromptRecord } from '@/types';
 
 const loading = ref(false);
 const result = ref('');
+const displayedResult = ref('');  // 用于流式展示的结果
+const showResult = ref(false);
+const isStreaming = ref(false);
+const cancelStream = ref<(() => void) | null>(null);
 
 const form = ref<PromptRequest>({
   taskDescription: '',
@@ -169,83 +179,108 @@ async function generate() {
   if (!canGenerate.value || loading.value) return;
 
   loading.value = true;
-  result.value = ''; // 清空之前的结果
+  isStreaming.value = true;
+  showResult.value = true;
+  result.value = '';
+  displayedResult.value = '';
+  
+  // 先滚动到结果区域
+  setTimeout(() => {
+    const resultSection = document.querySelector('.result-section');
+    if (resultSection) {
+      resultSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 100);
   
   try {
-    console.log('开始生成提示词...', form.value);
-    const generated = await promptApi.generate(form.value);
+    console.log('开始流式生成提示词...', form.value);
     
-    console.log('生成成功，结果长度:', generated?.length);
+    let lastUpdateTime = Date.now();
+    let pendingContent = '';
     
-    // 确保有内容
-    if (!generated || generated.trim() === '') {
-      showToast('生成结果为空，请重试', 'error');
-      return;
-    }
-    
-    result.value = generated;
-    
-    // 显示成功提示
-    showToast('✨ 提示词生成成功！', 'success');
-    
-    // 强制更新DOM后滚动
-    setTimeout(() => {
-      const resultSection = document.querySelector('.result-section');
-      console.log('结果区域元素:', resultSection);
-      if (resultSection) {
-        resultSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // 使用流式 API
+    cancelStream.value = promptApi.generateStream(
+      form.value,
+      // onMessage - 收到每个片段时
+      (content: string) => {
+        pendingContent += content;
+        
+        // 节流更新，每 50ms 更新一次 UI，避免过于频繁
+        const now = Date.now();
+        if (now - lastUpdateTime > 50) {
+          result.value += pendingContent;
+          displayedResult.value += pendingContent;
+          pendingContent = '';
+          lastUpdateTime = now;
+          
+          // 自动滚动到底部
+          setTimeout(() => {
+            const resultContent = document.querySelector('.result-content');
+            if (resultContent) {
+              resultContent.scrollTop = resultContent.scrollHeight;
+            }
+          }, 0);
+        }
+      },
+      // onDone - 完成时
+      (fullContent: string) => {
+        // 处理剩余未更新的内容
+        if (pendingContent) {
+          result.value += pendingContent;
+          displayedResult.value += pendingContent;
+          pendingContent = '';
+        }
+        
+        console.log('流式生成完成，总长度:', fullContent.length);
+        isStreaming.value = false;
+        loading.value = false;
+        cancelStream.value = null;
+        
+        // 确保最终内容一致
+        if (fullContent && fullContent.length > result.value.length) {
+          result.value = fullContent;
+          displayedResult.value = fullContent;
+        }
+        
+        showToast('✨ 提示词生成成功！', 'success');
+      },
+      // onError - 出错时
+      (error: string) => {
+        // 处理剩余未更新的内容
+        if (pendingContent) {
+          result.value += pendingContent;
+          displayedResult.value += pendingContent;
+          pendingContent = '';
+        }
+        
+        console.error('流式生成失败:', error);
+        isStreaming.value = false;
+        loading.value = false;
+        cancelStream.value = null;
+        showToast(error || '生成失败，请稍后重试', 'error');
+        if (!result.value) {
+          showResult.value = false;
+        }
       }
-    }, 150);
+    );
     
   } catch (error: any) {
-    console.error('生成失败:', error);
-    showToast(error?.message || '生成失败，请稍后重试', 'error');
-  } finally {
+    console.error('启动流式生成失败:', error);
+    isStreaming.value = false;
     loading.value = false;
+    showToast(error?.message || '生成失败，请稍后重试', 'error');
+    showResult.value = false;
   }
 }
 
-// 显示提示消息
-function showToast(message: string, type: 'success' | 'error' = 'success') {
-  // 创建提示元素
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.textContent = message;
-  
-  // 样式
-  toast.style.cssText = `
-    position: fixed;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-20px);
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    z-index: 9999;
-    opacity: 0;
-    transition: all 0.3s ease;
-    ${type === 'success' 
-      ? 'background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);' 
-      : 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);'}
-  `;
-  
-  document.body.appendChild(toast);
-  
-  // 显示动画
-  requestAnimationFrame(() => {
-    toast.style.opacity = '1';
-    toast.style.transform = 'translateX(-50%) translateY(0)';
-  });
-  
-  // 自动隐藏
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(-50%) translateY(-20px)';
-    setTimeout(() => {
-      document.body.removeChild(toast);
-    }, 300);
-  }, 3000);
+function cancelGeneration() {
+  if (cancelStream.value) {
+    cancelStream.value();
+    cancelStream.value = null;
+  }
+  isStreaming.value = false;
+  loading.value = false;
+  showToast('已停止生成', 'info');
 }
 
 function reset() {
@@ -259,19 +294,72 @@ function reset() {
     length: ''
   };
   result.value = '';
+  displayedResult.value = '';
+  showResult.value = false;
+  isStreaming.value = false;
+  if (cancelStream.value) {
+    cancelStream.value();
+    cancelStream.value = null;
+  }
 }
 
 function clearResult() {
   result.value = '';
+  displayedResult.value = '';
+  showResult.value = false;
 }
 
 async function copyResult() {
   try {
     await navigator.clipboard.writeText(result.value);
-    alert('已复制到剪贴板');
+    showToast('已复制到剪贴板', 'success');
   } catch (error) {
     console.error('复制失败:', error);
+    showToast('复制失败', 'error');
   }
+}
+
+// 显示提示消息
+function showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  
+  const colors = {
+    success: 'background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);',
+    error: 'background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);',
+    info: 'background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);'
+  };
+  
+  toast.style.cssText = `
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.3s ease;
+    ${colors[type]}
+  `;
+  
+  document.body.appendChild(toast);
+  
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+  });
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(-20px)';
+    setTimeout(() => {
+      document.body.removeChild(toast);
+    }, 300);
+  }, 3000);
 }
 
 // 监听复用历史记录事件
@@ -289,15 +377,7 @@ function handleReuseHistory(event: Event) {
     length: record.length || ''
   };
   
-  // 滚动到表单顶部
   window.scrollTo({ top: 0, behavior: 'smooth' });
-  
-  // 显示提示
-  // 使用 Element Plus 的 message 组件（如果可用）
-  const message = (window as any).$message;
-  if (message) {
-    message.success('已加载历史记录到表单');
-  }
 }
 
 onMounted(() => {
@@ -306,6 +386,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('reuse-history', handleReuseHistory);
+  if (cancelStream.value) {
+    cancelStream.value();
+  }
 });
 </script>
 
@@ -461,6 +544,7 @@ onUnmounted(() => {
   }
 }
 
+/* 结果区域 */
 .result-section {
   margin-top: 32px;
   background: white;
@@ -505,6 +589,20 @@ onUnmounted(() => {
   font-size: 1.4rem;
 }
 
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 24px;
+  background: #3b82f6;
+  margin-left: 4px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
 .result-actions {
   display: flex;
   gap: 10px;
@@ -516,7 +614,7 @@ onUnmounted(() => {
   border: none !important;
 }
 
-.btn-copy:hover {
+.btn-copy:hover:not(:disabled) {
   background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
 }
 
@@ -535,7 +633,7 @@ onUnmounted(() => {
   background: #1e293b;
   border-radius: 12px;
   padding: 20px;
-  max-height: 600px;
+  max-height: 500px;
   overflow-y: auto;
 }
 
@@ -549,17 +647,36 @@ onUnmounted(() => {
   color: #e2e8f0;
 }
 
-/* 加载提示 */
-.loading-hint {
-  margin-top: 32px;
-  text-align: center;
-  padding: 40px;
-  color: #64748b;
+/* 流式状态 */
+.stream-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: #f0fdf4;
+  border-radius: 8px;
+  color: #166534;
+  font-size: 0.875rem;
 }
 
-.loading-hint p {
-  margin-top: 12px;
-  font-size: 0.9rem;
+.stream-dot {
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
 }
 
 @media (max-width: 768px) {

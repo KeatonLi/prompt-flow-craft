@@ -72,7 +72,15 @@
             <div v-if="detailVisible" class="modal-container">
               <!-- 弹窗头部 -->
               <div class="modal-header">
-                <h3 class="modal-title">历史记录详情</h3>
+                <div class="modal-header-content">
+                  <div class="modal-icon">📋</div>
+                  <div>
+                    <h3 class="modal-title">提示词详情</h3>
+                    <p class="modal-subtitle" v-if="selectedRecord">
+                      {{ formatDateTime(selectedRecord.createdAt) }}
+                    </p>
+                  </div>
+                </div>
                 <button class="modal-close" @click="closeDetail">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M6 18L18 6M6 6l12 12"/>
@@ -82,62 +90,60 @@
 
               <!-- 弹窗内容 -->
               <div v-if="selectedRecord" class="modal-body" ref="modalBody">
-                <!-- 头部信息 -->
-                <div class="detail-header">
-                  <div class="detail-title">{{ selectedRecord.taskDescription }}</div>
-                  <div class="detail-meta">
-                    <span class="meta-item">
-                      <span class="meta-icon">📅</span>
-                      {{ formatDateTime(selectedRecord.createdAt) }}
-                    </span>
-                    <span class="meta-item">
-                      <span class="meta-icon">👁️</span>
-                      命中 {{ selectedRecord.hitCount }} 次
-                    </span>
+                <!-- 任务描述卡片 -->
+                <div class="info-card primary">
+                  <div class="info-card-header">
+                    <span class="info-icon">💡</span>
+                    <span class="info-label">任务描述</span>
+                  </div>
+                  <p class="task-description">{{ selectedRecord.taskDescription }}</p>
+                </div>
+
+                <!-- 参数配置卡片 -->
+                <div class="info-card">
+                  <div class="info-card-header">
+                    <span class="info-icon">⚙️</span>
+                    <span class="info-label">配置参数</span>
+                  </div>
+                  <div class="params-grid">
+                    <div v-if="selectedRecord.targetAudience" class="param-badge">
+                      <span class="param-dot audience"></span>
+                      <span class="param-name">受众</span>
+                      <span class="param-value-text">{{ getAudienceLabel(selectedRecord.targetAudience) }}</span>
+                    </div>
+                    <div v-if="selectedRecord.outputFormat" class="param-badge">
+                      <span class="param-dot format"></span>
+                      <span class="param-name">格式</span>
+                      <span class="param-value-text">{{ getFormatLabel(selectedRecord.outputFormat) }}</span>
+                    </div>
+                    <div v-if="selectedRecord.tone" class="param-badge">
+                      <span class="param-dot tone"></span>
+                      <span class="param-name">语调</span>
+                      <span class="param-value-text">{{ getToneLabel(selectedRecord.tone) }}</span>
+                    </div>
+                    <div v-if="selectedRecord.length" class="param-badge">
+                      <span class="param-dot length"></span>
+                      <span class="param-name">长度</span>
+                      <span class="param-value-text">{{ getLengthLabel(selectedRecord.length) }}</span>
+                    </div>
                   </div>
                 </div>
 
-                <!-- 参数标签 -->
-                <div class="detail-section">
-                  <h4 class="section-title">
-                    <span class="section-icon">⚙️</span>
-                    配置参数
-                  </h4>
-                  <div class="detail-params">
-                    <div v-if="selectedRecord.targetAudience" class="param-item">
-                      <span class="param-label">受众</span>
-                      <span class="param-value audience">{{ getAudienceLabel(selectedRecord.targetAudience) }}</span>
-                    </div>
-                    <div v-if="selectedRecord.outputFormat" class="param-item">
-                      <span class="param-label">格式</span>
-                      <span class="param-value format">{{ getFormatLabel(selectedRecord.outputFormat) }}</span>
-                    </div>
-                    <div v-if="selectedRecord.tone" class="param-item">
-                      <span class="param-label">语调</span>
-                      <span class="param-value tone">{{ getToneLabel(selectedRecord.tone) }}</span>
-                    </div>
-                    <div v-if="selectedRecord.length" class="param-item">
-                      <span class="param-label">长度</span>
-                      <span class="param-value length">{{ getLengthLabel(selectedRecord.length) }}</span>
-                    </div>
+                <!-- 标签卡片 -->
+                <div v-if="selectedRecord.tags && selectedRecord.tags.length > 0" class="info-card">
+                  <div class="info-card-header">
+                    <span class="info-icon">🏷️</span>
+                    <span class="info-label">标签</span>
                   </div>
-                </div>
-
-                <!-- 提示词标签 -->
-                <div v-if="selectedRecord.tags && selectedRecord.tags.length > 0" class="detail-section">
-                  <h4 class="section-title">
-                    <span class="section-icon">🏷️</span>
-                    标签
-                  </h4>
-                  <div class="detail-tags">
+                  <div class="tags-cloud">
                     <span
                       v-for="tag in selectedRecord.tags"
                       :key="tag.id"
-                      class="detail-tag"
+                      class="tag-item"
                       :style="{ 
-                        backgroundColor: tag.color ? tag.color + '15' : 'rgba(99, 102, 241, 0.1)', 
+                        background: `linear-gradient(135deg, ${tag.color || '#6366f1'}20 0%, ${tag.color || '#6366f1'}10 100%)`,
                         color: tag.color || '#6366f1',
-                        borderColor: tag.color ? tag.color + '30' : 'rgba(99, 102, 241, 0.2)'
+                        borderColor: `${tag.color || '#6366f1'}40`
                       }"
                     >
                       {{ tag.name }}
@@ -146,62 +152,68 @@
                 </div>
 
                 <!-- 约束条件 -->
-                <div v-if="selectedRecord.constraints" class="detail-section">
-                  <h4 class="section-title">
-                    <span class="section-icon">⚠️</span>
-                    约束条件
-                  </h4>
-                  <div class="detail-box">
-                    <p>{{ selectedRecord.constraints }}</p>
+                <div v-if="selectedRecord.constraints" class="info-card warning">
+                  <div class="info-card-header">
+                    <span class="info-icon">⚠️</span>
+                    <span class="info-label">约束条件</span>
                   </div>
+                  <p class="constraints-text">{{ selectedRecord.constraints }}</p>
                 </div>
 
                 <!-- 参考示例 -->
-                <div v-if="selectedRecord.examples" class="detail-section">
-                  <h4 class="section-title">
-                    <span class="section-icon">📝</span>
-                    参考示例
-                  </h4>
-                  <div class="detail-box">
-                    <p>{{ selectedRecord.examples }}</p>
+                <div v-if="selectedRecord.examples" class="info-card info">
+                  <div class="info-card-header">
+                    <span class="info-icon">📝</span>
+                    <span class="info-label">参考示例</span>
                   </div>
+                  <p class="examples-text">{{ selectedRecord.examples }}</p>
                 </div>
 
-                <!-- 生成结果 - 使用 Markdown 渲染 -->
-                <div class="detail-section">
-                  <h4 class="section-title">
-                    <span class="section-icon">✨</span>
-                    生成结果
-                    <span v-if="isMarkdown" class="format-badge">Markdown</span>
-                  </h4>
-                  
-                  <!-- 格式切换按钮 -->
-                  <div class="format-toggle">
-                    <button 
-                      class="toggle-btn" 
-                      :class="{ active: showRaw }"
-                      @click="showRaw = true"
-                    >
-                      原文
-                    </button>
-                    <button 
-                      class="toggle-btn" 
-                      :class="{ active: !showRaw }"
-                      @click="showRaw = false"
-                    >
-                      渲染
-                    </button>
+                <!-- 生成结果 -->
+                <div class="result-section">
+                  <div class="result-header-bar">
+                    <div class="result-title-group">
+                      <span class="result-icon">✨</span>
+                      <span class="result-title">生成结果</span>
+                      <span v-if="isMarkdown" class="badge">Markdown</span>
+                    </div>
+                    <div class="format-switch">
+                      <button 
+                        class="switch-btn" 
+                        :class="{ active: showRaw }"
+                        @click="showRaw = true"
+                      >
+                        原文
+                      </button>
+                      <button 
+                        class="switch-btn" 
+                        :class="{ active: !showRaw }"
+                        @click="showRaw = false"
+                      >
+                        渲染
+                      </button>
+                    </div>
                   </div>
-                  
-                  <!-- 内容显示 -->
-                  <div class="result-box">
-                    <!-- 原始文本 -->
-                    <pre v-if="showRaw" class="raw-content">{{ selectedRecord.generatedPrompt }}</pre>
-                    <!-- Markdown 渲染 -->
+                  <div class="result-code-block">
+                    <pre v-if="showRaw" class="code-content">{{ selectedRecord.generatedPrompt }}</pre>
                     <MarkdownRender 
                       v-else 
                       :content="selectedRecord.generatedPrompt"
                     />
+                  </div>
+                </div>
+
+                <!-- 统计信息 -->
+                <div class="stats-bar">
+                  <div class="stat-item">
+                    <span class="stat-icon">👁️</span>
+                    <span class="stat-label">命中</span>
+                    <span class="stat-value">{{ selectedRecord.hitCount }} 次</span>
+                  </div>
+                  <div class="stat-divider"></div>
+                  <div class="stat-item" v-if="selectedRecord.isFavorite">
+                    <span class="stat-icon">⭐</span>
+                    <span class="stat-label">已收藏</span>
                   </div>
                 </div>
               </div>
@@ -209,6 +221,7 @@
               <!-- 弹窗底部 -->
               <div class="modal-footer">
                 <button class="btn btn-secondary" @click="closeDetail">
+                  <span class="btn-icon">✕</span>
                   关闭
                 </button>
                 <button class="btn btn-primary" @click="handleReuseFromDetail">
@@ -229,7 +242,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useHistoryStore } from '@/stores';
 import type { PromptRecord } from '@/types';
 import dayjs from 'dayjs';
@@ -254,17 +267,9 @@ const modalBody = ref<HTMLElement | null>(null);
 const isMarkdown = computed(() => {
   if (!selectedRecord.value?.generatedPrompt) return false;
   const content = selectedRecord.value.generatedPrompt;
-  // 检查是否包含 Markdown 特征
   const markdownPatterns = [
-    /#{1,6}\s+/,           // 标题
-    /\*\*|__/,             // 粗体
-    /\*|_/,                // 斜体
-    /```/,                 // 代码块
-    /\[.*?\]\(.*?\)/,      // 链接
-    /^\s*-\s+/,            // 无序列表
-    /^\s*\d+\.\s+/,         // 有序列表
-    /\|.*\|/,              // 表格
-    /^>/m,                 // 引用
+    /#{1,6}\s+/, /\*\*|__/, /\*|_/, /```/, /\[.*?\]\(.*?\)/,
+    /^\s*-\s+/, /^\s*\d+\.\s+/, /\|.*\|/, /^>/m,
   ];
   return markdownPatterns.some(pattern => pattern.test(content));
 });
@@ -308,17 +313,9 @@ function handleReuse(record: PromptRecord) {
 // 处理查看详情
 function handleViewDetail(record: PromptRecord) {
   selectedRecord.value = record;
-  // 默认如果包含 Markdown 则渲染，否则显示原文
   showRaw.value = !isMarkdown.value;
   detailVisible.value = true;
   document.body.style.overflow = 'hidden';
-  
-  // 滚动到顶部
-  nextTick(() => {
-    if (modalBody.value) {
-      modalBody.value.scrollTop = 0;
-    }
-  });
 }
 
 // 关闭详情
@@ -338,49 +335,35 @@ function handleReuseFromDetail() {
 
 // 格式化时间
 function formatDateTime(timestamp: string): string {
-  return dayjs(timestamp).format('YYYY-MM-DD HH:mm:ss');
+  return dayjs(timestamp).format('YYYY年MM月DD日 HH:mm');
 }
 
 // 获取标签文本
 function getAudienceLabel(value: string): string {
   const labels: Record<string, string> = {
-    'general': '普通用户',
-    'professional': '专业人士',
-    'student': '学生',
-    'developer': '开发者',
-    'creator': '创作者'
+    'general': '普通用户', 'professional': '专业人士', 'student': '学生',
+    'developer': '开发者', 'creator': '创作者'
   };
   return labels[value] || value;
 }
 
 function getFormatLabel(value: string): string {
   const labels: Record<string, string> = {
-    'text': '文本',
-    'list': '列表',
-    'table': '表格',
-    'code': '代码',
-    'json': 'JSON'
+    'text': '文本', 'list': '列表', 'table': '表格', 'code': '代码', 'json': 'JSON'
   };
   return labels[value] || value;
 }
 
 function getToneLabel(value: string): string {
   const labels: Record<string, string> = {
-    'formal': '正式',
-    'friendly': '友好',
-    'professional': '专业',
-    'creative': '创意',
-    'concise': '简洁'
+    'formal': '正式', 'friendly': '友好', 'professional': '专业', 'creative': '创意', 'concise': '简洁'
   };
   return labels[value] || value;
 }
 
 function getLengthLabel(value: string): string {
   const labels: Record<string, string> = {
-    'short': '简短',
-    'medium': '中等',
-    'long': '详细',
-    'very_long': '非常详细'
+    'short': '简短', 'medium': '中等', 'long': '详细', 'very_long': '非常详细'
   };
   return labels[value] || value;
 }
@@ -524,7 +507,7 @@ onMounted(() => {
   background: #e2e8f0;
 }
 
-/* ========== 弹窗样式 ========== */
+/* ========== 美化后的弹窗样式 ========== */
 
 /* 遮罩层 */
 .modal-overlay {
@@ -533,8 +516,8 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -544,15 +527,29 @@ onMounted(() => {
 
 /* 弹窗容器 */
 .modal-container {
-  background: white;
-  border-radius: 20px;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  border-radius: 24px;
   width: 100%;
-  max-width: 800px;
-  max-height: 85vh;
+  max-width: 720px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset;
   overflow: hidden;
+  animation: modalEnter 0.3s ease-out;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 /* 弹窗头部 */
@@ -561,23 +558,60 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   color: white;
   flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.modal-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+}
+
+.modal-header-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  backdrop-filter: blur(8px);
 }
 
 .modal-title {
   margin: 0;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.modal-subtitle {
+  margin: 2px 0 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .modal-close {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border: none;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
   color: white;
   cursor: pointer;
   display: flex;
@@ -587,12 +621,13 @@ onMounted(() => {
 }
 
 .modal-close:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
+  transform: rotate(90deg);
 }
 
 .modal-close svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 /* 弹窗内容 */
@@ -601,201 +636,260 @@ onMounted(() => {
   overflow-y: auto;
   padding: 24px;
   scroll-behavior: smooth;
-}
-
-/* 头部信息 */
-.detail-header {
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #f1f5f9;
-}
-
-.detail-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1e293b;
-  line-height: 1.5;
-  margin-bottom: 12px;
-  word-break: break-word;
-}
-
-.detail-meta {
   display: flex;
+  flex-direction: column;
   gap: 16px;
-  flex-wrap: wrap;
 }
 
-.meta-item {
-  font-size: 13px;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+/* 信息卡片 */
+.info-card {
+  background: white;
+  border-radius: 16px;
+  padding: 16px 20px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s;
 }
 
-.meta-icon {
-  font-size: 14px;
+.info-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
 }
 
-/* 章节样式 */
-.detail-section {
-  margin-bottom: 24px;
+.info-card.primary {
+  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+  border-color: #bfdbfe;
 }
 
-.detail-section:last-child {
-  margin-bottom: 0;
+.info-card.warning {
+  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+  border-color: #fde68a;
 }
 
-.section-title {
+.info-card.info {
+  background: linear-gradient(135deg, #f0fdfa 0%, #ffffff 100%);
+  border-color: #99f6e4;
+}
+
+.info-card-header {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0 0 12px 0;
-  color: #1e293b;
-  font-size: 14px;
-  font-weight: 600;
+  margin-bottom: 12px;
 }
 
-.section-icon {
+.info-icon {
   font-size: 16px;
 }
 
-.format-badge {
-  font-size: 11px;
-  padding: 2px 8px;
-  background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
-  color: white;
-  border-radius: 12px;
-  margin-left: 8px;
+.info-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.task-description {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e293b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.constraints-text, .examples-text {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* 参数网格 */
+.params-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.param-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+}
+
+.param-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.param-dot.audience { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+.param-dot.format { background: linear-gradient(135deg, #10b981, #34d399); }
+.param-dot.tone { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+.param-dot.length { background: linear-gradient(135deg, #ef4444, #f87171); }
+
+.param-name {
+  font-size: 12px;
+  color: #94a3b8;
   font-weight: 500;
 }
 
-/* 格式切换 */
-.format-toggle {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
+.param-value-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
 }
 
-.toggle-btn {
+/* 标签云 */
+.tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-item {
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid;
   padding: 6px 14px;
-  border: 1px solid #e2e8f0;
-  background: white;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.tag-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 结果区块 */
+.result-section {
+  background: #0f172a;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.result-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.result-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.result-icon {
+  font-size: 16px;
+}
+
+.result-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: white;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.format-switch {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.switch-btn {
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
   border-radius: 6px;
   font-size: 12px;
-  color: #64748b;
+  color: #94a3b8;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.toggle-btn:hover {
-  border-color: #cbd5e1;
+.switch-btn:hover {
+  color: #e2e8f0;
 }
 
-.toggle-btn.active {
-  background: #3b82f6;
+.switch-btn.active {
+  background: rgba(255, 255, 255, 0.1);
   color: white;
-  border-color: #3b82f6;
 }
 
-/* 参数网格 */
-.detail-params {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
+/* 代码块 */
+.result-code-block {
+  padding: 18px;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-.param-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.param-label {
-  font-size: 12px;
-  color: #94a3b8;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.param-value {
-  font-size: 13px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 6px;
-  width: fit-content;
-}
-
-.param-value.audience {
-  background: rgba(99, 102, 241, 0.1);
-  color: #6366f1;
-}
-
-.param-value.format {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-}
-
-.param-value.tone {
-  background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
-}
-
-.param-value.length {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-}
-
-/* 标签样式 */
-.detail-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.detail-tag {
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid;
-  padding: 5px 12px;
-  border-radius: 20px;
-}
-
-/* 内容盒子 */
-.detail-box {
-  background: #f8fafc;
-  border-radius: 10px;
-  padding: 14px;
-  border: 1px solid #e2e8f0;
-}
-
-.detail-box p {
+.code-content {
   margin: 0;
-  color: #475569;
-  font-size: 14px;
-  line-height: 1.7;
-  word-break: break-word;
-}
-
-/* 结果盒子 */
-.result-box {
-  background: #1e293b;
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.raw-content {
-  margin: 0;
-  padding: 16px;
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Monaco', monospace;
   font-size: 13px;
   line-height: 1.7;
   color: #e2e8f0;
-  max-height: 400px;
-  overflow-y: auto;
+}
+
+/* 统计栏 */
+.stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-top: 8px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-icon {
+  font-size: 14px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.stat-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 16px;
+  background: #cbd5e1;
 }
 
 /* 弹窗底部 */
@@ -803,17 +897,15 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  padding: 16px 24px;
+  padding: 18px 24px;
   border-top: 1px solid #e2e8f0;
-  background: #fafafa;
+  background: white;
   flex-shrink: 0;
 }
 
-/* 按钮样式 */
 .btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 8px;
   padding: 10px 20px;
   border-radius: 10px;
@@ -851,14 +943,13 @@ onMounted(() => {
 }
 
 .btn-secondary {
-  background: white;
+  background: #f1f5f9;
   color: #475569;
   border: 1px solid #e2e8f0;
 }
 
 .btn-secondary:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
+  background: #e2e8f0;
   color: #1e293b;
 }
 

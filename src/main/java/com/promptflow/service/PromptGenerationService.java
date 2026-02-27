@@ -1,14 +1,22 @@
 package com.promptflow.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.promptflow.dto.PromptRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerSentEvent;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +26,8 @@ public class PromptGenerationService {
     private static final Logger logger = LoggerFactory.getLogger(PromptGenerationService.class);
     
     private final WebClient webClient;
+    
+    private final ObjectMapper objectMapper = new ObjectMapper();
     
     @Autowired
     private PromptCacheService promptCacheService;
@@ -41,6 +51,9 @@ public class PromptGenerationService {
         this.webClient = WebClient.builder().build();
     }
     
+    /**
+     * 同步生成提示词（非流式）
+     */
     public String generatePrompt(PromptRequest request) {
         try {
             // 首先检查缓存
@@ -52,7 +65,6 @@ public class PromptGenerationService {
             
             logger.info("缓存未命中，调用API生成新的提示词");
             String systemPrompt = buildSystemPrompt(request);
-            logger.debug("Generated system prompt: {}", systemPrompt);
             
             // 构建请求体
             Map<String, Object> requestBody = Map.of(
@@ -83,8 +95,6 @@ public class PromptGenerationService {
                     Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
                     String generatedPrompt = (String) message.get("content");
                     
-                    logger.debug("AI generated prompt: {}", generatedPrompt);
-                    
                     // 保存到缓存
                     promptCacheService.saveToCache(request, generatedPrompt);
                     
@@ -98,6 +108,94 @@ public class PromptGenerationService {
             logger.error("Error generating prompt", e);
             throw new RuntimeException("生成提示词时发生错误: " + e.getMessage(), e);
         }
+    }
+    
+    /**
+     * 流式生成提示词
+     * @return Flux<String> 流式返回生成的文本片段
+     */
+    public Flux<String> generatePromptStream(PromptRequest request) {
+        return Flux.defer(() -> {
+            // 首先检查缓存
+            String cachedPrompt = promptCacheService.getCachedPrompt(request);
+            if (cachedPrompt != null) {
+                logger.info("从缓存返回结果（流式），避免API调用");
+                // 将缓存内容逐字流式返回，模拟打字机效果
+                return Flux.fromArray(cachedPrompt.split(""))
+                    .delayElements(Duration.ofMillis(10)) // 每个字符延迟10ms
+                    .concatWith(Flux.just("[DONE]"));
+            }
+            
+            logger.info("缓存未命中，调用API流式生成新的提示词");
+            String systemPrompt = buildSystemPrompt(request);
+            
+            // 构建流式请求体
+            Map<String, Object> requestBody = Map.of(
+                "model", model,
+                "messages", List.of(
+                    Map.of("role", "user", "content", systemPrompt)
+                ),
+                "temperature", temperature,
+                "max_tokens", maxTokens,
+                "stream", true  // 启用流式输出
+            );
+            
+            StringBuilder fullContent = new StringBuilder();
+            
+            return webClient.post()
+                .uri(baseUrl + "/chat/completions")
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToFlux(String.class)  // 按行读取响应
+                .flatMap(line -> {
+                    logger.debug("收到流式数据行: {}", line);
+                    
+                    // 处理 SSE 格式的数据
+                    if (line.startsWith("data: ")) {
+                        String data = line.substring(6);
+                        
+                        // 流结束标记
+                        if ("[DONE]".equals(data.trim())) {
+                            // 保存完整内容到缓存
+                            String completeContent = fullContent.toString();
+                            if (!completeContent.isEmpty()) {
+                                promptCacheService.saveToCache(request, completeContent);
+                                logger.info("流式生成完成，已保存到缓存，长度: {}", completeContent.length());
+                            }
+                            return Flux.just("[DONE]");
+                        }
+                        
+                        // 解析 JSON 数据
+                        try {
+                            Map<String, Object> chunk = objectMapper.readValue(data, Map.class);
+                            if (chunk != null && chunk.containsKey("choices")) {
+                                @SuppressWarnings("unchecked")
+                                List<Map<String, Object>> choices = (List<Map<String, Object>>) chunk.get("choices");
+                                if (!choices.isEmpty()) {
+                                    @SuppressWarnings("unchecked")
+                                    Map<String, Object> delta = (Map<String, Object>) choices.get(0).get("delta");
+                                    if (delta != null && delta.containsKey("content")) {
+                                        String content = (String) delta.get("content");
+                                        if (content != null && !content.isEmpty()) {
+                                            fullContent.append(content);
+                                            return Flux.just(content);
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Exception e) {
+                            logger.debug("解析流式数据失败: {}, 错误: {}", data, e.getMessage());
+                        }
+                    }
+                    return Flux.empty();
+                })
+                .onErrorResume(e -> {
+                    logger.error("流式生成失败", e);
+                    return Flux.error(new RuntimeException("流式生成失败: " + e.getMessage()));
+                });
+        });
     }
     
     private String buildSystemPrompt(PromptRequest request) {
@@ -246,132 +344,7 @@ public class PromptGenerationService {
         promptBuilder.append("- 能够在不同场景下保持稳定表现\n\n");
         
         promptBuilder.append("**输出格式**\n");
-        promptBuilder.append("请直接输出完整的提示词系统，无需额外解释或说明。\n\n");
-        
-        // 系统提示词模板示例
-        promptBuilder.append("## 系统提示词模板参考\n");
-        promptBuilder.append("以下是一个完整的系统提示词模板，请参考此结构进行设计：\n\n");
-        
-        promptBuilder.append("```\n");
-        promptBuilder.append("# [AI智能体名称] 系统提示词 v1.0\n\n");
-        promptBuilder.append("---\n");
-        promptBuilder.append("## 第一层：核心定义\n");
-        promptBuilder.append("---\n");
-        promptBuilder.append("### 1. 角色建模\n");
-        promptBuilder.append("# 描述AI的身份、人格和立场。这是所有行为的基石。\n");
-        promptBuilder.append("- **身份 (Identity)**: 你是 [AI名称]，一个 [AI的核心定位，例如：由XX公司开发的专家级数据分析AI]。\n");
-        promptBuilder.append("- **人格 (Personality)**: 你的沟通风格 **必须是 (MUST BE)** [形容词，例如：专业、严谨、客观、简洁]。你对待用户的态度 **必须是 (MUST BE)** [形容词，例如：耐心、乐于助人]。\n");
-        promptBuilder.append("- **立场 (Stance)**: 在 [某个关键领域，例如：数据隐私] 方面，你的立场是：**永远 (ALWAYS)** 将用户数据安全和匿名化放在首位。\n");
-        promptBuilder.append("### 2. 目标定义\n");
-        promptBuilder.append("# 描述AI的核心使命、价值主张和成功的标准。\n");
-        promptBuilder.append("- **功能性目标**:\n");
-        promptBuilder.append("  - 你的核心任务是：[目标1]，[目标2]，以及 [目标3]。\n");
-        promptBuilder.append("- **价值性目标**:\n");
-        promptBuilder.append("  - 你致力于为用户创造的核心价值是：[价值1] 和 [价值2]。\n");
-        promptBuilder.append("- **质量标准/红线**:\n");
-        promptBuilder.append("  - [标准1，例如：生成的所有代码 **都应当 (SHOULD)** 包含注释。]\n");
-        promptBuilder.append("  - [红线1，例如：**绝不 (MUST NEVER)** 提供财务投资建议。]\n");
-        promptBuilder.append("  - [红线2，例如：**绝不 (MUST NEVER)** 使用\"在我看来\"、\"我认为\"等主观性强的短语。]\n");
-        promptBuilder.append("---\n");
-        promptBuilder.append("## 第二层：交互接口\n");
-        promptBuilder.append("---\n");
-        promptBuilder.append("### 2. 输入规范\n");
-        promptBuilder.append("# 你接收的输入将被以下标签包裹，请严格根据标签识别信息上下文。\n");
-        promptBuilder.append("- `<user_query>`: 用户的直接提问。\n");
-        promptBuilder.append("- `<context_data>`: 任务所需的背景信息或文件内容。\n");
-        promptBuilder.append("- `<chat_history>`: 之前的对话历史。\n");
-        promptBuilder.append("- **优先级规则**: 当 `<context_data>` 存在时，你的回答 **必须 (MUST)** 优先基于其内容。\n");
-        promptBuilder.append("### 3. 输出规格\n");
-        promptBuilder.append("# 你的所有回应都必须严格遵循以下结构和格式化规则。\n");
-        promptBuilder.append("- 响应结构:\n");
-        promptBuilder.append("  - 你的标准响应 **必须 (MUST)** 包含以下部分，并按此顺序排列：\n");
-        promptBuilder.append("    1. `[关键结论]`：用一句话总结核心答案。\n");
-        promptBuilder.append("    2. `[详细分析]`：提供具体的分析过程、代码或解释。\n");
-        promptBuilder.append("    3. `[参考来源]`：如果适用，列出引用的信息来源。\n");
-        promptBuilder.append("- **格式化规则**:\n");
-        promptBuilder.append("  - 代码 **必须 (MUST)** 使用 ` ```[语言] ` 代码块包裹。\n");
-        promptBuilder.append("  - 列表 **应当 (SHOULD)** 使用 `-` 或 `*` 作为项目符号。\n");
-        promptBuilder.append("  - 关键术语 **应当 (SHOULD)** 使用 **粗体** 标出。\n");
-        promptBuilder.append("- **禁用项**:\n");
-        promptBuilder.append("  - **绝不 (MUST NEVER)** 使用Emoji表情符号。\n");
-        promptBuilder.append("  - **绝不 (MUST NEVER)** 在结尾说\"希望对您有帮助\"或类似的话。\n");
-        promptBuilder.append("---\n");
-        promptBuilder.append("## 第三层：内部处理\n");
-        promptBuilder.append("---\n");
-        promptBuilder.append("### 4. 工具与能力模块\n");
-        promptBuilder.append("# 以下是你可用的工具集，以及围绕它们的能力规则。\n");
-        promptBuilder.append("#### `[工具/能力1_名称，例如：execute_command]`\n");
-        promptBuilder.append("- **描述**: [工具的详细描述]。\n");
-        promptBuilder.append("- **规则**:\n");
-        promptBuilder.append("  - **安全第一**: 在使用此工具前，你 **必须 (MUST)** 思考其潜在影响。对于任何可能造成修改、删除或安装的操作，都 **必须 (MUST)** 请求用户批准。\n");
-        promptBuilder.append("  - **禁止项**: **绝不 (MUST NEVER)** 执行任何可能有害的指令。\n");
-        promptBuilder.append("#### `[工具/能力2_名称，例如：图片生成]`\n");
-        promptBuilder.append("- **描述**: [工具的详细描述]。\n");
-        promptBuilder.append("- **规则**:\n");
-        promptBuilder.append("  - **适用场景**: **应当 (SHOULD)** 在解释视觉概念时使用此能力。\n");
-        promptBuilder.append("  - **排除场景**: 对于以下主题，你 **绝不 (MUST NEVER)** 生成图片：[主题1]、[主题2]。\n");
-        promptBuilder.append("### 5. 工作流程示例\n");
-        promptBuilder.append("# 这是你执行一个典型任务的思考和行动步骤。\n");
-        promptBuilder.append("**任务：用户要求\"分析`data.csv`并找出销售额最高的月份\"。**\n");
-        promptBuilder.append("1.  **分析需求**: 我理解用户的目标是进行数据分析。\n");
-        promptBuilder.append("2.  **规划步骤**:\n");
-        promptBuilder.append("    a. 首先，我需要读取文件内容。我会使用 `read_file` 工具，并传入路径 `data.csv`。\n");
-        promptBuilder.append("    b. 接着，我需要处理数据。我会使用 `execute_command` 并调用 Python 来分析数据。\n");
-        promptBuilder.append("    c. 最后，我需要按照 `输出规格` 格式化我的答案。\n");
-        promptBuilder.append("3.  **执行与交付**:\n");
-        promptBuilder.append("  - **(第一步)** 调用 `<read_file><path>data.csv</path></read_file>`。\n");
-        promptBuilder.append("  - **(等待结果)**\n");
-        promptBuilder.append("  - **(第二步)** 调用 `<execute_command><command>python -c \"...\"</command></execute_command>`。\n");
-        promptBuilder.append("  - **(等待结果)**\n");
-        promptBuilder.append("  - **(第三步)** 生成最终回应：`[关键结论]：销售额最高的月份是...。[详细分析]：以下是分析脚本...`\n");
-        promptBuilder.append("### 6. 核心任务示例\n");
-        promptBuilder.append("> 你必须学习并模仿以下示例来执行任务。\n");
-        promptBuilder.append("#### 示例1：[执行一个需要工具的成功任务]\n");
-        promptBuilder.append("- **用户输入**:\n");
-        promptBuilder.append("  <user_query>分析一下这个CSV数据，找出销售额最高的城市。</user_query>\n");
-        promptBuilder.append("  <context_data>\n");
-        promptBuilder.append("  城市,销售额\n");
-        promptBuilder.append("  北京,800\n");
-        promptBuilder.append("  上海,1200\n");
-        promptBuilder.append("  广州,950\n");
-        promptBuilder.append("  </context_data>\n");
-        promptBuilder.append("- **你的行动 (Your Action)**:\n");
-        promptBuilder.append("  <thinking>\n");
-        promptBuilder.append("  1. 用户需要分析CSV数据找出销售额最高的城市。\n");
-        promptBuilder.append("  2. 数据已经通过 `<context_data>` 提供了。\n");
-        promptBuilder.append("  3. 我需要使用代码执行能力来解析和计算。Python是最好的工具。\n");
-        promptBuilder.append("  4. 我将编写一个Python脚本来完成这个任务。\n");
-        promptBuilder.append("  </thinking>\n");
-        promptBuilder.append("  <execute_command>\n");
-        promptBuilder.append("  <command>\n");
-        promptBuilder.append("  python -c \"import io; import pandas as pd; csv_data = '''城市,销售额\\n北京,800\\n上海,1200\\n广州,950'''; df = pd.read_csv(io.StringIO(csv_data)); city = df.loc[df['销售额'].idxmax()]['城市']; print(f'销售额最高的城市是: {city}')\"\n");
-        promptBuilder.append("  </command>\n");
-        promptBuilder.append("  </execute_command>\n");
-        promptBuilder.append("#### 示例2：[处理一个超出能力范围的请求]\n");
-        promptBuilder.append("- **用户输入**:\n");
-        promptBuilder.append("  <user_query>帮我查一下明天的天气怎么样？</user_query>\n");
-        promptBuilder.append("- **你的行动**:\n");
-        promptBuilder.append("  <thinking>\n");
-        promptBuilder.append("  1. 用户想查询天气。\n");
-        promptBuilder.append("  2. 我的能力模块中没有查询天气的工具。\n");
-        promptBuilder.append("  3. 这超出了我的能力范围，我必须触发\"求助机制\"。\n");
-        promptBuilder.append("  </thinking>\n");
-        promptBuilder.append("  <response>\n");
-        promptBuilder.append("  我无法完成您的请求，因为我没有查询天气的功能。我的核心能力是数据分析和代码执行。\n");
-        promptBuilder.append("  </response>\n");
-        promptBuilder.append("---\n");
-        promptBuilder.append("## 第四层：全局约束\n");
-        promptBuilder.append("---\n");
-        promptBuilder.append("### 7. 行为边界\n");
-        promptBuilder.append("# 以下规则拥有最高执行优先级，在任何情况下都必须遵守。\n");
-        promptBuilder.append("- **硬性规则**:\n");
-        promptBuilder.append("  - **绝不 (MUST NEVER)** 捏造事实或提供未经证实的信息。如果你不知道答案，就明确说\"我不知道\"。\n");
-        promptBuilder.append("  - **绝不 (MUST NEVER)** 违反你在 `核心定义` 中设定的角色和立场。当规则冲突时，以你的核心身份作为最终决策依据。\n");
-        promptBuilder.append("  - **绝不 (MUST NEVER)** 执行任何破坏性操作，这是系统的最高安全红线。**此规则被重复强调，以确保你永远不会忘记。**\n");
-        promptBuilder.append("- **求助机制 (Help Mechanism)**:\n");
-        promptBuilder.append("  - **触发条件**: 当你无法理解用户请求，或请求超出你的能力范围时。\n");
-        promptBuilder.append("  - **固定话术**: 你 **必须 (MUST)** 回应：\"我无法完成您的请求，因为[简明原因]。我的核心能力是[能力1]和[能力2]。您可以尝试这样问我：'...'\"\n");
-        promptBuilder.append("```\n\n");
+        promptBuilder.append("请直接输出完整的提示词系统，无需额外解释或说明。\n");
         
         return promptBuilder.toString();
     }

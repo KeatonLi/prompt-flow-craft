@@ -153,13 +153,7 @@ upload_files() {
 
     # 清理服务器上的旧文件
     echo -e "${YELLOW}清理服务器上的旧文件...${NC}"
-    ssh -i "${SSH_KEY_PATH/#\~/$HOME}" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" << 'EOF'
-cd /opt/prompt-flow-craft
-echo "清理旧的应用文件..."
-rm -f backend.jar
-rm -rf frontend-dist
-echo "旧文件清理完成"
-EOF
+    ssh -i "${SSH_KEY_PATH/#\~/$HOME}" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" "cd $REMOTE_DIR && rm -f backend.jar && rm -rf frontend-dist && echo '旧文件清理完成'"
 
     # 上传后端JAR文件
     echo -e "${YELLOW}上传后端文件...${NC}"
@@ -172,6 +166,12 @@ EOF
     scp -i "${SSH_KEY_PATH/#\~/$HOME}" -P "$SERVER_PORT" -r \
         "frontend/dist" \
         "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/frontend-dist"
+
+    # 上传 .env 配置文件
+    echo -e "${YELLOW}上传环境变量配置文件...${NC}"
+    scp -i "${SSH_KEY_PATH/#\~/$HOME}" -P "$SERVER_PORT" \
+        ".env" \
+        "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/.env"
 
     echo -e "${GREEN}文件上传完成${NC}"
 }
@@ -201,8 +201,10 @@ fi
 # 安装 serve (如果没有安装)
 which serve || npm install -g serve
 
-# 启动后端服务
-echo "启动后端服务..."
+# 加载环境变量并启动后端服务
+echo "加载环境变量并启动后端服务..."
+source ./.env
+
 nohup java -jar backend.jar > backend.log 2>&1 &
 BACKEND_PID=$!
 echo $BACKEND_PID > backend.pid
