@@ -154,7 +154,7 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     /**
      * 统计今日创建的提示词数量
      */
-    @Query("SELECT COUNT(p) FROM PromptCache p WHERE CAST(p.createdAt AS java.time.LocalDate) = CURRENT_DATE")
+//     @Query("SELECT COUNT(p) FROM PromptCache p WHERE CAST(p.createdAt AS java.time.LocalDate) = CURRENT_DATE")
     long countToday();
     
     /**
@@ -190,10 +190,10 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     /**
      * 统计每日创建数量（最近N天）
      */
-    @Query("SELECT CAST(p.createdAt AS string), COUNT(p) FROM PromptCache p " +
-           "WHERE p.createdAt >= CURRENT_DATE - :days " +
-           "GROUP BY CAST(p.createdAt AS string) " +
-           "ORDER BY CAST(p.createdAt AS string)")
+//     @Query("SELECT CAST(p.createdAt AS string), COUNT(p) FROM PromptCache p " +
+//            "WHERE p.createdAt >= CURRENT_DATE - :days " +
+//            "GROUP BY CAST(p.createdAt AS string) " +
+//            "ORDER BY CAST(p.createdAt AS string)")
     List<Object[]> countByDay(@Param("days") int days);
     
     /**
