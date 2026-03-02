@@ -39,6 +39,10 @@
           <span class="nav-icon">🔄</span>
           <span>转换</span>
         </router-link>
+        <router-link to="/prompt-formatter" class="nav-link" :class="{ active: $route.path === '/prompt-formatter' }">
+          <span class="nav-icon">✨</span>
+          <span>格式化</span>
+        </router-link>
         <router-link to="/popular" class="nav-link" :class="{ active: $route.path === '/popular' }">
           <span class="nav-icon">🏆</span>
           <span>热门</span>

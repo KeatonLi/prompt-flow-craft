@@ -12,6 +12,7 @@ import Community from '../views/Community.vue'
 import VariableExtractor from '../views/VariableExtractor.vue'
 import PromptScore from '../views/PromptScore.vue'
 import PromptConvert from '../views/PromptConvert.vue'
+import PromptFormatter from '../views/PromptFormatter.vue'
 
 const routes = [
   {
@@ -78,6 +79,11 @@ const routes = [
     path: '/prompt-convert',
     name: 'PromptConvert',
     component: PromptConvert
+  },
+  {
+    path: '/prompt-formatter',
+    name: 'PromptFormatter',
+    component: PromptFormatter
   }
 ]
 
