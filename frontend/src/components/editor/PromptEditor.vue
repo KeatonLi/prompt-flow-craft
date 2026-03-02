@@ -216,7 +216,7 @@ async function generate() {
   }, 100);
   
   try {
-    console.log('开始流式生成提示词...', form.value);
+    
     
     let lastUpdateTime = Date.now();
     let pendingContent = '';
@@ -254,7 +254,7 @@ async function generate() {
           pendingContent = '';
         }
         
-        console.log('流式生成完成，总长度:', fullContent.length);
+        
         isStreaming.value = false;
         loading.value = false;
         cancelStream.value = null;
@@ -276,7 +276,7 @@ async function generate() {
           pendingContent = '';
         }
         
-        console.error('流式生成失败:', error);
+        
         isStreaming.value = false;
         loading.value = false;
         cancelStream.value = null;
@@ -288,7 +288,7 @@ async function generate() {
     );
     
   } catch (error: any) {
-    console.error('启动流式生成失败:', error);
+    
     isStreaming.value = false;
     loading.value = false;
     showToast(error?.message || '生成失败，请稍后重试', 'error');
@@ -337,7 +337,7 @@ async function copyResult() {
     await navigator.clipboard.writeText(result.value);
     showToast('已复制到剪贴板', 'success');
   } catch (error) {
-    console.error('复制失败:', error);
+    
     showToast('复制失败', 'error');
   }
 }
