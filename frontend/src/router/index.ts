@@ -20,6 +20,7 @@ import Statistics from '../views/Statistics.vue'
 import PromptVariants from '../views/PromptVariants.vue'
 import TemplateEditor from '../views/TemplateEditor.vue'
 import StructureAnalyzer from '../views/StructureAnalyzer.vue'
+import PromptDebugger from '../views/PromptDebugger.vue'
 
 const routes = [
   {
@@ -126,6 +127,11 @@ const routes = [
     path: '/structure-analyzer',
     name: 'StructureAnalyzer',
     component: StructureAnalyzer
+  },
+  {
+    path: '/debugger',
+    name: 'PromptDebugger',
+    component: PromptDebugger
   }
 ]
 

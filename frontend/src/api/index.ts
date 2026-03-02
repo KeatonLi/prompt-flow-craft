@@ -4,3 +4,4 @@ export { tagApi } from './tag';
 export { historyApi } from './history';
 export { promptApi } from './prompt';
 export { qualityApi } from './quality';
+export { debugApi } from './debug';
