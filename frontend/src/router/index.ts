@@ -11,6 +11,7 @@ import Compare from '../views/Compare.vue'
 import Community from '../views/Community.vue'
 import VariableExtractor from '../views/VariableExtractor.vue'
 import PromptScore from '../views/PromptScore.vue'
+import PromptConvert from '../views/PromptConvert.vue'
 
 const routes = [
   {
@@ -72,6 +73,11 @@ const routes = [
     path: '/prompt-score',
     name: 'PromptScore',
     component: PromptScore
+  },
+  {
+    path: '/prompt-convert',
+    name: 'PromptConvert',
+    component: PromptConvert
   }
 ]
 
