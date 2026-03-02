@@ -313,7 +313,11 @@ export default {
 <style scoped>
 .home {
   min-height: calc(100vh - 144px);
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.05) 0%, transparent 60%),
+    linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
   position: relative;
   overflow-x: hidden;
   overflow-y: auto;
@@ -328,7 +332,9 @@ export default {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.04) 0%, transparent 70%);
+  background: 
+    radial-gradient(circle, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+    radial-gradient(circle, rgba(168, 85, 247, 0.04) 50%, transparent 70%);
   animation: float 20s ease-in-out infinite;
   pointer-events: none;
 }
@@ -457,16 +463,33 @@ export default {
   margin-bottom: 40px;
   border: 1px solid rgba(226, 232, 240, 0.6);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(24px);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 
+    0 4px 24px rgba(0, 0, 0, 0.06), 
+    0 1px 3px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
   transition: all 0.3s ease;
   animation: slideInUp 0.6s ease-out 0.2s both;
+  position: relative;
+  overflow: hidden;
+}
+
+.form-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
 }
 
 .form-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12), 0 6px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 
+    0 12px 48px rgba(59, 130, 246, 0.15), 
+    0 6px 24px rgba(0, 0, 0, 0.08);
 }
 
 @keyframes slideInUp {
@@ -489,15 +512,26 @@ export default {
   margin-top: 40px;
   border: none;
   border-radius: 20px;
-  background: #ffffff;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.04);
   animation: slideInUp 0.6s ease-out 0.4s both;
   overflow: hidden;
+  position: relative;
+}
+
+.result-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #10b981);
 }
 
 .result-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 25px 50px rgba(125, 211, 160, 0.2), 0 10px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 25px 50px rgba(59, 130, 246, 0.15), 0 10px 20px rgba(0, 0, 0, 0.08);
 }
 
 .result-header {
