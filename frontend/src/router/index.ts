@@ -21,6 +21,7 @@ import PromptVariants from '../views/PromptVariants.vue'
 import TemplateEditor from '../views/TemplateEditor.vue'
 import StructureAnalyzer from '../views/StructureAnalyzer.vue'
 import PromptDebugger from '../views/PromptDebugger.vue'
+import PromptWorkflow from '../views/PromptWorkflow.vue'
 
 const routes = [
   {
@@ -132,6 +133,11 @@ const routes = [
     path: '/debugger',
     name: 'PromptDebugger',
     component: PromptDebugger
+  },
+  {
+    path: '/workflow',
+    name: 'PromptWorkflow',
+    component: PromptWorkflow
   }
 ]
 
