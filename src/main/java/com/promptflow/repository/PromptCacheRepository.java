@@ -142,4 +142,10 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
      */
     @Query("SELECT p FROM PromptCache p ORDER BY p.createdAt DESC")
     List<PromptCache> findRecentPrompts(Pageable pageable);
+
+    /**
+     * 查询评分最高的提示词（分页）
+     */
+    @Query("SELECT p FROM PromptCache p WHERE p.averageRating IS NOT NULL ORDER BY p.averageRating DESC, p.createdAt DESC")
+    Page<PromptCache> findByAverageRatingIsNotNullOrderByAverageRatingDesc(Pageable pageable);
 }

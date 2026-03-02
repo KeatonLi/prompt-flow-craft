@@ -1,12 +1,67 @@
 <template>
   <div class="history-card">
+    <!-- 评分弹窗 -->
+    <el-dialog
+      v-model="showRatingModal"
+      title="评分提示词"
+      width="400px"
+      :close-on-click-modal="false"
+      class="rating-dialog"
+    >
+      <div class="rating-content">
+        <div class="rating-prompt">这个提示词效果如何？</div>
+        <div class="star-rating">
+          <span 
+            v-for="i in 5" 
+            :key="i" 
+            class="star"
+            :class="{ 'active': i <= rating, 'hover': i <= hoverRating }"
+            @click="rating = i"
+            @mouseenter="hoverRating = i"
+            @mouseleave="hoverRating = 0"
+          >
+            <svg viewBox="0 0 24 24" :fill="i <= (hoverRating || rating) ? '#f59e0b' : 'none'" stroke="#f59e0b" stroke-width="2">
+              <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+            </svg>
+          </span>
+          <span class="rating-label">{{ ratingLabels[rating] }}</span>
+        </div>
+        <div class="rating-comment">
+          <el-input
+            v-model="comment"
+            type="textarea"
+            :rows="3"
+            placeholder="添加评论（可选）"
+            maxlength="200"
+            show-word-limit
+          />
+        </div>
+      </div>
+      <template #footer>
+        <div class="rating-footer">
+          <el-button @click="showRatingModal = false">取消</el-button>
+          <el-button type="primary" :loading="ratingLoading" @click="submitRating">
+            提交评分
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
     <!-- 头部：任务描述和时间 -->
     <div class="card-header">
       <div class="card-title">
         {{ history.taskDescription || '无标题' }}
       </div>
-      <div class="card-time">
-        {{ formatTime(history.createdAt) }}
+      <div class="card-meta">
+        <!-- 显示评分 -->
+        <div v-if="history.averageRating" class="card-rating" :title="`评分 ${history.averageRating.toFixed(1)} (${history.ratingCount}人评)`">
+          <svg viewBox="0 0 24 24" fill="#f59e0b" stroke="none" class="rating-star">
+            <path d="M11.049 2.927c.3-.921 921 1.1.603-.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+          </svg>
+          <span class="rating-value">{{ history.averageRating.toFixed(1) }}</span>
+        </div>
+        <div class="card-time">
+          {{ formatTime(history.createdAt) }}
+        </div>
       </div>
     </div>
     
@@ -59,6 +114,15 @@
     
     <!-- 操作按钮 -->
     <div class="card-actions">
+      <!-- 评分按钮 -->
+      <button class="action-btn btn-rate" :class="{ 'rated': hasRated }" @click.stop="showRatingModal = true">
+        <span class="btn-icon">
+          <svg viewBox="0 0 24 24" :fill="hasRated ? '#f59e0b' : 'none'" :stroke="hasRated ? '#f59e0b' : 'currentColor'" stroke-width="2">
+            <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+          </svg>
+        </span>
+        <span class="btn-text">{{ hasRated ? '已评分' : '评分' }}</span>
+      </button>
       <button class="action-btn btn-like" :class="{ 'liked': isLiked }" @click.stop="handleLike">
         <span class="btn-icon">
           <svg viewBox="0 0 24 24" :fill="isLiked ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
@@ -103,7 +167,21 @@ export default {
     return {
       isLiked: false,
       likeCount: 0,
-      liking: false
+      liking: false,
+      // 评分相关
+      showRatingModal: false,
+      rating: 0,
+      hoverRating: 0,
+      comment: '',
+      ratingLoading: false,
+      hasRated: false,
+      ratingLabels: {
+        1: '很差',
+        2: '较差',
+        3: '一般',
+        4: '不错',
+        5: '很棒'
+      }
     };
   },
   watch: {
@@ -227,6 +305,33 @@ export default {
     
     handleView() {
       this.$emit('view', this.history)
+    },
+    
+    async submitRating() {
+      if (this.rating === 0) {
+        this.$message.warning('请选择评分');
+        return;
+      }
+      this.ratingLoading = true;
+      try {
+        await historyApi.rate(this.history.id, {
+          rating: this.rating,
+          comment: this.comment
+        });
+        this.$message.success('评分成功');
+        this.hasRated = true;
+        this.showRatingModal = false;
+        // 更新平均评分显示
+        this.$emit('rated', { 
+          id: this.history.id, 
+          rating: this.rating, 
+          averageRating: this.rating 
+        });
+      } catch (error) {
+        this.$message.error('评分失败，请稍后重试');
+      } finally {
+        this.ratingLoading = false;
+      }
     }
   }
 }
@@ -282,6 +387,33 @@ export default {
   padding: 4px 10px;
   border-radius: 20px;
   flex-shrink: 0;
+}
+
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: #fffbeb;
+  padding: 3px 8px;
+  border-radius: 12px;
+  border: 1px solid #fcd34d;
+}
+
+.rating-star {
+  width: 12px;
+  height: 12px;
+}
+
+.rating-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: #d97706;
 }
 
 /* 内容区 */
@@ -502,5 +634,79 @@ export default {
 .action-btn:active::after {
   width: 100%;
   height: 100%;
+}
+
+/* 评分按钮 - 金色 */
+.btn-rate {
+  background: white;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-rate:hover {
+  border-color: #f59e0b;
+  color: #f59e0b;
+  background: #fffbeb;
+}
+
+.btn-rate.rated {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  border-color: #f59e0b;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+}
+
+/* 评分弹窗样式 */
+.rating-content {
+  text-align: center;
+  padding: 10px 0;
+}
+
+.rating-prompt {
+  font-size: 16px;
+  color: #1e293b;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.star-rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.star {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.star:hover {
+  transform: scale(1.15);
+}
+
+.star svg {
+  width: 36px;
+  height: 36px;
+  transition: fill 0.2s;
+}
+
+.rating-label {
+  font-size: 14px;
+  color: #f59e0b;
+  font-weight: 500;
+  margin-left: 8px;
+  min-width: 40px;
+}
+
+.rating-comment {
+  text-align: left;
+}
+
+.rating-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 </style>

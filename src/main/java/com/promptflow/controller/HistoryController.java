@@ -476,4 +476,110 @@ public class HistoryController {
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
+
+    /**
+     * 评分提示词
+     */
+    @PostMapping("/{id}/rate")
+    public ResponseEntity<Map<String, Object>> ratePrompt(
+            @PathVariable("id") Long id,
+            @RequestBody Map<String, Object> ratingRequest) {
+        try {
+            Integer rating = (Integer) ratingRequest.get("rating");
+            String comment = (String) ratingRequest.get("comment");
+
+            if (rating == null || rating < 1 || rating > 5) {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "评分必须在1-5之间");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+
+            boolean success = promptHistoryService.ratePrompt(id, rating, comment);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", success);
+            if (success) {
+                response.put("message", "评分成功");
+                // 返回更新后的评分信息
+                Optional<PromptCache> updated = promptHistoryService.getHistoryById(id);
+                if (updated.isPresent()) {
+                    PromptCache pc = updated.get();
+                    response.put("averageRating", pc.getAverageRating());
+                    response.put("ratingCount", pc.getRatingCount());
+                }
+            } else {
+                response.put("message", "记录不存在");
+            }
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("评分失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "评分失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 获取提示词评分
+     */
+    @GetMapping("/{id}/rating")
+    public ResponseEntity<Map<String, Object>> getPromptRating(@PathVariable("id") Long id) {
+        try {
+            Optional<PromptCache> promptOpt = promptHistoryService.getHistoryById(id);
+
+            if (promptOpt.isPresent()) {
+                PromptCache pc = promptOpt.get();
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("userRating", pc.getUserRating());
+                response.put("ratingComment", pc.getRatingComment());
+                response.put("averageRating", pc.getAverageRating());
+                response.put("ratingCount", pc.getRatingCount());
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "记录不存在");
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            logger.error("获取评分失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "获取评分失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 获取评分最高的提示词
+     */
+    @GetMapping("/top-rated")
+    public ResponseEntity<Map<String, Object>> getTopRatedPrompts(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size) {
+        try {
+            PagedResult<PromptCache> result = promptHistoryService.getTopRatedPrompts(page, size);
+            List<HistoryResponse> responseList = result.getList().stream()
+                .map(p -> convertToHistoryResponse(p, true))
+                .collect(Collectors.toList());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", responseList);
+            response.put("total", result.getTotal());
+            response.put("totalPages", result.getTotalPages());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("获取评分最高的提示词失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "获取评分最高的提示词失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
 }

@@ -97,6 +97,30 @@ export const historyApi = {
     return request.post<ApiResponse<void>>('/history/batch-classify', null, {
       params: { batchSize }
     }).then(() => undefined);
+  },
+
+  // 评分提示词
+  rate(id: number, data: { rating: number; comment?: string }): Promise<void> {
+    return request.post<ApiResponse<any>>(`/history/${id}/rate`, data)
+      .then(() => undefined);
+  },
+
+  // 获取提示词评分
+  getRating(id: number): Promise<{
+    userRating: number;
+    ratingComment: string;
+    averageRating: number;
+    ratingCount: number;
+  }> {
+    return request.get<ApiResponse<any>>(`/history/${id}/rating`)
+      .then(res => res.data.data);
+  },
+
+  // 获取评分最高的提示词
+  getTopRated(page: number = 1, size: number = 20): Promise<PagedResult<PromptRecord>> {
+    return request.get<ApiResponse<PagedResult<PromptRecord>>>('/history/top-rated', {
+      params: { page, size }
+    }).then(res => res.data.data);
   }
 };
 

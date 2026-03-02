@@ -266,4 +266,50 @@ public class PromptHistoryService {
         }
         return count;
     }
+
+    /**
+     * 评分提示词
+     */
+    @Transactional
+    public boolean ratePrompt(Long id, Integer rating, String comment) {
+        return promptCacheRepository.findById(id)
+                .map(prompt -> {
+                    // 更新用户评分和评论
+                    prompt.setUserRating(rating);
+                    prompt.setRatingComment(comment);
+                    
+                    // 更新评分统计
+                    Integer currentCount = prompt.getRatingCount();
+                    prompt.setRatingCount(currentCount == null ? 1 : currentCount + 1);
+                    
+                    // 计算新的平均分
+                    Double currentAvg = prompt.getAverageRating();
+                    if (currentAvg == null) {
+                        prompt.setAverageRating(rating.doubleValue());
+                    } else {
+                        double newAvg = (currentAvg * currentCount + rating) / (currentCount + 1);
+                        prompt.setAverageRating(newAvg);
+                    }
+                    
+                    promptCacheRepository.save(prompt);
+                    return true;
+                })
+                .orElse(false);
+    }
+
+    /**
+     * 分页获取评分最高的提示词
+     */
+    public PagedResult<PromptCache> getTopRatedPrompts(int page, int size) {
+        Pageable pageable = PageRequest.of(page - 1, size);
+        Page<PromptCache> result = promptCacheRepository.findByAverageRatingIsNotNullOrderByAverageRatingDesc(pageable);
+
+        return new PagedResult<>(
+                result.getContent(),
+                result.getTotalElements(),
+                result.getTotalPages(),
+                page,
+                size
+        );
+    }
 }

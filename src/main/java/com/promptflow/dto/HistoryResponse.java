@@ -30,6 +30,11 @@ public class HistoryResponse {
     private List<TagResponse> tags;
     private String usageScenario;
     private Integer effectivenessScore;
+    // 用户评分相关
+    private Integer userRating;
+    private String ratingComment;
+    private Integer ratingCount;
+    private Double averageRating;
 
     public HistoryResponse() {}
 
@@ -109,6 +114,18 @@ public class HistoryResponse {
 
     public Integer getEffectivenessScore() { return effectivenessScore; }
     public void setEffectivenessScore(Integer effectivenessScore) { this.effectivenessScore = effectivenessScore; }
+
+    public Integer getUserRating() { return userRating; }
+    public void setUserRating(Integer userRating) { this.userRating = userRating; }
+
+    public String getRatingComment() { return ratingComment; }
+    public void setRatingComment(String ratingComment) { this.ratingComment = ratingComment; }
+
+    public Integer getRatingCount() { return ratingCount; }
+    public void setRatingCount(Integer ratingCount) { this.ratingCount = ratingCount; }
+
+    public Double getAverageRating() { return averageRating; }
+    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
 
     /**
      * 内部类：分类响应

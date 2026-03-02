@@ -79,6 +79,22 @@ public class PromptCache {
     @Column(name = "effectiveness_score")
     private Integer effectivenessScore;
 
+    // 用户评分（1-5星）
+    @Column(name = "user_rating")
+    private Integer userRating;
+
+    // 用户评分评论
+    @Column(name = "rating_comment", columnDefinition = "TEXT")
+    private String ratingComment;
+
+    // 评分次数
+    @Column(name = "rating_count")
+    private Integer ratingCount = 0;
+
+    // 平均评分（缓存）
+    @Column(name = "average_rating")
+    private Double averageRating;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
     private PromptCategory category;
@@ -273,6 +289,38 @@ public class PromptCache {
 
     public void setEffectivenessScore(Integer effectivenessScore) {
         this.effectivenessScore = effectivenessScore;
+    }
+
+    public Integer getUserRating() {
+        return userRating;
+    }
+
+    public void setUserRating(Integer userRating) {
+        this.userRating = userRating;
+    }
+
+    public String getRatingComment() {
+        return ratingComment;
+    }
+
+    public void setRatingComment(String ratingComment) {
+        this.ratingComment = ratingComment;
+    }
+
+    public Integer getRatingCount() {
+        return ratingCount;
+    }
+
+    public void setRatingCount(Integer ratingCount) {
+        this.ratingCount = ratingCount;
+    }
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
     }
 
     public PromptCategory getCategory() {
