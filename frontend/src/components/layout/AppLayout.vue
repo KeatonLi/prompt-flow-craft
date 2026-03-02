@@ -47,6 +47,10 @@
           <span class="nav-icon">🔍</span>
           <span>质量检查</span>
         </router-link>
+        <router-link to="/playground" class="nav-link" :class="{ active: $route.path === '/playground' }">
+          <span class="nav-icon">🧪</span>
+          <span>测试场</span>
+        </router-link>
         <router-link to="/popular" class="nav-link" :class="{ active: $route.path === '/popular' }">
           <span class="nav-icon">🏆</span>
           <span>热门</span>

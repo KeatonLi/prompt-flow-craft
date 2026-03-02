@@ -14,6 +14,7 @@ import PromptScore from '../views/PromptScore.vue'
 import PromptConvert from '../views/PromptConvert.vue'
 import PromptFormatter from '../views/PromptFormatter.vue'
 import QualityChecker from '../views/QualityChecker.vue'
+import PromptPlayground from '../views/PromptPlayground.vue'
 
 const routes = [
   {
@@ -90,6 +91,11 @@ const routes = [
     path: '/quality-checker',
     name: 'QualityChecker',
     component: QualityChecker
+  },
+  {
+    path: '/playground',
+    name: 'PromptPlayground',
+    component: PromptPlayground
   }
 ]
 
