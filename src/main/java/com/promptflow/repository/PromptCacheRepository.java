@@ -148,4 +148,66 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
      */
     @Query("SELECT p FROM PromptCache p WHERE p.averageRating IS NOT NULL ORDER BY p.averageRating DESC, p.createdAt DESC")
     Page<PromptCache> findByAverageRatingIsNotNullOrderByAverageRatingDesc(Pageable pageable);
+    
+    // ==================== 统计相关查询 ====================
+    
+    /**
+     * 统计今日创建的提示词数量
+     */
+    @Query("SELECT COUNT(p) FROM PromptCache p WHERE CAST(p.createdAt AS java.time.LocalDate) = CURRENT_DATE")
+    long countToday();
+    
+    /**
+     * 统计本周创建的提示词数量
+     */
+    @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.createdAt >= CURRENT_DATE - 7")
+    long countThisWeek();
+    
+    /**
+     * 统计本月创建的提示词数量
+     */
+    @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.createdAt >= CURRENT_DATE - 30")
+    long countThisMonth();
+    
+    /**
+     * 统计总点赞数
+     */
+    @Query("SELECT COALESCE(SUM(p.likeCount), 0) FROM PromptCache p")
+    long sumTotalLikes();
+    
+    /**
+     * 统计有评分的记录数
+     */
+    @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.ratingCount > 0")
+    long countRated();
+    
+    /**
+     * 统计平均评分
+     */
+    @Query("SELECT AVG(p.averageRating) FROM PromptCache p WHERE p.averageRating IS NOT NULL")
+    Double getAverageRating();
+    
+    /**
+     * 统计每日创建数量（最近N天）
+     */
+    @Query("SELECT CAST(p.createdAt AS string), COUNT(p) FROM PromptCache p " +
+           "WHERE p.createdAt >= CURRENT_DATE - :days " +
+           "GROUP BY CAST(p.createdAt AS string) " +
+           "ORDER BY CAST(p.createdAt AS string)")
+    List<Object[]> countByDay(@Param("days") int days);
+    
+    /**
+     * 统计每日创建数和点赞数（最近N天）
+     */
+    @Query("SELECT CAST(p.createdAt AS string), COUNT(p), COALESCE(SUM(p.likeCount), 0) FROM PromptCache p " +
+           "WHERE p.createdAt >= CURRENT_DATE - :days " +
+           "GROUP BY CAST(p.createdAt AS string) " +
+           "ORDER BY CAST(p.createdAt AS string)")
+    List<Object[]> countByDayWithLikes(@Param("days") int days);
+    
+    /**
+     * 获取总浏览次数
+     */
+    @Query("SELECT COALESCE(SUM(p.hitCount), 0) FROM PromptCache p")
+    long sumTotalHits();
 }

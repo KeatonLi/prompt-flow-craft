@@ -16,6 +16,8 @@ import PromptFormatter from '../views/PromptFormatter.vue'
 import QualityChecker from '../views/QualityChecker.vue'
 import PromptPlayground from '../views/PromptPlayground.vue'
 import PromptStyleTransfer from '../views/PromptStyleTransfer.vue'
+import Statistics from '../views/Statistics.vue'
+import PromptVariants from '../views/PromptVariants.vue'
 
 const routes = [
   {
@@ -102,6 +104,16 @@ const routes = [
     path: '/style-transfer',
     name: 'PromptStyleTransfer',
     component: PromptStyleTransfer
+  },
+  {
+    path: '/statistics',
+    name: 'Statistics',
+    component: Statistics
+  },
+  {
+    path: '/variants',
+    name: 'PromptVariants',
+    component: PromptVariants
   }
 ]
 

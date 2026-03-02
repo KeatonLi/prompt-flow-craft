@@ -19,6 +19,10 @@
           <span class="nav-icon">📦</span>
           <span>模板市场</span>
         </router-link>
+        <router-link to="/variants" class="nav-link" :class="{ active: $route.path === '/variants' }">
+          <span class="nav-icon">🎨</span>
+          <span>变体生成</span>
+        </router-link>
         <router-link to="/optimize" class="nav-link" :class="{ active: $route.path === '/optimize' }">
           <span class="nav-icon">✨</span>
           <span>优化器</span>
@@ -70,6 +74,10 @@
         <router-link to="/settings" class="nav-link" :class="{ active: $route.path === '/settings' }">
           <span class="nav-icon">⚙️</span>
           <span>设置</span>
+        </router-link>
+        <router-link to="/statistics" class="nav-link" :class="{ active: $route.path === '/statistics' }">
+          <span class="nav-icon">📊</span>
+          <span>统计</span>
         </router-link>
       </nav>
       <div class="navbar-actions">
