@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -31,15 +32,36 @@ public class PromptHistoryService {
     }
     
     /**
-     * 获取最近的历史记录
+     * 获取最近的历史记录（只查摘要，用于列表展示）
      * @param limit 限制数量
-     * @return 最近的历史记录
+     * @return 最近的历史记录列表
      */
     public List<PromptCache> getRecentHistory(int limit) {
-        return promptCacheRepository.findAllByOrderByCreatedAtDesc()
-            .stream()
-            .limit(limit)
+        List<Object[]> results = promptCacheRepository.findRecentHistorySummary(PageRequest.of(0, limit));
+        return results.stream()
+            .map(this::convertToPromptCache)
             .collect(Collectors.toList());
+    }
+
+    /**
+     * 将查询结果转换为 PromptCache 对象
+     * Object[] 顺序: id, taskDescription, targetAudience, promptSummary, createdAt, hitCount, categoryId, likeCount, isAutoTagged, usageScenario, effectivenessScore, aiTags
+     */
+    private PromptCache convertToPromptCache(Object[] row) {
+        PromptCache p = new PromptCache();
+        p.setId((Long) row[0]);
+        p.setTaskDescription((String) row[1]);
+        p.setTargetAudience((String) row[2]);
+        p.setPromptSummary((String) row[3]);
+        p.setCreatedAt((LocalDateTime) row[4]);
+        p.setHitCount((Integer) row[5]);
+        p.setCategoryId((Long) row[6]);
+        p.setLikeCount((Integer) row[7]);
+        p.setIsAutoTagged((Boolean) row[8]);
+        p.setUsageScenario((String) row[9]);
+        p.setEffectivenessScore((Integer) row[10]);
+        p.setAiTags((String) row[11]);
+        return p;
     }
     
     /**

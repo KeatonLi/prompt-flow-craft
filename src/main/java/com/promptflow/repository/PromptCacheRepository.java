@@ -58,11 +58,12 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     List<PromptCache> findAllByOrderByCreatedAtDesc();
     
     /**
-     * 获取最近的历史记录
-     * @return 最近的历史记录
+     * 查询最近的历史记录（只查摘要，用于列表展示）
+     * @param pageable 分页参数
+     * @return 最近的历史记录（包含摘要信息）
      */
-    @Query("SELECT p FROM PromptCache p ORDER BY p.createdAt DESC")
-    List<PromptCache> findRecentHistory();
+    @Query("SELECT p.id, p.taskDescription, p.targetAudience, p.promptSummary, p.createdAt, p.hitCount, p.categoryId, p.likeCount, p.isAutoTagged, p.usageScenario, p.effectivenessScore, p.aiTags FROM PromptCache p ORDER BY p.createdAt DESC")
+    List<Object[]> findRecentHistorySummary(Pageable pageable);
     
     /**
      * 获取历史记录（排除缓存，即hit_count=0的记录）
