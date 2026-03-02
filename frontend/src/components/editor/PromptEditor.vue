@@ -160,9 +160,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { useRoute } from 'vue-router';
 import { promptApi } from '@/api';
 import type { PromptRequest, PromptRecord } from '@/types';
 
+const route = useRoute();
 const loading = ref(false);
 const result = ref('');
 const displayedResult = ref('');  // 用于流式展示的结果
@@ -404,6 +406,29 @@ function handleReuseHistory(event: Event) {
 }
 
 onMounted(() => {
+  // 从URL query参数回填表单
+  if (route.query.task) {
+    form.value.taskDescription = String(route.query.task);
+  }
+  if (route.query.audience) {
+    form.value.targetAudience = String(route.query.audience);
+  }
+  if (route.query.format) {
+    form.value.outputFormat = String(route.query.format);
+  }
+  if (route.query.tone) {
+    form.value.tone = String(route.query.tone);
+  }
+  if (route.query.length) {
+    form.value.length = String(route.query.length);
+  }
+  if (route.query.constraints) {
+    form.value.constraints = String(route.query.constraints);
+  }
+  if (route.query.examples) {
+    form.value.examples = String(route.query.examples);
+  }
+
   window.addEventListener('reuse-history', handleReuseHistory);
 });
 

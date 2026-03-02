@@ -13,9 +13,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.time.LocalDateTime;
 import java.util.Set;
+import java.time.LocalDateTime;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 public class PromptHistoryService {
@@ -183,11 +187,27 @@ public class PromptHistoryService {
      * 点赞提示词
      */
     @Transactional
+    /**
+     * 点赞提示词（可多次点赞，但60秒内不能连赞）
+     */
+    @Transactional
     public boolean likePrompt(Long id) {
         return promptCacheRepository.findById(id)
                 .map(prompt -> {
+                    // 检查冷却时间
+                    LocalDateTime now = LocalDateTime.now();
+                    LocalDateTime lastLikeTime = prompt.getLastLikeTime();
+                    if (lastLikeTime != null) {
+                        long secondsSinceLastLike = java.time.Duration.between(lastLikeTime, now).getSeconds();
+                        if (secondsSinceLastLike < 60) {
+                            // 冷却期内，不能点赞
+                            return false;
+                        }
+                    }
+                    // 更新点赞数和时间
                     Integer currentCount = prompt.getLikeCount();
                     prompt.setLikeCount(currentCount == null ? 1 : currentCount + 1);
+                    prompt.setLastLikeTime(now);
                     promptCacheRepository.save(prompt);
                     return true;
                 })

@@ -64,180 +64,14 @@
       </button>
     </div>
 
-    <!-- 详情弹窗 -->
+        <!-- 详情弹窗 - 使用统一组件 -->
     <Teleport to="body">
-      <Transition name="fade">
-        <div v-if="detailVisible" class="modal-overlay" @click.self="closeDetail">
-          <Transition name="scale">
-            <div v-if="detailVisible" class="modal-container">
-              <!-- 弹窗头部 -->
-              <div class="modal-header">
-                <div class="modal-header-content">
-                  <div class="modal-icon">📋</div>
-                  <div>
-                    <h3 class="modal-title">提示词详情</h3>
-                    <p class="modal-subtitle" v-if="selectedRecord">
-                      {{ formatDateTime(selectedRecord.createdAt) }}
-                    </p>
-                  </div>
-                </div>
-                <button class="modal-close" @click="closeDetail">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 18L18 6M6 6l12 12"/>
-                  </svg>
-                </button>
-              </div>
-
-              <!-- 弹窗内容 -->
-              <div v-if="selectedRecord" class="modal-body" ref="modalBody">
-                <!-- 任务描述卡片 -->
-                <div class="info-card primary">
-                  <div class="info-card-header">
-                    <span class="info-icon">💡</span>
-                    <span class="info-label">任务描述</span>
-                  </div>
-                  <p class="task-description">{{ selectedRecord.taskDescription }}</p>
-                </div>
-
-                <!-- 参数配置卡片 -->
-                <div class="info-card">
-                  <div class="info-card-header">
-                    <span class="info-icon">⚙️</span>
-                    <span class="info-label">配置参数</span>
-                  </div>
-                  <div class="params-grid">
-                    <div v-if="selectedRecord.targetAudience" class="param-badge">
-                      <span class="param-dot audience"></span>
-                      <span class="param-name">受众</span>
-                      <span class="param-value-text">{{ getAudienceLabel(selectedRecord.targetAudience) }}</span>
-                    </div>
-                    <div v-if="selectedRecord.outputFormat" class="param-badge">
-                      <span class="param-dot format"></span>
-                      <span class="param-name">格式</span>
-                      <span class="param-value-text">{{ getFormatLabel(selectedRecord.outputFormat) }}</span>
-                    </div>
-                    <div v-if="selectedRecord.tone" class="param-badge">
-                      <span class="param-dot tone"></span>
-                      <span class="param-name">语调</span>
-                      <span class="param-value-text">{{ getToneLabel(selectedRecord.tone) }}</span>
-                    </div>
-                    <div v-if="selectedRecord.length" class="param-badge">
-                      <span class="param-dot length"></span>
-                      <span class="param-name">长度</span>
-                      <span class="param-value-text">{{ getLengthLabel(selectedRecord.length) }}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 标签卡片 -->
-                <div v-if="selectedRecord.tags && selectedRecord.tags.length > 0" class="info-card">
-                  <div class="info-card-header">
-                    <span class="info-icon">🏷️</span>
-                    <span class="info-label">标签</span>
-                  </div>
-                  <div class="tags-cloud">
-                    <span
-                      v-for="tag in selectedRecord.tags"
-                      :key="tag.id"
-                      class="tag-item"
-                      :style="{ 
-                        background: `linear-gradient(135deg, ${tag.color || '#6366f1'}20 0%, ${tag.color || '#6366f1'}10 100%)`,
-                        color: tag.color || '#6366f1',
-                        borderColor: `${tag.color || '#6366f1'}40`
-                      }"
-                    >
-                      {{ tag.name }}
-                    </span>
-                  </div>
-                </div>
-
-                <!-- 约束条件 -->
-                <div v-if="selectedRecord.constraints" class="info-card warning">
-                  <div class="info-card-header">
-                    <span class="info-icon">⚠️</span>
-                    <span class="info-label">约束条件</span>
-                  </div>
-                  <p class="constraints-text">{{ selectedRecord.constraints }}</p>
-                </div>
-
-                <!-- 参考示例 -->
-                <div v-if="selectedRecord.examples" class="info-card info">
-                  <div class="info-card-header">
-                    <span class="info-icon">📝</span>
-                    <span class="info-label">参考示例</span>
-                  </div>
-                  <p class="examples-text">{{ selectedRecord.examples }}</p>
-                </div>
-
-                <!-- 生成结果 -->
-                <div class="result-section">
-                  <div class="result-header-bar">
-                    <div class="result-title-group">
-                      <span class="result-icon">✨</span>
-                      <span class="result-title">生成结果</span>
-                      <span v-if="isMarkdown" class="badge">Markdown</span>
-                    </div>
-                    <div class="format-switch">
-                      <button 
-                        class="switch-btn" 
-                        :class="{ active: showRaw }"
-                        @click="showRaw = true"
-                      >
-                        原文
-                      </button>
-                      <button 
-                        class="switch-btn" 
-                        :class="{ active: !showRaw }"
-                        @click="showRaw = false"
-                      >
-                        渲染
-                      </button>
-                    </div>
-                  </div>
-                  <div class="result-code-block">
-                    <pre v-if="showRaw" class="code-content">{{ selectedRecord.generatedPrompt }}</pre>
-                    <MarkdownRender 
-                      v-else 
-                      :content="selectedRecord.generatedPrompt"
-                    />
-                  </div>
-                </div>
-
-                <!-- 统计信息 -->
-                <div class="stats-bar">
-                  <div class="stat-item">
-                    <span class="stat-icon">👁️</span>
-                    <span class="stat-label">命中</span>
-                    <span class="stat-value">{{ selectedRecord.hitCount }} 次</span>
-                  </div>
-                  <div class="stat-divider"></div>
-                  <div class="stat-item">
-                    <span class="stat-icon">❤️</span>
-                    <span class="stat-label">点赞</span>
-                    <span class="stat-value">{{ selectedRecord.likeCount || 0 }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 弹窗底部 -->
-              <div class="modal-footer">
-                <button class="btn btn-secondary" @click="closeDetail">
-                  <span class="btn-icon">✕</span>
-                  关闭
-                </button>
-                <button class="btn btn-primary" @click="handleReuseFromDetail">
-                  <span class="btn-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
-                  </span>
-                  复用此记录
-                </button>
-              </div>
-            </div>
-          </Transition>
-        </div>
-      </Transition>
+      <PromptDetailModal 
+        :item="selectedRecord" 
+        :loading="detailLoading"
+        @close="closeDetail" 
+        @use="handleReuseFromDetail"
+      />
     </Teleport>
   </div>
 </template>
@@ -245,10 +79,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useHistoryStore } from '@/stores';
+import { historyApi } from '@/api/history';
 import type { PromptRecord } from '@/types';
 import dayjs from 'dayjs';
 import { debounce } from 'lodash-es';
 import HistoryCard from '@/components/HistoryCard.vue';
+import PromptDetailModal from '@/components/PromptDetailModal.vue';
 import MarkdownRender from '@/components/MarkdownRender.vue';
 
 const historyStore = useHistoryStore();
@@ -260,6 +96,7 @@ const showBatchActions = ref(false);
 
 // 详情弹窗相关
 const detailVisible = ref(false);
+const detailLoading = ref(false);
 const selectedRecord = ref<PromptRecord | null>(null);
 const showRaw = ref(false);
 const modalBody = ref<HTMLElement | null>(null);
@@ -312,12 +149,22 @@ function handleReuse(record: PromptRecord) {
   window.dispatchEvent(new CustomEvent('reuse-history', { detail: record }));
 }
 
-// 处理查看详情
-function handleViewDetail(record: PromptRecord) {
+// 处理查看详情 - 调用API获取完整数据
+async function handleViewDetail(record: PromptRecord) {
   selectedRecord.value = record;
-  showRaw.value = !isMarkdown.value;
+  detailLoading.value = true;
   detailVisible.value = true;
   document.body.style.overflow = 'hidden';
+  
+  try {
+    const res = await historyApi.getById(record.id);
+    if (res) {
+      selectedRecord.value = res;
+    }
+  } catch (e) {
+    console.error('Failed to load detail:', e);
+  }
+  detailLoading.value = false;
 }
 
 // 关闭详情

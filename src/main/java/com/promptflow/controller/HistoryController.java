@@ -316,7 +316,11 @@ public class HistoryController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", success);
-            response.put("message", success ? "点赞成功" : "记录不存在");
+            if (success) {
+                response.put("message", "点赞成功");
+            } else {
+                response.put("message", "操作太频繁，请60秒后再试");
+            }
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {

@@ -2,6 +2,11 @@ import request from './request';
 import type { ApiResponse, PromptRecord, PagedResult, HistoryQueryRequest } from '@/types';
 
 export const historyApi = {
+  // 根据ID获取单条记录
+  getById(id: number): Promise<PromptRecord> {
+    return request.get<ApiResponse<PromptRecord>>(`/history/${id}`)
+      .then(res => res.data.data);
+  },
   // 分页查询历史记录
   getPage(params: HistoryQueryRequest): Promise<PagedResult<PromptRecord>> {
     return request.post<ApiResponse<any>>('/history/page', params)

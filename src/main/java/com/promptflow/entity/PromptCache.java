@@ -60,6 +60,13 @@ public class PromptCache {
     @Column(name = "like_count")
     private Integer likeCount = 0;
 
+    // 记录最后一次点赞时间（用于防刷）
+    @Column(name = "last_like_time")
+    private LocalDateTime lastLikeTime;
+
+    // 点赞冷却时间（秒），默认60秒内不能重复点赞
+    private static final int LIKE_COOLDOWN_SECONDS = 60;
+
     @Column(name = "is_auto_tagged")
     private Boolean isAutoTagged = false;
 
@@ -226,6 +233,14 @@ public class PromptCache {
 
     public void setLikeCount(Integer likeCount) {
         this.likeCount = likeCount;
+    }
+
+    public LocalDateTime getLastLikeTime() {
+        return lastLikeTime;
+    }
+
+    public void setLastLikeTime(LocalDateTime lastLikeTime) {
+        this.lastLikeTime = lastLikeTime;
     }
 
     public Boolean getIsAutoTagged() {

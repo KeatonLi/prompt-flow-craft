@@ -197,13 +197,23 @@ export default {
           this.likeCount = Math.max(0, this.likeCount - 1);
           this.isLiked = false;
         } else {
-          await historyApi.like(this.history.id);
+          const res = await historyApi.like(this.history.id);
+          // 如果返回false说明在冷却期内
+          if (res === false) {
+            this.$message.warning('操作太频繁，请稍后再点赞');
+            this.liking = false;
+            return;
+          }
           this.likeCount = this.likeCount + 1;
           this.isLiked = true;
         }
       } catch (error) {
-        
-        this.$message.error('操作失败，请稍后重试');
+        const msg = error?.response?.data?.message || '';
+        if (msg.includes('频繁') || msg.includes('冷却')) {
+          this.$message.warning('操作太频繁，请稍后再点赞');
+        } else {
+          this.$message.error('操作失败，请稍后重试');
+        }
       } finally {
         setTimeout(() => {
           this.liking = false;
