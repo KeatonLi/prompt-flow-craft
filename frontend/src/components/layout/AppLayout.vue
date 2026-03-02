@@ -12,8 +12,8 @@
           <span>首页</span>
         </router-link>
         <router-link to="/templates" class="nav-link" :class="{ active: $route.path === '/templates' }">
-          <span class="nav-icon">📚</span>
-          <span>模板</span>
+          <span class="nav-icon">💡</span>
+          <span>提示词大全</span>
         </router-link>
         <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
           <span class="nav-icon">ℹ️</span>
@@ -50,7 +50,7 @@
 
     <div class="layout-body">
       <!-- 左侧分类导航 -->
-      <aside class="sidebar-left" :class="{ collapsed: isLeftCollapsed }">
+      <aside v-if="showSidebars" class="sidebar-left" :class="{ collapsed: isLeftCollapsed }">
         <div class="sidebar-header">
           <h1 v-if="!isLeftCollapsed" class="sidebar-title">
             <span>📁</span>
@@ -77,7 +77,7 @@
       </main>
 
       <!-- 右侧历史记录 -->
-      <aside class="sidebar-right" :class="{ collapsed: isRightCollapsed }">
+      <aside v-if="showSidebars" class="sidebar-right" :class="{ collapsed: isRightCollapsed }">
         <div class="sidebar-header">
           <button class="toggle-btn" @click="toggleRight">
             <span v-if="isRightCollapsed">←</span>
@@ -99,11 +99,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute()
 const isLeftCollapsed = ref(false);
 const isRightCollapsed = ref(false);
 const isDark = ref(false);
+
+// 根据路由控制侧边栏显示
+const showSidebars = computed(() => {
+  return route.path === '/' || route.path === '/home'
+});
 
 const toggleLeft = () => {
   isLeftCollapsed.value = !isLeftCollapsed.value;
