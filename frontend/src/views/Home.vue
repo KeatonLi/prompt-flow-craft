@@ -138,6 +138,7 @@
           <div class="result-header">
             <span>生成的提示词</span>
             <div class="result-actions">
+              <PromptExporter :prompt="result" title="提示词" />
               <el-button size="small" @click="copyToClipboard">
                 <el-icon><DocumentCopy /></el-icon>
                 复制
@@ -160,12 +161,14 @@
 <script>
 import { promptApi } from '@/api/prompt'
 import HistorySidebar from '../components/HistorySidebar.vue'
+import PromptExporter from '../components/PromptExporter.vue'
 import { Clock, MagicStick, DocumentCopy, Delete } from '@element-plus/icons-vue'
 
 export default {
   name: 'Home',
   components: {
     HistorySidebar,
+    PromptExporter,
     Clock,
     MagicStick,
     DocumentCopy,

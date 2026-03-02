@@ -98,9 +98,18 @@
               <el-button type="primary" size="small" @click="copyResult" :icon="CopyDocument">
                 复制结果
               </el-button>
-              <el-button size="small" @click="downloadResult" :icon="Download">
-                下载
-              </el-button>
+              <el-dropdown trigger="click" @command="handleExport">
+                <el-button size="small" :icon="Download">
+                  导出
+                </el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="txt">📄 纯文本 (.txt)</el-dropdown-item>
+                    <el-dropdown-item command="md">📝 Markdown (.md)</el-dropdown-item>
+                    <el-dropdown-item command="json">{} JSON (.json)</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
             </div>
           </div>
         </template>
@@ -346,18 +355,46 @@ const copyResult = async () => {
   }
 }
 
-// 下载结果
-const downloadResult = () => {
+// 导出结果
+const handleExport = (format) => {
   if (!filledPrompt.value) return
   
-  const blob = new Blob([filledPrompt.value], { type: 'text/plain;charset=utf-8' })
+  const timestamp = new Date().toISOString().slice(0, 10)
+  let content = ''
+  let filename = `prompt-filled-${timestamp}`
+  let mimeType = 'text/plain'
+  
+  if (format === 'md') {
+    content = `# 填充后的提示词\n\n> 生成时间: ${new Date().toLocaleString('zh-CN')}\n\n## 原始提示词\n\n${rawPrompt.value}\n\n## 填充结果\n\n${filledPrompt.value}\n\n---\n*由 Prompt Flow Craft 生成*`
+    filename += '.md'
+    mimeType = 'text/markdown'
+  } else if (format === 'json') {
+    const exportData = {
+      originalPrompt: rawPrompt.value,
+      filledPrompt: filledPrompt.value,
+      variables: variables.value.map(v => ({
+        name: v.name,
+        type: v.type,
+        value: variableValues.value[v.name] || ''
+      })),
+      generatedAt: new Date().toISOString()
+    }
+    content = JSON.stringify(exportData, null, 2)
+    filename += '.json'
+    mimeType = 'application/json'
+  } else {
+    content = filledPrompt.value
+    filename += '.txt'
+  }
+  
+  const blob = new Blob([content], { type: mimeType + ';charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = 'prompt-filled.txt'
+  a.download = filename
   a.click()
   URL.revokeObjectURL(url)
-  ElMessage.success('下载成功')
+  ElMessage.success(`已导出为 ${format.toUpperCase()} 格式`)
 }
 
 // 计算属性
