@@ -202,7 +202,7 @@ export default {
           this.isLiked = true;
         }
       } catch (error) {
-        console.error('点赞操作失败:', error);
+        
         this.$message.error('操作失败，请稍后重试');
       } finally {
         setTimeout(() => {

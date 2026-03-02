@@ -187,16 +187,16 @@ export default {
     async loadHistory() {
       this.loading = true
       try {
-        console.log('开始加载历史记录...')
+        
         const data = await historyApi.getRecent(this.limit)
-        console.log('获取到的历史记录数据:', data)
+        
         this.historyList = data || []
         this.displayedHistory = this.historyList.slice(0, this.pageSize)
         this.totalCount = this.historyList.length
         this.currentPage = 1
-        console.log('displayedHistory:', this.displayedHistory)
+        
       } catch (error) {
-        console.error('加载历史记录失败:', error)
+        
         this.$message.error('加载历史记录失败')
       } finally {
         this.loading = false
@@ -213,7 +213,7 @@ export default {
           this.totalCount = this.historyList.length
           this.currentPage = 1
         } catch (error) {
-          console.error('搜索失败:', error)
+          
           this.$message.error('搜索失败')
         } finally {
           this.loading = false

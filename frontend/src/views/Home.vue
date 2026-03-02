@@ -216,7 +216,7 @@ export default {
         this.result = generatedPrompt
         this.$message.success('提示词生成成功！')
       } catch (error) {
-        console.error('生成提示词失败:', error)
+        
         this.$message.error('生成提示词失败，请稍后重试')
       } finally {
         this.loading = false
@@ -251,7 +251,7 @@ export default {
           throw new Error('execCommand failed')
         }
       } catch (error) {
-        console.error('复制失败:', error)
+        
         // 最后的降级方案：选中文本让用户手动复制
         this.selectResultText()
         this.$message.error('自动复制失败，已为您选中文本，请使用 Ctrl+C (或 Cmd+C) 手动复制')
