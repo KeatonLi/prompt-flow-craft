@@ -8,6 +8,8 @@ import Favorites from '../views/Favorites.vue'
 import Settings from '../views/Settings.vue'
 import Optimize from '../views/Optimize.vue'
 import Compare from '../views/Compare.vue'
+import Community from '../views/Community.vue'
+import VariableExtractor from '../views/VariableExtractor.vue'
 
 const routes = [
   {
@@ -54,6 +56,16 @@ const routes = [
     path: '/compare',
     name: 'Compare',
     component: Compare
+  },
+  {
+    path: '/community',
+    name: 'Community',
+    component: Community
+  },
+  {
+    path: '/variable-extractor',
+    name: 'VariableExtractor',
+    component: VariableExtractor
   }
 ]
 

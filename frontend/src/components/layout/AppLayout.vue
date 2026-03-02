@@ -27,9 +27,17 @@
           <span class="nav-icon">⚖️</span>
           <span>对比</span>
         </router-link>
+        <router-link to="/variable-extractor" class="nav-link" :class="{ active: $route.path === '/variable-extractor' }">
+          <span class="nav-icon">🔧</span>
+          <span>变量提取</span>
+        </router-link>
         <router-link to="/popular" class="nav-link" :class="{ active: $route.path === '/popular' }">
           <span class="nav-icon">🏆</span>
           <span>热门</span>
+        </router-link>
+        <router-link to="/community" class="nav-link" :class="{ active: $route.path === '/community' }">
+          <span class="nav-icon">🌟</span>
+          <span>社区</span>
         </router-link>
         <router-link to="/favorites" class="nav-link" :class="{ active: $route.path === '/favorites' }">
           <span class="nav-icon">⭐</span>
