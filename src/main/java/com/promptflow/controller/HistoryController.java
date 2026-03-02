@@ -145,12 +145,22 @@ public class HistoryController {
     /**
      * 将PromptCache实体转换为HistoryResponse DTO
      * @param promptCache 提示词缓存实体
-     * @param isPreview 是否预览模式（预览模式只返回前50个字符）
+     * @param isPreview 是否预览模式（预览模式只返回摘要）
      */
     private HistoryResponse convertToHistoryResponse(PromptCache promptCache, boolean isPreview) {
-        String generatedPrompt = promptCache.getGeneratedPrompt();
-        if (isPreview && generatedPrompt != null && generatedPrompt.length() > PROMPT_PREVIEW_LENGTH) {
-            generatedPrompt = generatedPrompt.substring(0, PROMPT_PREVIEW_LENGTH) + "...";
+        String generatedPrompt;
+        if (isPreview) {
+            // 预览模式：优先使用摘要，否则截取generatedPrompt
+            if (promptCache.getPromptSummary() != null && !promptCache.getPromptSummary().isEmpty()) {
+                generatedPrompt = promptCache.getPromptSummary();
+            } else if (promptCache.getGeneratedPrompt() != null && promptCache.getGeneratedPrompt().length() > PROMPT_PREVIEW_LENGTH) {
+                generatedPrompt = promptCache.getGeneratedPrompt().substring(0, PROMPT_PREVIEW_LENGTH) + "...";
+            } else {
+                generatedPrompt = promptCache.getGeneratedPrompt();
+            }
+        } else {
+            // 详情模式：返回完整内容
+            generatedPrompt = promptCache.getGeneratedPrompt();
         }
         
         HistoryResponse response = new HistoryResponse(
@@ -166,6 +176,8 @@ public class HistoryController {
             promptCache.getCreatedAt(),
             promptCache.getHitCount()
         );
+        
+        response.setPromptSummary(promptCache.getPromptSummary());
         
         response.setCategoryId(promptCache.getCategoryId());
         response.setLikeCount(promptCache.getLikeCount());

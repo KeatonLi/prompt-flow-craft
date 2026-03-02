@@ -38,6 +38,9 @@ public class PromptCache {
     @Column(name = "generated_prompt", columnDefinition = "TEXT")
     private String generatedPrompt;
     
+    @Column(name = "prompt_summary", length = 500)
+    private String promptSummary;
+    
     @Column(name = "request_hash", unique = true)
     private String requestHash;
     
@@ -161,6 +164,14 @@ public class PromptCache {
     
     public void setGeneratedPrompt(String generatedPrompt) {
         this.generatedPrompt = generatedPrompt;
+    }
+    
+    public String getPromptSummary() {
+        return promptSummary;
+    }
+    
+    public void setPromptSummary(String promptSummary) {
+        this.promptSummary = promptSummary;
     }
     
     public String getRequestHash() {

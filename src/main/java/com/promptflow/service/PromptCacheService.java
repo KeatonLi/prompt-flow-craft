@@ -73,6 +73,12 @@ public class PromptCacheService {
             cache.setTone(request.getTone());
             cache.setLength(request.getLength());
             cache.setGeneratedPrompt(generatedPrompt);
+            // 生成摘要（取前100字符）
+            if (generatedPrompt != null && generatedPrompt.length() > 100) {
+                cache.setPromptSummary(generatedPrompt.substring(0, 100) + "...");
+            } else {
+                cache.setPromptSummary(generatedPrompt);
+            }
             cache.setRequestHash(requestHash);
             cache.setHitCount(0);
             

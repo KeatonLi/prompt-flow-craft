@@ -17,6 +17,7 @@ public class HistoryResponse {
     private String tone;
     private String length;
     private String generatedPrompt;
+    private String promptSummary;
     private LocalDateTime createdAt;
     private Integer hitCount;
     
@@ -75,6 +76,9 @@ public class HistoryResponse {
 
     public String getGeneratedPrompt() { return generatedPrompt; }
     public void setGeneratedPrompt(String generatedPrompt) { this.generatedPrompt = generatedPrompt; }
+
+    public String getPromptSummary() { return promptSummary; }
+    public void setPromptSummary(String promptSummary) { this.promptSummary = promptSummary; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
