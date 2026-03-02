@@ -199,10 +199,7 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     /**
      * 统计每日创建数和点赞数（最近N天）
      */
-    @Query("SELECT CAST(p.createdAt AS string), COUNT(p), COALESCE(SUM(p.likeCount), 0) FROM PromptCache p " +
-           "WHERE p.createdAt >= CURRENT_DATE - :days " +
-           "GROUP BY CAST(p.createdAt AS string) " +
-           "ORDER BY CAST(p.createdAt AS string)")
+    @Query(value = "SELECT DATE_FORMAT(created_at, '%Y-%m-%d') as day, COUNT(*) as count, COALESCE(SUM(like_count), 0) as likes FROM prompt_cache WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY) GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d') ORDER BY day", nativeQuery = true)
     List<Object[]> countByDayWithLikes(@Param("days") int days);
     
     /**
