@@ -31,6 +31,10 @@
           <span class="nav-icon">🔧</span>
           <span>变量提取</span>
         </router-link>
+        <router-link to="/prompt-score" class="nav-link" :class="{ active: $route.path === '/prompt-score' }">
+          <span class="nav-icon">📊</span>
+          <span>评分</span>
+        </router-link>
         <router-link to="/popular" class="nav-link" :class="{ active: $route.path === '/popular' }">
           <span class="nav-icon">🏆</span>
           <span>热门</span>

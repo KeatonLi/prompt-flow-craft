@@ -10,6 +10,7 @@ import Optimize from '../views/Optimize.vue'
 import Compare from '../views/Compare.vue'
 import Community from '../views/Community.vue'
 import VariableExtractor from '../views/VariableExtractor.vue'
+import PromptScore from '../views/PromptScore.vue'
 
 const routes = [
   {
@@ -66,6 +67,11 @@ const routes = [
     path: '/variable-extractor',
     name: 'VariableExtractor',
     component: VariableExtractor
+  },
+  {
+    path: '/prompt-score',
+    name: 'PromptScore',
+    component: PromptScore
   }
 ]
 
