@@ -1,6 +1,8 @@
 package com.promptflow.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.promptflow.dto.AnalyzeRequest;
+import com.promptflow.dto.AnalyzeResponse;
 import com.promptflow.dto.ApiResponse;
 import com.promptflow.dto.OptimizeRequest;
 import com.promptflow.dto.OptimizeResponse;
@@ -604,6 +606,266 @@ public class PromptController {
         // 检查是否有输出格式要求
         if (prompt.contains("格式") || prompt.contains("输出") || prompt.contains("返回") ||
             prompt.contains("format") || prompt.contains("output") || prompt.contains("return")) {
+            score += 10;
+        }
+        
+        return Math.min(score, 100);
+    }
+    
+    /**
+     * 提示词质量分析API - 分析提示词的结构、角色、任务、约束、输出格式等
+     */
+    @PostMapping("/prompt/analyze")
+    public ResponseEntity<ApiResponse<AnalyzeResponse>> analyzePrompt(@RequestBody AnalyzeRequest request) {
+        try {
+            logger.info("Received prompt analysis request");
+            
+            if (request.getPrompt() == null || request.getPrompt().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(400, "提示词内容不能为空"));
+            }
+            
+            AnalyzeResponse response = analyzePromptQuality(request.getPrompt());
+            return ResponseEntity.ok(ApiResponse.success("分析完成", response));
+            
+        } catch (Exception e) {
+            logger.error("Error processing prompt analysis request", e);
+            return ResponseEntity.internalServerError()
+                .body(ApiResponse.error(500, "分析提示词时发生错误: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * 分析提示词质量的详细实现
+     */
+    private AnalyzeResponse analyzePromptQuality(String prompt) {
+        AnalyzeResponse response = new AnalyzeResponse();
+        List<AnalyzeResponse.Improvement> improvements = new ArrayList<>();
+        List<String> strengths = new ArrayList<>();
+        
+        // 1. 结构完整度分析
+        int structureScore = analyzeStructure(prompt);
+        response.setStructureScore(structureScore);
+        
+        // 2. 角色定义分析
+        int roleScore = analyzeRole(prompt);
+        response.setRoleScore(roleScore);
+        
+        // 3. 任务清晰度分析
+        int taskScore = analyzeTask(prompt);
+        response.setTaskScore(taskScore);
+        
+        // 4. 约束条件分析
+        int constraintScore = analyzeConstraint(prompt);
+        response.setConstraintScore(constraintScore);
+        
+        // 5. 输出格式分析
+        int outputScore = analyzeOutput(prompt);
+        response.setOutputScore(outputScore);
+        
+        // 计算总分
+        int totalScore = (structureScore + roleScore + taskScore + constraintScore + outputScore) / 5;
+        response.setTotalScore(totalScore);
+        
+        // 确定评分等级
+        if (totalScore >= 90) {
+            response.setScoreLevel("优秀");
+        } else if (totalScore >= 70) {
+            response.setScoreLevel("良好");
+        } else if (totalScore >= 50) {
+            response.setScoreLevel("一般");
+        } else {
+            response.setScoreLevel("较差");
+        }
+        
+        // 生成改进建议
+        if (structureScore < 80) {
+            improvements.add(new AnalyzeResponse.Improvement("结构完整度", "建议添加清晰的任务目标和背景信息，使提示词结构更加完整", 2));
+        }
+        if (roleScore < 80) {
+            improvements.add(new AnalyzeResponse.Improvement("角色定义", "建议明确定义AI的角色身份，例如'你是一位专业的...'或'你是一个...'", 1));
+        }
+        if (taskScore < 80) {
+            improvements.add(new AnalyzeResponse.Improvement("任务清晰度", "建议更清晰地描述任务要求，使用'请帮我...'、'请生成...'等明确指令", 1));
+        }
+        if (constraintScore < 80) {
+            improvements.add(new AnalyzeResponse.Improvement("约束条件", "建议添加具体的约束条件，如'不要...'、'必须...'、'限制在...'等", 2));
+        }
+        if (outputScore < 80) {
+            improvements.add(new AnalyzeResponse.Improvement("输出格式", "建议明确指定输出格式，如JSON、Markdown、列表等格式要求", 1));
+        }
+        
+        // 识别优点
+        if (roleScore >= 80) {
+            strengths.add("✅ 角色定义清晰");
+        }
+        if (taskScore >= 80) {
+            strengths.add("✅ 任务描述明确");
+        }
+        if (constraintScore >= 80) {
+            strengths.add("✅ 包含约束条件");
+        }
+        if (outputScore >= 80) {
+            strengths.add("✅ 输出格式规范");
+        }
+        if (prompt.length() > 200) {
+            strengths.add("✅ 内容详实");
+        }
+        
+        // 按优先级排序
+        improvements.sort(Comparator.comparingInt(AnalyzeResponse.Improvement::getPriority));
+        
+        response.setImprovements(improvements);
+        response.setStrengths(strengths);
+        
+        return response;
+    }
+    
+    /**
+     * 分析提示词结构完整度
+     */
+    private int analyzeStructure(String prompt) {
+        int score = 60;
+        
+        // 检查基本长度
+        if (prompt.length() > 50) score += 5;
+        if (prompt.length() > 100) score += 10;
+        if (prompt.length() > 300) score += 10;
+        if (prompt.length() > 500) score += 5;
+        
+        // 检查是否有明确的段落分隔
+        if (prompt.contains("\n\n") || prompt.contains("。\n")) score += 5;
+        
+        // 检查是否有编号列表
+        if (prompt.matches(".*\\d+[.、].*")) score += 5;
+        
+        return Math.min(score, 100);
+    }
+    
+    /**
+     * 分析角色定义
+     */
+    private int analyzeRole(String prompt) {
+        int score = 40;
+        
+        // 中文角色关键词
+        if (prompt.contains("你是") || prompt.contains("你是一个") || prompt.contains("你是一位")) {
+            score += 20;
+        }
+        if (prompt.contains("角色") || prompt.contains("身份") || prompt.contains("扮演")) {
+            score += 15;
+        }
+        if (prompt.contains("专家") || prompt.contains("助手") || prompt.contains("顾问")) {
+            score += 10;
+        }
+        if (prompt.contains("具备") || prompt.contains("拥有") || prompt.contains("擅长")) {
+            score += 10;
+        }
+        
+        // 英文角色关键词
+        if (prompt.toLowerCase().contains("you are") || prompt.toLowerCase().contains("you act as")) {
+            score += 20;
+        }
+        if (prompt.toLowerCase().contains("expert") || prompt.toLowerCase().contains("assistant")) {
+            score += 10;
+        }
+        
+        return Math.min(score, 100);
+    }
+    
+    /**
+     * 分析任务清晰度
+     */
+    private int analyzeTask(String prompt) {
+        int score = 40;
+        
+        // 中文任务关键词
+        if (prompt.contains("请") || prompt.contains("帮我") || prompt.contains("需要")) {
+            score += 15;
+        }
+        if (prompt.contains("任务") || prompt.contains("目标") || prompt.contains("目的")) {
+            score += 10;
+        }
+        if (prompt.contains("生成") || prompt.contains("创建") || prompt.contains("编写")) {
+            score += 10;
+        }
+        if (prompt.contains("分析") || prompt.contains("处理") || prompt.contains("计算")) {
+            score += 10;
+        }
+        
+        // 英文任务关键词
+        if (prompt.toLowerCase().contains("please") || prompt.toLowerCase().contains("help me") || prompt.toLowerCase().contains("i need")) {
+            score += 15;
+        }
+        if (prompt.toLowerCase().contains("generate") || prompt.toLowerCase().contains("create") || prompt.toLowerCase().contains("write")) {
+            score += 10;
+        }
+        
+        return Math.min(score, 100);
+    }
+    
+    /**
+     * 分析约束条件
+     */
+    private int analyzeConstraint(String prompt) {
+        int score = 40;
+        
+        // 中文约束关键词
+        if (prompt.contains("不能") || prompt.contains("不要") || prompt.contains("避免")) {
+            score += 15;
+        }
+        if (prompt.contains("必须") || prompt.contains("需要") || prompt.contains("应该")) {
+            score += 10;
+        }
+        if (prompt.contains("限制") || prompt.contains("约束") || prompt.contains("范围")) {
+            score += 10;
+        }
+        if (prompt.contains("只") || prompt.contains("仅") || prompt.contains("不超过")) {
+            score += 10;
+        }
+        
+        // 英文约束关键词
+        if (prompt.toLowerCase().contains("don't") || prompt.toLowerCase().contains("must not") || prompt.toLowerCase().contains("avoid")) {
+            score += 15;
+        }
+        if (prompt.toLowerCase().contains("must") || prompt.toLowerCase().contains("should") || prompt.toLowerCase().contains("need to")) {
+            score += 10;
+        }
+        if (prompt.toLowerCase().contains("limit") || prompt.toLowerCase().contains("only") || prompt.toLowerCase().contains("maximum")) {
+            score += 10;
+        }
+        
+        return Math.min(score, 100);
+    }
+    
+    /**
+     * 分析输出格式
+     */
+    private int analyzeOutput(String prompt) {
+        int score = 40;
+        
+        // 中文格式关键词
+        if (prompt.contains("格式") || prompt.contains("输出") || prompt.contains("返回")) {
+            score += 15;
+        }
+        if (prompt.contains("JSON") || prompt.contains("json") || prompt.contains("Markdown") || prompt.contains("markdown")) {
+            score += 15;
+        }
+        if (prompt.contains("列表") || prompt.contains("表格") || prompt.contains("按照")) {
+            score += 10;
+        }
+        if (prompt.contains("包含") || prompt.contains("包括") || prompt.contains("字段")) {
+            score += 10;
+        }
+        
+        // 英文格式关键词
+        if (prompt.toLowerCase().contains("format") || prompt.toLowerCase().contains("output") || prompt.toLowerCase().contains("return")) {
+            score += 15;
+        }
+        if (prompt.toLowerCase().contains("json") || prompt.toLowerCase().contains("markdown") || prompt.toLowerCase().contains("md")) {
+            score += 15;
+        }
+        if (prompt.toLowerCase().contains("list") || prompt.toLowerCase().contains("table") || prompt.toLowerCase().contains("array")) {
             score += 10;
         }
         

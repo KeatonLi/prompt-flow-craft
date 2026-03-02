@@ -50,6 +50,61 @@
               <span v-if="loading" class="loading-spinner"></span>
               {{ loading ? '优化中...' : '开始优化' }}
             </button>
+            
+            <button 
+              class="analyze-btn"
+              :disabled="analyzing || !originalPrompt.trim()"
+              @click="analyzePrompt"
+            >
+              <span v-if="analyzing" class="loading-spinner"></span>
+              {{ analyzing ? '分析中...' : '🔍 质量分析' }}
+            </button>
+          </div>
+          
+          <!-- 质量分析结果 -->
+          <div v-if="analysisResult" class="analysis-section">
+            <div class="analysis-header">
+              <h3>📊 质量分析报告</h3>
+              <span class="score-badge" :class="analysisResult.scoreLevel">{{ analysisResult.totalScore }}分 - {{ analysisResult.scoreLevel }}</span>
+            </div>
+            
+            <div class="score-grid">
+              <div class="score-item">
+                <div class="score-name">结构完整度</div>
+                <div class="score-bar"><div class="score-fill" :style="{width: analysisResult.structureScore + '%'}"></div></div>
+                <div class="score-num">{{ analysisResult.structureScore }}</div>
+              </div>
+              <div class="score-item">
+                <div class="score-name">角色定义</div>
+                <div class="score-bar"><div class="score-fill" :style="{width: analysisResult.roleScore + '%'}"></div></div>
+                <div class="score-num">{{ analysisResult.roleScore }}</div>
+              </div>
+              <div class="score-item">
+                <div class="score-name">任务清晰度</div>
+                <div class="score-bar"><div class="score-fill" :style="{width: analysisResult.taskScore + '%'}"></div></div>
+                <div class="score-num">{{ analysisResult.taskScore }}</div>
+              </div>
+              <div class="score-item">
+                <div class="score-name">约束条件</div>
+                <div class="score-bar"><div class="score-fill" :style="{width: analysisResult.constraintScore + '%'}"></div></div>
+                <div class="score-num">{{ analysisResult.constraintScore }}</div>
+              </div>
+              <div class="score-item">
+                <div class="score-name">输出格式</div>
+                <div class="score-bar"><div class="score-fill" :style="{width: analysisResult.outputScore + '%'}"></div></div>
+                <div class="score-num">{{ analysisResult.outputScore }}</div>
+              </div>
+            </div>
+            
+            <div v-if="analysisResult.strengths && analysisResult.strengths.length" class="strengths">
+              <h4>✨ 优点</h4>
+              <ul><li v-for="s in analysisResult.strengths" :key="s">{{ s }}</li></ul>
+            </div>
+            
+            <div v-if="analysisResult.improvements && analysisResult.improvements.length" class="improvements">
+              <h4>💡 改进建议</h4>
+              <ul><li v-for="imp in analysisResult.improvements" :key="imp.category + imp.suggestion"><strong>{{ imp.category }}:</strong> {{ imp.suggestion }}</li></ul>
+            </div>
           </div>
 
           <!-- 结果展示 -->
@@ -174,6 +229,28 @@ const result = ref(null)
 const activeTab = ref('optimized')
 const copied = ref(false)
 const showExportMenu = ref(false)
+const analyzing = ref(false)
+const analysisResult = ref(null)
+
+const analyzePrompt = async () => {
+  analyzing.value = true
+  analysisResult.value = null
+  try {
+    const response = await fetch(`${API}/prompt/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: originalPrompt.value })
+    })
+    const data = await response.json()
+    if (data.code === 200) {
+      analysisResult.value = data.data
+    }
+  } catch (e) {
+    console.error('分析失败:', e)
+  } finally {
+    analyzing.value = false
+  }
+}
 
 function toggleExportMenu() {
   showExportMenu.value = !showExportMenu.value
@@ -435,6 +512,123 @@ onUnmounted(() => {
 .optimize-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.analyze-btn {
+  margin-left: 12px;
+  padding: 14px 28px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.analyze-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.analyze-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 分析结果区域 */
+.analysis-section {
+  margin-top: 20px;
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.analysis-header h3 {
+  margin: 0;
+  color: #1f2937;
+}
+
+.score-badge {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.score-badge.优秀 { background: #d1fae5; color: #065f46; }
+.score-badge.良好 { background: #dbeafe; color: #1e40af; }
+.score-badge.一般 { background: #fef3c7; color: #92400e; }
+.score-badge.较差 { background: #fee2e2; color: #991b1b; }
+
+.score-grid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.score-item {
+  display: grid;
+  grid-template-columns: 100px 1fr 40px;
+  align-items: center;
+  gap: 12px;
+}
+
+.score-name {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.score-bar {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #6366f1);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.score-num {
+  font-weight: 600;
+  color: #6b7280;
+  text-align: right;
+}
+
+.strengths, .improvements {
+  margin-top: 16px;
+}
+
+.strengths h4, .improvements h4 {
+  margin: 0 0 10px;
+  color: #1f2937;
+}
+
+.strengths ul, .improvements ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.strengths li, .improvements li {
+  margin: 6px 0;
+  color: #4b5563;
+  line-height: 1.5;
 }
 
 .loading-spinner {
