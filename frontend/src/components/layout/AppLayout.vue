@@ -15,6 +15,10 @@
           <span class="nav-icon">💡</span>
           <span>提示词大全</span>
         </router-link>
+        <router-link to="/template-market" class="nav-link" :class="{ active: $route.path === '/template-market' }">
+          <span class="nav-icon">📦</span>
+          <span>模板市场</span>
+        </router-link>
         <router-link to="/optimize" class="nav-link" :class="{ active: $route.path === '/optimize' }">
           <span class="nav-icon">✨</span>
           <span>优化器</span>

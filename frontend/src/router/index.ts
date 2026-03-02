@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import About from '../views/About.vue'
 import Templates from '../views/Templates.vue'
+import TemplateMarket from '../views/TemplateMarket.vue'
 import Popular from '../views/Popular.vue'
 import Favorites from '../views/Favorites.vue'
 import Settings from '../views/Settings.vue'
@@ -22,6 +23,11 @@ const routes = [
     path: '/templates',
     name: 'Templates',
     component: Templates
+  },
+  {
+    path: '/template-market',
+    name: 'TemplateMarket',
+    component: TemplateMarket
   },
   {
     path: '/popular',
