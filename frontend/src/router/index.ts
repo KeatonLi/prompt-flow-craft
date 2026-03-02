@@ -18,6 +18,7 @@ import PromptPlayground from '../views/PromptPlayground.vue'
 import PromptStyleTransfer from '../views/PromptStyleTransfer.vue'
 import Statistics from '../views/Statistics.vue'
 import PromptVariants from '../views/PromptVariants.vue'
+import TemplateEditor from '../views/TemplateEditor.vue'
 
 const routes = [
   {
@@ -114,6 +115,11 @@ const routes = [
     path: '/variants',
     name: 'PromptVariants',
     component: PromptVariants
+  },
+  {
+    path: '/template-editor',
+    name: 'TemplateEditor',
+    component: TemplateEditor
   }
 ]
 
