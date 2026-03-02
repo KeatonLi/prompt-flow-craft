@@ -129,7 +129,7 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     /**
      * 统计有点赞的记录数量
      */
-    long countByLikeCountGreaterThan(int likeCount);
+//     long countByLikeCountGreaterThan(int likeCount);
 
     /**
      * 查询需要自动打标签的提示词（未打过标签的）
@@ -155,19 +155,19 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
      * 统计今日创建的提示词数量
      */
 //     @Query("SELECT COUNT(p) FROM PromptCache p WHERE CAST(p.createdAt AS java.time.LocalDate) = CURRENT_DATE")
-    long countToday();
+//     long countToday();
     
     /**
      * 统计本周创建的提示词数量
      */
 //     @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.createdAt >= CURRENT_DATE - 7")
-    long countThisWeek();
+//     long countThisWeek();
     
     /**
      * 统计本月创建的提示词数量
      */
 //    @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.createdAt >= CURRENT_DATE - 30")
-    long countThisMonth();
+//     long countThisMonth();
     
     /**
      * 统计总点赞数
@@ -179,7 +179,7 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
      * 统计有评分的记录数
      */
     @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.ratingCount > 0")
-    long countRated();
+//     long countRated();
     
     /**
      * 统计平均评分
