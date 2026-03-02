@@ -19,6 +19,7 @@ import PromptStyleTransfer from '../views/PromptStyleTransfer.vue'
 import Statistics from '../views/Statistics.vue'
 import PromptVariants from '../views/PromptVariants.vue'
 import TemplateEditor from '../views/TemplateEditor.vue'
+import StructureAnalyzer from '../views/StructureAnalyzer.vue'
 
 const routes = [
   {
@@ -120,6 +121,11 @@ const routes = [
     path: '/template-editor',
     name: 'TemplateEditor',
     component: TemplateEditor
+  },
+  {
+    path: '/structure-analyzer',
+    name: 'StructureAnalyzer',
+    component: StructureAnalyzer
   }
 ]
 

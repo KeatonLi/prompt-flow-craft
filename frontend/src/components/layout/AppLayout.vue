@@ -55,6 +55,10 @@
           <span class="nav-icon">🔍</span>
           <span>质量检查</span>
         </router-link>
+        <router-link to="/structure-analyzer" class="nav-link" :class="{ active: $route.path === '/structure-analyzer' }">
+          <span class="nav-icon">🏗️</span>
+          <span>结构分析</span>
+        </router-link>
         <router-link to="/playground" class="nav-link" :class="{ active: $route.path === '/playground' }">
           <span class="nav-icon">🧪</span>
           <span>测试场</span>
