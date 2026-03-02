@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 SERVER_HOST="111.231.107.210"          # 服务器IP地址
 SERVER_USER="root"                    # SSH用户名
 SERVER_PORT="22"                      # SSH端口
-SSH_KEY_PATH="~/.ssh/github_actions_key"          # SSH私钥路径
+SSH_KEY_PATH="~/.ssh/id_ed25519"          # SSH私钥路径
 REMOTE_DIR="/opt/prompt-flow-craft"   # 服务器部署目录
 
 # 检查配置

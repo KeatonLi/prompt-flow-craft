@@ -87,10 +87,22 @@
             <div v-if="activeTab === 'optimized'" class="optimized-content">
               <div class="result-header">
                 <span>优化后的提示词</span>
-                <button class="copy-btn" @click="copyOptimized">
-                  <span v-if="copied">✓ 已复制</span>
-                  <span v-else>📋 复制</span>
-                </button>
+                <div class="result-actions">
+                  <div class="export-dropdown">
+                    <button class="copy-btn export-btn" @click="toggleExportMenu">
+                      📥 导出
+                    </button>
+                    <div v-if="showExportMenu" class="export-menu">
+                      <button @click="exportPrompt('markdown')">📝 Markdown</button>
+                      <button @click="exportPrompt('json')">{} JSON</button>
+                      <button @click="exportPrompt('txt')">📄 文本</button>
+                    </div>
+                  </div>
+                  <button class="copy-btn" @click="copyOptimized">
+                    <span v-if="copied">✓ 已复制</span>
+                    <span v-else>📋 复制</span>
+                  </button>
+                </div>
               </div>
               <pre class="result-text">{{ result.optimizedPrompt }}</pre>
             </div>
@@ -146,7 +158,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AppLayout from '../components/layout/AppLayout.vue'
 
@@ -161,6 +173,53 @@ const loading = ref(false)
 const result = ref(null)
 const activeTab = ref('optimized')
 const copied = ref(false)
+const showExportMenu = ref(false)
+
+function toggleExportMenu() {
+  showExportMenu.value = !showExportMenu.value
+}
+
+function exportPrompt(format) {
+  showExportMenu.value = false
+  const timestamp = new Date().toISOString().slice(0, 10)
+  let content = ''
+  let filename = `optimized-prompt-${timestamp}`
+  let mimeType = 'text/plain'
+  
+  if (format === 'markdown') {
+    content = `# AI 提示词（优化版）\n\n${result.value.optimizedPrompt}\n\n---\n*由 Prompt Flow Craft 生成*`
+    filename += '.md'
+    mimeType = 'text/markdown'
+  } else if (format === 'json') {
+    const exportData = {
+      prompt: result.value.optimizedPrompt,
+      originalPrompt: originalPrompt.value,
+      scoreBefore: result.value.scoreBefore,
+      scoreAfter: result.value.scoreAfter,
+      optimizationType: optimizationType.value,
+      generatedAt: new Date().toISOString()
+    }
+    content = JSON.stringify(exportData, null, 2)
+    filename += '.json'
+    mimeType = 'application/json'
+  } else {
+    content = result.value.optimizedPrompt
+    filename += '.txt'
+  }
+  
+  const blob = new Blob([content], { type: mimeType })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+  
+  copied.value = true
+  setTimeout(() => { copied.value = false }, 2000)
+}
 
 const optimizePrompt = async () => {
   if (!originalPrompt.value.trim() || loading.value) return
@@ -223,6 +282,21 @@ const useOptimized = () => {
     query: { usePrompt: result.value?.optimizedPrompt }
   })
 }
+
+function handleClickOutside(event) {
+  const target = event.target
+  if (!target.closest('.export-dropdown')) {
+    showExportMenu.value = false
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>
@@ -506,6 +580,57 @@ const useOptimized = () => {
 .copy-btn:hover {
   background: #e2e8f0;
   color: #8b5cf6;
+}
+
+.export-dropdown {
+  position: relative;
+}
+
+.export-btn {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%) !important;
+  color: white !important;
+}
+
+.export-btn:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%) !important;
+}
+
+.export-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  min-width: 140px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.export-menu button {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 0.85rem;
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-menu button:hover {
+  background: #f1f5f9;
+  color: #8b5cf6;
+}
+
+.result-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .result-text {

@@ -137,6 +137,23 @@
           <span v-if="isStreaming" class="typing-cursor">|</span>
         </h3>
         <div class="result-actions">
+          <div class="export-dropdown">
+            <button class="btn btn-sm btn-export" @click="toggleExportMenu" :disabled="isStreaming">
+              <span>📥</span>
+              导出
+            </button>
+            <div v-if="showExportMenu" class="export-menu">
+              <button @click="exportPrompt('markdown')">
+                <span>📝</span> Markdown (.md)
+              </button>
+              <button @click="exportPrompt('json')">
+                <span>{}</span> JSON (.json)
+              </button>
+              <button @click="exportPrompt('txt')">
+                <span>📄</span> 纯文本 (.txt)
+              </button>
+            </div>
+          </div>
           <button class="btn btn-sm btn-copy" @click="copyResult" :disabled="isStreaming">
             <span>📋</span>
             复制
@@ -171,6 +188,7 @@ const displayedResult = ref('');  // 用于流式展示的结果
 const showResult = ref(false);
 const isStreaming = ref(false);
 const cancelStream = ref<(() => void) | null>(null);
+const showExportMenu = ref(false);
 
 const form = ref<PromptRequest>({
   taskDescription: '',
@@ -344,6 +362,64 @@ async function copyResult() {
   }
 }
 
+function toggleExportMenu() {
+  showExportMenu.value = !showExportMenu.value;
+}
+
+function exportPrompt(format: 'markdown' | 'json' | 'txt') {
+  showExportMenu.value = false;
+  
+  const timestamp = new Date().toISOString().slice(0, 10);
+  let content = '';
+  let filename = `prompt-${timestamp}`;
+  let mimeType = 'text/plain';
+  
+  if (format === 'markdown') {
+    content = `# AI 提示词\n\n${result.value}\n\n---\n*由 Prompt Flow Craft 生成*\n`;
+    filename += '.md';
+    mimeType = 'text/markdown';
+  } else if (format === 'json') {
+    const exportData = {
+      prompt: result.value,
+      metadata: {
+        generatedAt: new Date().toISOString(),
+        taskDescription: form.value.taskDescription,
+        targetAudience: form.value.targetAudience,
+        outputFormat: form.value.outputFormat,
+        tone: form.value.tone,
+        length: form.value.length
+      }
+    };
+    content = JSON.stringify(exportData, null, 2);
+    filename += '.json';
+    mimeType = 'application/json';
+  } else {
+    content = result.value;
+    filename += '.txt';
+  }
+  
+  // 创建下载
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  
+  showToast(`已导出为 ${format.toUpperCase()} 格式`, 'success');
+}
+
+// 点击外部关闭导出菜单
+function handleClickOutside(event: MouseEvent) {
+  const target = event.target as HTMLElement;
+  if (!target.closest('.export-dropdown')) {
+    showExportMenu.value = false;
+  }
+}
+
 // 显示提示消息
 function showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
   const toast = document.createElement('div');
@@ -430,10 +506,12 @@ onMounted(() => {
   }
 
   window.addEventListener('reuse-history', handleReuseHistory);
+  window.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
   window.removeEventListener('reuse-history', handleReuseHistory);
+  window.removeEventListener('click', handleClickOutside);
   if (cancelStream.value) {
     cancelStream.value();
   }
@@ -755,6 +833,66 @@ onUnmounted(() => {
 .btn-clear:hover {
   background: #e2e8f0 !important;
   color: #475569 !important;
+}
+
+/* 导出下拉菜单 */
+.export-dropdown {
+  position: relative;
+}
+
+.btn-export {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.btn-export:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%) !important;
+}
+
+.export-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  min-width: 160px;
+  z-index: 100;
+  overflow: hidden;
+  animation: dropdownFade 0.2s ease;
+}
+
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.export-menu button {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 0.85rem;
+  color: #374151;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.15s;
+}
+
+.export-menu button:hover {
+  background: #f1f5f9;
+  color: #4f46e5;
 }
 
 .result-content {
