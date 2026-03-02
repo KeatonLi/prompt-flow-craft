@@ -54,14 +54,23 @@ const gridRef = ref(null)
 const API = 'http://111.231.107.210:8080/api'
 
 const loadData = async (reset = false) => {
-  if (pending.value) return
+  console.log('[Templates] loadData called, reset:', reset, 'pending:', pending.value)
+  if (pending.value) {
+    console.log('[Templates] Returning early - pending is true')
+    return
+  }
   pending.value = true
   
   try {
     const p = reset ? 1 : page.value
-    const r = await fetch(`${API}/history/recent?page=${p}&limit=${size.value}`)
+    const url = `${API}/history/recent?page=${p}&limit=${size.value}`
+    console.log('[Templates] Fetching URL:', url)
+    const r = await fetch(url)
+    console.log('[Templates] Response status:', r.status, 'ok:', r.ok)
     const d = await r.json()
+    console.log('[Templates] Response data:', d)
     const newList = d.data?.list || d.data || []
+    console.log('[Templates] newList length:', newList.length)
     
     if (reset) {
       list.value = newList
@@ -69,11 +78,15 @@ const loadData = async (reset = false) => {
       list.value = [...list.value, ...newList]
     }
     hasMore.value = newList.length >= size.value
-  } catch (e) { console.error(e) }
+    console.log('[Templates] list updated, total:', list.value.length, 'hasMore:', hasMore.value)
+  } catch (e) { 
+    console.error('[Templates] Error:', e) 
+  }
   pending.value = false
 }
 
 onMounted(() => {
+  console.log('[Templates] onMounted called')
   loadData(true)
   
   // 滚动加载

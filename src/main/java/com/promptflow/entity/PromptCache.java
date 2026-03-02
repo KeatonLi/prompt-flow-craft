@@ -36,6 +36,7 @@ public class PromptCache {
     private String length;
     
     @Column(name = "generated_prompt", columnDefinition = "TEXT")
+    @Basic(fetch = FetchType.LAZY)
     private String generatedPrompt;
     
     @Column(name = "prompt_summary", length = 500)
