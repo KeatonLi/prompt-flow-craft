@@ -215,6 +215,9 @@ export default {
         
         this.result = generatedPrompt
         this.$message.success('提示词生成成功！')
+        
+        // 刷新历史记录
+        this.$refs.historySidebar?.loadHistory()
       } catch (error) {
         
         this.$message.error('生成提示词失败，请稍后重试')

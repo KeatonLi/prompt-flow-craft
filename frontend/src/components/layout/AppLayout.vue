@@ -11,6 +11,10 @@
           <span class="nav-icon">🏠</span>
           <span>首页</span>
         </router-link>
+        <router-link to="/templates" class="nav-link" :class="{ active: $route.path === '/templates' }">
+          <span class="nav-icon">📚</span>
+          <span>模板</span>
+        </router-link>
         <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
           <span class="nav-icon">ℹ️</span>
           <span>关于</span>
