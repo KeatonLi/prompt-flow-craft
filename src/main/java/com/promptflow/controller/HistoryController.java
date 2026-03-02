@@ -32,6 +32,8 @@ public class HistoryController {
     @Autowired
     private PromptClassificationService classificationService;
     
+    private static final int PROMPT_PREVIEW_LENGTH = 50;
+    
     /**
      * 获取所有历史记录
      */
@@ -40,7 +42,7 @@ public class HistoryController {
         try {
             List<PromptCache> historyList = promptHistoryService.getAllHistory();
             List<HistoryResponse> responseList = historyList.stream()
-                .map(this::convertToHistoryResponse)
+                .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
             
             Map<String, Object> response = new HashMap<>();
@@ -66,7 +68,7 @@ public class HistoryController {
         try {
             List<PromptCache> historyList = promptHistoryService.getRecentHistory(limit);
             List<HistoryResponse> responseList = historyList.stream()
-                .map(this::convertToHistoryResponse)
+                .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
             
             Map<String, Object> response = new HashMap<>();
@@ -92,7 +94,7 @@ public class HistoryController {
             Optional<PromptCache> historyOptional = promptHistoryService.getHistoryById(id);
             
             if (historyOptional.isPresent()) {
-                HistoryResponse response = convertToHistoryResponse(historyOptional.get());
+                HistoryResponse response = convertToHistoryResponse(historyOptional.get(), false);
                 
                 Map<String, Object> responseMap = new HashMap<>();
                 responseMap.put("success", true);
@@ -122,7 +124,7 @@ public class HistoryController {
         try {
             List<PromptCache> historyList = promptHistoryService.searchHistory(keyword);
             List<HistoryResponse> responseList = historyList.stream()
-                .map(this::convertToHistoryResponse)
+                .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
             
             Map<String, Object> response = new HashMap<>();
@@ -142,8 +144,15 @@ public class HistoryController {
     
     /**
      * 将PromptCache实体转换为HistoryResponse DTO
+     * @param promptCache 提示词缓存实体
+     * @param isPreview 是否预览模式（预览模式只返回前50个字符）
      */
-    private HistoryResponse convertToHistoryResponse(PromptCache promptCache) {
+    private HistoryResponse convertToHistoryResponse(PromptCache promptCache, boolean isPreview) {
+        String generatedPrompt = promptCache.getGeneratedPrompt();
+        if (isPreview && generatedPrompt != null && generatedPrompt.length() > PROMPT_PREVIEW_LENGTH) {
+            generatedPrompt = generatedPrompt.substring(0, PROMPT_PREVIEW_LENGTH) + "...";
+        }
+        
         HistoryResponse response = new HistoryResponse(
             promptCache.getId(),
             promptCache.getTaskDescription(),
@@ -153,7 +162,7 @@ public class HistoryController {
             promptCache.getExamples(),
             promptCache.getTone(),
             promptCache.getLength(),
-            promptCache.getGeneratedPrompt(),
+            generatedPrompt,
             promptCache.getCreatedAt(),
             promptCache.getHitCount()
         );
@@ -209,7 +218,7 @@ public class HistoryController {
         try {
             PagedResult<PromptCache> result = promptHistoryService.getHistoryPage(request);
             List<HistoryResponse> responseList = result.getList().stream()
-                .map(this::convertToHistoryResponse)
+                .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
 
             Map<String, Object> response = new HashMap<>();
@@ -238,7 +247,7 @@ public class HistoryController {
         try {
             List<PromptCache> historyList = promptHistoryService.getHistoryByCategory(categoryId);
             List<HistoryResponse> responseList = historyList.stream()
-                .map(this::convertToHistoryResponse)
+                .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
 
             Map<String, Object> response = new HashMap<>();
@@ -266,7 +275,7 @@ public class HistoryController {
         try {
             PagedResult<PromptCache> result = promptHistoryService.getTopLikedPromptsPage(page, size);
             List<HistoryResponse> responseList = result.getList().stream()
-                .map(this::convertToHistoryResponse)
+                .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
 
             Map<String, Object> response = new HashMap<>();

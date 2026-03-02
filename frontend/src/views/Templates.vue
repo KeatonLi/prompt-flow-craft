@@ -17,7 +17,7 @@
           <div v-else class="cards-grid">
             <div v-for="item in list" :key="item.id" class="prompt-card" @click="open(item)">
               <div class="card-task">{{ item.taskDescription?.substring(0, 50) }}{{ item.taskDescription?.length > 50 ? '...' : '' }}</div>
-              <div class="card-result">{{ item.generatedPrompt?.substring(0, 60) }}...</div>
+              <div class="card-result">{{ item.generatedPrompt?.substring(0, 30) }}...</div>
               <div class="card-tags">
                 <span v-for="t in item.tags" :key="t.id" class="tag" :style="{background: t.color+'20', color: t.color}">{{ t.name }}</span>
                 <span v-if="!item.tags?.length" class="tag-empty">无标签</span>
