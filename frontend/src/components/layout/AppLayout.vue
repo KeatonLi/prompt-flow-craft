@@ -15,9 +15,21 @@
           <span class="nav-icon">💡</span>
           <span>提示词大全</span>
         </router-link>
+        <router-link to="/popular" class="nav-link" :class="{ active: $route.path === '/popular' }">
+          <span class="nav-icon">🏆</span>
+          <span>热门</span>
+        </router-link>
+        <router-link to="/favorites" class="nav-link" :class="{ active: $route.path === '/favorites' }">
+          <span class="nav-icon">⭐</span>
+          <span>收藏</span>
+        </router-link>
         <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
           <span class="nav-icon">ℹ️</span>
           <span>关于</span>
+        </router-link>
+        <router-link to="/settings" class="nav-link" :class="{ active: $route.path === '/settings' }">
+          <span class="nav-icon">⚙️</span>
+          <span>设置</span>
         </router-link>
       </nav>
       <div class="navbar-actions">
