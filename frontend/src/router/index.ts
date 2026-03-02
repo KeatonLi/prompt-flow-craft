@@ -13,6 +13,7 @@ import VariableExtractor from '../views/VariableExtractor.vue'
 import PromptScore from '../views/PromptScore.vue'
 import PromptConvert from '../views/PromptConvert.vue'
 import PromptFormatter from '../views/PromptFormatter.vue'
+import QualityChecker from '../views/QualityChecker.vue'
 
 const routes = [
   {
@@ -84,6 +85,11 @@ const routes = [
     path: '/prompt-formatter',
     name: 'PromptFormatter',
     component: PromptFormatter
+  },
+  {
+    path: '/quality-checker',
+    name: 'QualityChecker',
+    component: QualityChecker
   }
 ]
 

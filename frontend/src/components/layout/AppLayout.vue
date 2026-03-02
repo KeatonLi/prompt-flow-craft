@@ -43,6 +43,10 @@
           <span class="nav-icon">✨</span>
           <span>格式化</span>
         </router-link>
+        <router-link to="/quality-checker" class="nav-link" :class="{ active: $route.path === '/quality-checker' }">
+          <span class="nav-icon">🔍</span>
+          <span>质量检查</span>
+        </router-link>
         <router-link to="/popular" class="nav-link" :class="{ active: $route.path === '/popular' }">
           <span class="nav-icon">🏆</span>
           <span>热门</span>
