@@ -15,6 +15,10 @@
           <span class="nav-icon">💡</span>
           <span>提示词大全</span>
         </router-link>
+        <router-link to="/optimize" class="nav-link" :class="{ active: $route.path === '/optimize' }">
+          <span class="nav-icon">✨</span>
+          <span>优化器</span>
+        </router-link>
         <router-link to="/popular" class="nav-link" :class="{ active: $route.path === '/popular' }">
           <span class="nav-icon">🏆</span>
           <span>热门</span>

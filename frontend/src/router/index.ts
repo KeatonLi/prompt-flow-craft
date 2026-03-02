@@ -5,6 +5,7 @@ import Templates from '../views/Templates.vue'
 import Popular from '../views/Popular.vue'
 import Favorites from '../views/Favorites.vue'
 import Settings from '../views/Settings.vue'
+import Optimize from '../views/Optimize.vue'
 
 const routes = [
   {
@@ -36,6 +37,11 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: Settings
+  },
+  {
+    path: '/optimize',
+    name: 'Optimize',
+    component: Optimize
   }
 ]
 

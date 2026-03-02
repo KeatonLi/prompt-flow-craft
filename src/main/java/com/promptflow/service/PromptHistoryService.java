@@ -184,10 +184,6 @@ public class PromptHistoryService {
     }
 
     /**
-     * 点赞提示词
-     */
-    @Transactional
-    /**
      * 点赞提示词（可多次点赞，但60秒内不能连赞）
      */
     @Transactional

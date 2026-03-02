@@ -2,6 +2,8 @@ package com.promptflow.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.promptflow.dto.ApiResponse;
+import com.promptflow.dto.OptimizeRequest;
+import com.promptflow.dto.OptimizeResponse;
 import com.promptflow.dto.PromptRequest;
 import com.promptflow.service.PromptCacheService;
 import org.slf4j.Logger;
@@ -18,10 +20,11 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api")
@@ -352,5 +355,258 @@ public class PromptController {
     @GetMapping("/health")
     public ResponseEntity<String> health() {
         return ResponseEntity.ok("Prompt Flow Craft API is running!");
+    }
+    
+    /**
+     * 优化提示词API
+     */
+    @PostMapping("/prompt/optimize")
+    public ResponseEntity<ApiResponse<OptimizeResponse>> optimizePrompt(@RequestBody OptimizeRequest request) {
+        try {
+            logger.info("Received prompt optimization request");
+            
+            if (request.getPrompt() == null || request.getPrompt().trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error(400, "提示词内容不能为空"));
+            }
+            
+            String optimizationType = request.getOptimizationType();
+            if (optimizationType == null || optimizationType.isEmpty()) {
+                optimizationType = "general";
+            }
+            
+            String targetModel = request.getTargetModel();
+            if (targetModel == null || targetModel.isEmpty()) {
+                targetModel = "general";
+            }
+            
+            // 评估原始提示词质量
+            int scoreBefore = evaluatePromptQuality(request.getPrompt());
+            
+            // 调用LLM进行优化
+            OptimizeResponse response = callLLMOptimize(request.getPrompt(), optimizationType, targetModel);
+            
+            // 评估优化后的质量
+            int scoreAfter = evaluatePromptQuality(response.getOptimizedPrompt());
+            response.setScoreBefore(scoreBefore);
+            response.setScoreAfter(scoreAfter);
+            
+            return ResponseEntity.ok(ApiResponse.success("优化完成", response));
+            
+        } catch (Exception e) {
+            logger.error("Error processing prompt optimization request", e);
+            return ResponseEntity.internalServerError()
+                .body(ApiResponse.error(500, "优化提示词时发生错误: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * 构建优化提示词的系统prompt
+     */
+    private String buildOptimizePrompt(String userPrompt, String optimizationType, String targetModel) {
+        StringBuilder promptBuilder = new StringBuilder();
+        
+        promptBuilder.append("你是一位专业的AI提示词优化专家。你的任务是根据用户的需求优化提示词。\n\n");
+        
+        promptBuilder.append("## 原始提示词\n");
+        promptBuilder.append(userPrompt).append("\n\n");
+        
+        promptBuilder.append("## 优化类型\n");
+        switch (optimizationType) {
+            case "clarity":
+                promptBuilder.append("重点：提升清晰度，让AI更准确地理解任务要求\n");
+                break;
+            case "specificity":
+                promptBuilder.append("重点：增加具体性和细节，减少模糊性\n");
+                break;
+            case "examples":
+                promptBuilder.append("重点：添加示例，让AI更好地理解期望的输出格式\n");
+                break;
+            case "structure":
+                promptBuilder.append("重点：优化结构，使提示词更有逻辑性\n");
+                break;
+            default:
+                promptBuilder.append("全面优化：提升提示词的整体质量\n");
+        }
+        
+        promptBuilder.append("\n## 目标模型\n");
+        switch (targetModel) {
+            case "gpt":
+                promptBuilder.append("针对GPT系列模型优化\n");
+                break;
+            case "claude":
+                promptBuilder.append("针对Claude模型优化\n");
+                break;
+            default:
+                promptBuilder.append("通用优化，适用于各种LLM\n");
+        }
+        
+        promptBuilder.append("\n## 输出要求\n");
+        promptBuilder.append("请按以下JSON格式返回优化结果：\n");
+        promptBuilder.append("{\n");
+        promptBuilder.append("  \"optimizedPrompt\": \"优化后的完整提示词\",\n");
+        promptBuilder.append("  \"explanation\": \"优化说明，解释你做了哪些改进及其原因\",\n");
+        promptBuilder.append("  \"improvements\": [\n");
+        promptBuilder.append("    {\n");
+        promptBuilder.append("      \"type\": \"改进类型\",\n");
+        promptBuilder.append("      \"description\": \"发现的问题\",\n");
+        promptBuilder.append("      \"suggestion\": \"改进建议\"\n");
+        promptBuilder.append("    }\n");
+        promptBuilder.append("  ]\n");
+        promptBuilder.append("}\n\n");
+        promptBuilder.append("请确保返回的是有效的JSON格式。");
+        
+        return promptBuilder.toString();
+    }
+    
+    /**
+     * 调用LLM进行提示词优化
+     */
+    private OptimizeResponse callLLMOptimize(String userPrompt, String optimizationType, String targetModel) throws Exception {
+        String systemPrompt = buildOptimizePrompt(userPrompt, optimizationType, targetModel);
+        
+        Map<String, Object> requestBody = Map.of(
+            "model", model,
+            "messages", List.of(
+                Map.of("role", "user", "content", systemPrompt)
+            ),
+            "temperature", 0.7,
+            "max_tokens", 4000
+        );
+        
+        String jsonBody = objectMapper.writeValueAsString(requestBody);
+        
+        URL url = new URL(normalizeUrl(baseUrl) + "/chat/completions");
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Authorization", "Bearer " + apiKey);
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setDoOutput(true);
+        conn.setConnectTimeout(30000);
+        conn.setReadTimeout(120000);
+        
+        try (OutputStream os = conn.getOutputStream()) {
+            os.write(jsonBody.getBytes(StandardCharsets.UTF_8));
+        }
+        
+        int responseCode = conn.getResponseCode();
+        if (responseCode != 200) {
+            BufferedReader errorReader = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
+            StringBuilder errorMsg = new StringBuilder();
+            String line;
+            while ((line = errorReader.readLine()) != null) {
+                errorMsg.append(line);
+            }
+            throw new RuntimeException("API调用失败: " + responseCode + " - " + errorMsg);
+        }
+        
+        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
+        StringBuilder response = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            response.append(line);
+        }
+        
+        // 解析响应
+        Map<String, Object> responseMap = objectMapper.readValue(response.toString(), Map.class);
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) responseMap.get("choices");
+        if (choices != null && !choices.isEmpty()) {
+            Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+            String content = (String) message.get("content");
+            
+            // 解析JSON响应
+            return parseOptimizeResponse(content);
+        }
+        
+        throw new RuntimeException("API响应格式错误");
+    }
+    
+    /**
+     * 解析LLM返回的优化结果
+     */
+    private OptimizeResponse parseOptimizeResponse(String content) {
+        try {
+            // 尝试提取JSON部分
+            Pattern jsonPattern = Pattern.compile("\\{[\\s\\S]*\\}", Pattern.MULTILINE);
+            Matcher matcher = jsonPattern.matcher(content);
+            
+            String jsonStr = content;
+            if (matcher.find()) {
+                jsonStr = matcher.group();
+            }
+            
+            Map<String, Object> result = objectMapper.readValue(jsonStr, Map.class);
+            
+            OptimizeResponse response = new OptimizeResponse();
+            response.setOptimizedPrompt((String) result.get("optimizedPrompt"));
+            response.setExplanation((String) result.get("explanation"));
+            
+            // 解析improvements
+            List<Map<String, String>> improvementsList = (List<Map<String, String>>) result.get("improvements");
+            if (improvementsList != null) {
+                List<OptimizeResponse.Improvement> improvements = new ArrayList<>();
+                for (Map<String, String> imp : improvementsList) {
+                    improvements.add(new OptimizeResponse.Improvement(
+                        imp.get("type"),
+                        imp.get("description"),
+                        imp.get("suggestion")
+                    ));
+                }
+                response.setImprovements(improvements);
+            }
+            
+            return response;
+            
+        } catch (Exception e) {
+            logger.warn("解析优化结果JSON失败，使用原始文本", e);
+            // 如果解析失败，返回原始内容
+            OptimizeResponse response = new OptimizeResponse();
+            response.setOptimizedPrompt(content);
+            response.setExplanation("优化完成，但解析详细结果时出现问题");
+            response.setImprovements(new ArrayList<>());
+            return response;
+        }
+    }
+    
+    /**
+     * 简单评估提示词质量（基于规则）
+     */
+    private int evaluatePromptQuality(String prompt) {
+        if (prompt == null || prompt.trim().isEmpty()) {
+            return 0;
+        }
+        
+        int score = 50; // 基础分数
+        
+        // 检查长度
+        if (prompt.length() > 50) score += 5;
+        if (prompt.length() > 100) score += 5;
+        if (prompt.length() > 300) score += 5;
+        
+        // 检查是否包含角色定义
+        if (prompt.contains("角色") || prompt.contains("你是") || prompt.contains("你是一个") || 
+            prompt.contains("role") || prompt.contains("You are")) {
+            score += 10;
+        }
+        
+        // 检查是否包含任务描述
+        if (prompt.contains("请") || prompt.contains("帮我") || prompt.contains("需要") ||
+            prompt.contains("Please") || prompt.contains("help") || prompt.contains("need")) {
+            score += 10;
+        }
+        
+        // 检查是否包含约束条件
+        if (prompt.contains("不能") || prompt.contains("不要") || prompt.contains("必须") ||
+            prompt.contains("不能") || prompt.contains("约束") || prompt.contains("限制")) {
+            score += 10;
+        }
+        
+        // 检查是否有输出格式要求
+        if (prompt.contains("格式") || prompt.contains("输出") || prompt.contains("返回") ||
+            prompt.contains("format") || prompt.contains("output") || prompt.contains("return")) {
+            score += 10;
+        }
+        
+        return Math.min(score, 100);
     }
 }
