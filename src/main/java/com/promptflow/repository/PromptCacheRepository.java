@@ -166,7 +166,6 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     /**
      * 统计本月创建的提示词数量
      */
-//     @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.createdAt >= CURRENT_DATE - 30")
     long countThisMonth();
     
     /**

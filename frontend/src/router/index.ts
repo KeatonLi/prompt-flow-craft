@@ -22,6 +22,7 @@ import TemplateEditor from '../views/TemplateEditor.vue'
 import StructureAnalyzer from '../views/StructureAnalyzer.vue'
 import PromptDebugger from '../views/PromptDebugger.vue'
 import PromptWorkflow from '../views/PromptWorkflow.vue'
+import PromptTranslator from '../views/PromptTranslator.vue'
 
 const routes = [
   {
@@ -138,6 +139,11 @@ const routes = [
     path: '/workflow',
     name: 'PromptWorkflow',
     component: PromptWorkflow
+  },
+  {
+    path: '/translator',
+    name: 'PromptTranslator',
+    component: PromptTranslator
   }
 ]
 
