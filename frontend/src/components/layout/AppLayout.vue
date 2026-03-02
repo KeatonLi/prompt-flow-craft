@@ -17,6 +17,25 @@
         </router-link>
       </nav>
       <div class="navbar-actions">
+        <!-- 主题切换 -->
+        <button class="theme-btn" @click="toggleTheme" :title="isDark ? '切换亮色模式' : '切换暗黑模式'">
+          <!-- 太阳图标 -->
+          <svg v-if="!isDark" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <!-- 月亮图标 -->
+          <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
         <a href="https://github.com/KeatonLi/prompt-flow-craft" target="_blank" class="action-link" title="GitHub">
           <svg class="github-icon" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
@@ -76,10 +95,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const isLeftCollapsed = ref(false);
 const isRightCollapsed = ref(false);
+const isDark = ref(false);
 
 const toggleLeft = () => {
   isLeftCollapsed.value = !isLeftCollapsed.value;
@@ -88,6 +108,20 @@ const toggleLeft = () => {
 const toggleRight = () => {
   isRightCollapsed.value = !isRightCollapsed.value;
 };
+
+const toggleTheme = () => {
+  isDark.value = !isDark.value;
+  document.documentElement.classList.toggle('dark', isDark.value);
+  localStorage.setItem('theme', isDark.value ? 'dark' : 'light');
+};
+
+onMounted(() => {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    isDark.value = true;
+    document.documentElement.classList.add('dark');
+  }
+});
 </script>
 
 <style scoped>
@@ -368,5 +402,111 @@ const toggleRight = () => {
   .sidebar-right.collapsed {
     transform: translateX(100%);
   }
+}
+
+/* 主题切换按钮 */
+.theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.theme-btn:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+/* 暗黑模式 */
+:root {
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --hover-bg: #f1f5f9;
+}
+
+:root.dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+  --hover-bg: #334155;
+}
+
+:root.dark .app-layout {
+  background: var(--bg-primary);
+}
+
+:root.dark .top-navbar {
+  background: rgba(30, 41, 59, 0.8);
+  border-bottom-color: var(--border-color);
+}
+
+:root.dark .brand-text {
+  color: #60a5fa;
+}
+
+:root.dark .nav-link {
+  color: var(--text-secondary);
+}
+
+:root.dark .nav-link:hover {
+  background: var(--hover-bg);
+  color: var(--text-primary);
+}
+
+:root.dark .nav-link.active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+:root.dark .sidebar-left,
+:root.dark .sidebar-right {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+:root.dark .sidebar-title {
+  color: var(--text-primary);
+}
+
+:root.dark .toggle-btn {
+  background: var(--hover-bg);
+  color: var(--text-secondary);
+}
+
+:root.dark .toggle-btn:hover {
+  background: #475569;
+}
+
+:root.dark .main-content {
+  background: 
+    radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+}
+
+:root.dark .theme-btn {
+  color: var(--text-secondary);
+}
+
+:root.dark .theme-btn:hover {
+  background: var(--hover-bg);
+  color: #fbbf24;
+}
+
+:root.dark .action-link:hover {
+  background: var(--hover-bg);
+  color: var(--text-primary);
 }
 </style>
