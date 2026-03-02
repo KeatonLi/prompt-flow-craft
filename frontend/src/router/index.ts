@@ -7,6 +7,7 @@ import Popular from '../views/Popular.vue'
 import Favorites from '../views/Favorites.vue'
 import Settings from '../views/Settings.vue'
 import Optimize from '../views/Optimize.vue'
+import Compare from '../views/Compare.vue'
 
 const routes = [
   {
@@ -48,6 +49,11 @@ const routes = [
     path: '/optimize',
     name: 'Optimize',
     component: Optimize
+  },
+  {
+    path: '/compare',
+    name: 'Compare',
+    component: Compare
   }
 ]
 

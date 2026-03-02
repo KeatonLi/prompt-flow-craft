@@ -23,6 +23,10 @@
           <span class="nav-icon">✨</span>
           <span>优化器</span>
         </router-link>
+        <router-link to="/compare" class="nav-link" :class="{ active: $route.path === '/compare' }">
+          <span class="nav-icon">⚖️</span>
+          <span>对比</span>
+        </router-link>
         <router-link to="/popular" class="nav-link" :class="{ active: $route.path === '/popular' }">
           <span class="nav-icon">🏆</span>
           <span>热门</span>
