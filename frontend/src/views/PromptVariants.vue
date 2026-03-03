@@ -187,12 +187,12 @@ const selectedVariant = ref(null)
 
 const variantColors = [
   'linear-gradient(135deg, #3b82f6, #1d4ed8)',
-  'linear-gradient(135deg, #8b5cf6, #6d28d9)',
-  'linear-gradient(135deg, #10b981, #059669)',
-  'linear-gradient(135deg, #f59e0b, #d97706)',
-  'linear-gradient(135deg, #ef4444, #dc2626)',
-  'linear-gradient(135deg, #ec4899, #db2777)',
-  'linear-gradient(135deg, #06b6d4, #0891b2)',
+  'linear-gradient(135deg, #60a5fa, #3b82f6)',
+  'linear-gradient(135deg, #93c5fd, #60a5fa)',
+  'linear-gradient(135deg, #2563eb, #1d4ed8)',
+  'linear-gradient(135deg, #1e40af, #1e3a8a)',
+  'linear-gradient(135deg, #1d4ed8, #1e3a8a)',
+  'linear-gradient(135deg, #3b82f6, #2563eb)',
 ]
 
 const getVariantColor = (index) => {
@@ -352,7 +352,7 @@ const resetForm = () => {
 }
 
 .banner {
-  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   padding: 36px 40px;
   text-align: center;
 }
@@ -418,8 +418,8 @@ const resetForm = () => {
 
 .prompt-textarea:focus {
   outline: none;
-  border-color: #f59e0b;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .char-info {
@@ -463,7 +463,7 @@ const resetForm = () => {
 
 .option-select:focus {
   outline: none;
-  border-color: #f59e0b;
+  border-color: #3b82f6;
 }
 
 .checkbox-group {
@@ -482,13 +482,13 @@ const resetForm = () => {
 }
 
 .checkbox-label input {
-  accent-color: #f59e0b;
+  accent-color: #3b82f6;
 }
 
 .generate-btn {
   width: 100%;
   padding: 14px 28px;
-  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -554,7 +554,7 @@ const resetForm = () => {
 
 .action-btn {
   padding: 8px 16px;
-  background: #f59e0b;
+  background: #3b82f6;
   color: white;
   border: none;
   border-radius: 8px;
@@ -599,7 +599,7 @@ const resetForm = () => {
 }
 
 .variant-card.active {
-  border-color: #f59e0b;
+  border-color: #3b82f6;
 }
 
 .variant-header {

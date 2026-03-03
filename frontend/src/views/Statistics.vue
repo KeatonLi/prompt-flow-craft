@@ -52,34 +52,18 @@
       <!-- 第二行指标 -->
       <div class="stats-cards secondary">
         <div class="stat-card">
-          <div class="stat-icon">⭐</div>
-          <div class="stat-info">
-            <div class="stat-value">{{ stats.averageRating.toFixed(1) }}</div>
-            <div class="stat-label">平均评分</div>
-          </div>
-        </div>
-        
-        <div class="stat-card">
           <div class="stat-icon">💾</div>
           <div class="stat-info">
             <div class="stat-value">{{ stats.cacheHitRate.toFixed(1) }}%</div>
             <div class="stat-label">缓存命中率</div>
           </div>
         </div>
-        
+
         <div class="stat-card">
           <div class="stat-icon">📈</div>
           <div class="stat-info">
             <div class="stat-value">{{ formatNumber(stats.monthCount) }}</div>
             <div class="stat-label">本月新增</div>
-          </div>
-        </div>
-        
-        <div class="stat-card">
-          <div class="stat-icon">💬</div>
-          <div class="stat-info">
-            <div class="stat-value">{{ formatNumber(stats.totalRatings) }}</div>
-            <div class="stat-label">评分次数</div>
           </div>
         </div>
       </div>
@@ -289,7 +273,7 @@ export default {
   height: 40px;
   margin: 0 auto 16px;
   border: 3px solid #f3f3f3;
-  border-top: 3px solid #4FC08D;
+  border-top: 3px solid #3b82f6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -322,7 +306,7 @@ export default {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-.stat-card.primary { border-left: 4px solid #4FC08D; }
+.stat-card.primary { border-left: 4px solid #3b82f6; }
 .stat-card.success { border-left: 4px solid #52c41a; }
 .stat-card.info { border-left: 4px solid #1890ff; }
 .stat-card.warning { border-left: 4px solid #faad14; }
@@ -366,7 +350,7 @@ export default {
 
 .chart-bar {
   flex: 1;
-  background: linear-gradient(180deg, #4FC08D 0%, #36a359 100%);
+  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
   border-radius: 4px 4px 0 0;
   min-height: 4px;
   position: relative;
@@ -433,7 +417,7 @@ export default {
 
 .category-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #4FC08D, #36a359);
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
   border-radius: 4px;
   transition: width 0.5s ease;
 }
@@ -463,7 +447,7 @@ export default {
 .prompt-rank {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #4FC08D, #36a359);
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
   color: white;
   border-radius: 50%;
   display: flex;
@@ -540,7 +524,7 @@ export default {
 .retry-btn {
   margin-top: 16px;
   padding: 10px 24px;
-  background: #4FC08D;
+  background: #3b82f6;
   color: white;
   border: none;
   border-radius: 8px;
@@ -549,7 +533,7 @@ export default {
 }
 
 .retry-btn:hover {
-  background: #36a359;
+  background: #1d4ed8;
 }
 
 @media (max-width: 768px) {

@@ -428,7 +428,7 @@ loadWorkflows()
 }
 
 .banner {
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   padding: 36px 40px;
   text-align: center;
 }
@@ -466,55 +466,89 @@ loadWorkflows()
 
 .empty-state {
   text-align: center;
-  padding: 60px 20px;
+  padding: 80px 40px;
   color: #94a3b8;
+  background: white;
+  border-radius: 20px;
+  border: 2px dashed #e2e8f0;
 }
 
 .empty-icon {
-  font-size: 4rem;
-  margin-bottom: 16px;
+  font-size: 5rem;
+  margin-bottom: 20px;
+  display: inline-block;
+  padding: 24px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 50%;
 }
 
 .empty-tip {
-  font-size: 0.85rem;
-  margin-top: 8px;
+  font-size: 0.95rem;
+  margin-top: 12px;
+  color: #64748b;
 }
 
 .workflows-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
 }
 
 .workflow-card {
   background: white;
-  border-radius: 14px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 24px;
   border: 1px solid #e2e8f0;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   display: flex;
-  gap: 16px;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.workflow-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .workflow-card:hover {
-  border-color: #6366f1;
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.15);
-  transform: translateY(-2px);
+  border-color: #3b82f6;
+  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.18);
+  transform: translateY(-4px);
+}
+
+.workflow-card:hover::before {
+  opacity: 1;
 }
 
 .workflow-card.recommended {
-  border-color: #10b981;
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
 }
 
 .workflow-card.recommended:hover {
-  border-color: #10b981;
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15);
+  border-color: #3b82f6;
+  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.2);
 }
 
 .workflow-icon {
-  font-size: 2.5rem;
+  font-size: 3rem;
   flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 16px;
 }
 
 .workflow-info {
@@ -575,22 +609,37 @@ loadWorkflows()
 }
 
 .step-item {
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 16px;
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border-radius: 16px;
+  padding: 20px;
   border: 1px solid #e2e8f0;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.step-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
 }
 
 .step-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .step-number {
-  font-weight: 600;
-  color: #6366f1;
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
 }
 
 .step-name-input {
@@ -614,61 +663,79 @@ loadWorkflows()
 
 /* 运行进度 */
 .run-progress {
-  padding: 20px;
+  padding: 28px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
 }
 
 .run-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .run-icon {
-  font-size: 2rem;
+  font-size: 2.5rem;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 14px;
 }
 
 .run-name {
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.3rem;
+  font-weight: 700;
   color: #1e293b;
 }
 
 .run-progress-bar {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  height: 8px;
+  overflow: hidden;
 }
 
 .run-steps {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-height: 400px;
+  max-height: 500px;
   overflow-y: auto;
 }
 
 .run-step {
   display: flex;
   gap: 16px;
-  padding: 16px;
-  border-radius: 12px;
+  padding: 20px;
+  border-radius: 14px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
+  transition: all 0.2s;
 }
 
 .run-step.active {
-  border-color: #6366f1;
-  background: #eef2ff;
+  border-color: #3b82f6;
+  background: #eff6ff;
 }
 
 .run-step.completed {
-  border-color: #10b981;
-  background: #ecfdf5;
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
 }
 
 .step-status {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 10px;
   background: #e2e8f0;
   display: flex;
   align-items: center;
@@ -679,12 +746,12 @@ loadWorkflows()
 }
 
 .run-step.completed .step-status {
-  background: #10b981;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   color: white;
 }
 
 .run-step.active .step-status {
-  background: #6366f1;
+  background: #3b82f6;
   color: white;
 }
 
@@ -700,7 +767,7 @@ loadWorkflows()
 }
 
 .step-loading {
-  color: #6366f1;
+  color: #3b82f6;
   font-size: 0.85rem;
 }
 

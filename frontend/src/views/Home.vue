@@ -430,7 +430,7 @@ export default {
 
 .title {
   font-size: 3.25rem;
-  background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #3b82f6 100%);
+  background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 50%, #60a5fa 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

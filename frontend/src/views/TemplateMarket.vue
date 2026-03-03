@@ -220,15 +220,15 @@ onMounted(() => {
 
 <style scoped>
 .page-container { min-height: 100%; background: #f8fafc; margin: -24px; }
-.banner { background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); padding: 36px 40px; text-align: center; }
+.banner { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 36px 40px; text-align: center; }
 .banner-title { font-size: 1.6rem; font-weight: 700; color: white; margin: 0 0 6px; }
 .banner-desc { color: rgba(255,255,255,0.85); font-size: 0.95rem; margin: 0; }
 
 .filter-bar { padding: 16px 40px; background: white; border-bottom: 1px solid #e2e8f0; }
 .category-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
 .cat-btn { padding: 8px 16px; font-size: 13px; border: 1px solid #e2e8f0; border-radius: 20px; background: white; color: #64748b; cursor: pointer; transition: all 0.2s; }
-.cat-btn:hover { border-color: #8b5cf6; color: #8b5cf6; }
-.cat-btn.active { background: #8b5cf6; color: white; border-color: #8b5cf6; }
+.cat-btn:hover { border-color: #3b82f6; color: #3b82f6; }
+.cat-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
 
 .content-area { padding: 24px 40px 40px; min-height: 400px; }
 .loading, .empty { text-align: center; padding: 60px 30px; color: #94a3b8; font-size: 1rem; }

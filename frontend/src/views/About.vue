@@ -134,7 +134,7 @@ import AppLayout from '../components/layout/AppLayout.vue'
 }
 
 .hero-section {
-  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   padding: 60px 40px;
   text-align: center;
 }

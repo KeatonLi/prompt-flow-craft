@@ -313,7 +313,7 @@ const clearHistory = () => {
 .banner {
   text-align: center;
   padding: 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   border-radius: 16px;
   margin-bottom: 24px;
 }
@@ -350,26 +350,29 @@ const clearHistory = () => {
 
 .input-panel,
 .output-panel {
-  background: #1e1e1e;
-  border-radius: 12px;
-  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #333;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .panel-header h3 {
   margin: 0;
   font-size: 18px;
-  color: #fff;
+  color: #1e293b;
+  font-weight: 600;
 }
 
 .quick-actions {
@@ -378,7 +381,7 @@ const clearHistory = () => {
 }
 
 .action-btn {
-  background: #333;
+  background: #e2e8f0;
   border: none;
   padding: 8px 12px;
   border-radius: 8px;
@@ -388,7 +391,7 @@ const clearHistory = () => {
 }
 
 .action-btn:hover {
-  background: #444;
+  background: #cbd5e1;
 }
 
 .action-btn:disabled {
@@ -409,11 +412,11 @@ const clearHistory = () => {
 }
 
 .prompt-input {
-  background: #2a2a2a;
-  border: 1px solid #444;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
   padding: 12px;
-  color: #fff;
+  color: #1e293b;
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
@@ -422,7 +425,7 @@ const clearHistory = () => {
 
 .prompt-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #3b82f6;
 }
 
 .prompt-input::placeholder {
@@ -456,17 +459,17 @@ const clearHistory = () => {
 .option-select {
   width: 100%;
   padding: 10px 12px;
-  background: #2a2a2a;
-  border: 1px solid #444;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  color: #fff;
+  color: #1e293b;
   font-size: 14px;
   cursor: pointer;
 }
 
 .option-select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #3b82f6;
 }
 
 .temperature-control {
@@ -479,7 +482,7 @@ const clearHistory = () => {
   flex: 1;
   height: 6px;
   -webkit-appearance: none;
-  background: #333;
+  background: #e2e8f0;
   border-radius: 3px;
   outline: none;
 }
@@ -488,7 +491,7 @@ const clearHistory = () => {
   -webkit-appearance: none;
   width: 18px;
   height: 18px;
-  background: #667eea;
+  background: #3b82f6;
   border-radius: 50%;
   cursor: pointer;
 }
@@ -496,7 +499,7 @@ const clearHistory = () => {
 .temp-value {
   min-width: 40px;
   text-align: center;
-  color: #667eea;
+  color: #3b82f6;
   font-weight: 600;
 }
 
@@ -508,7 +511,7 @@ const clearHistory = () => {
 .run-btn {
   flex: 1;
   padding: 14px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   border: none;
   border-radius: 8px;
   color: white;
@@ -549,7 +552,7 @@ const clearHistory = () => {
 .response-area {
   flex: 1;
   min-height: 300px;
-  background: #2a2a2a;
+  background: #f8fafc;
   border-radius: 8px;
   padding: 16px;
   overflow-y: auto;
@@ -567,8 +570,8 @@ const clearHistory = () => {
 .loading-spinner {
   width: 24px;
   height: 24px;
-  border: 3px solid #333;
-  border-top-color: #667eea;
+  border: 3px solid #e2e8f0;
+  border-top-color: #3b82f6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -609,7 +612,7 @@ const clearHistory = () => {
 .tips {
   margin-top: 24px;
   padding: 16px;
-  background: #2a2a2a;
+  background: #f8fafc;
   border-radius: 8px;
   text-align: left;
   width: 100%;
@@ -635,7 +638,7 @@ const clearHistory = () => {
   display: flex;
   gap: 16px;
   padding-top: 12px;
-  border-top: 1px solid #333;
+  border-top: 1px solid #e2e8f0;
   flex-wrap: wrap;
 }
 
@@ -645,7 +648,7 @@ const clearHistory = () => {
 }
 
 .history-section {
-  background: #1e1e1e;
+  background: #ffffff;
   border-radius: 12px;
   padding: 20px;
 }
@@ -659,12 +662,12 @@ const clearHistory = () => {
 
 .section-header h3 {
   margin: 0;
-  color: #fff;
+  color: #1e293b;
 }
 
 .clear-history-btn {
   background: transparent;
-  border: 1px solid #444;
+  border: 1px solid #cbd5e1;
   color: #888;
   padding: 6px 12px;
   border-radius: 6px;
@@ -673,8 +676,8 @@ const clearHistory = () => {
 }
 
 .clear-history-btn:hover {
-  background: #333;
-  color: #fff;
+  background: #e2e8f0;
+  color: #1e293b;
 }
 
 .history-list {
@@ -684,7 +687,7 @@ const clearHistory = () => {
 }
 
 .history-item {
-  background: #2a2a2a;
+  background: #f8fafc;
   border-radius: 8px;
   padding: 12px;
   cursor: pointer;
@@ -692,7 +695,7 @@ const clearHistory = () => {
 }
 
 .history-item:hover {
-  background: #333;
+  background: #e2e8f0;
 }
 
 .history-prompt {

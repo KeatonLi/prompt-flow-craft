@@ -4,25 +4,10 @@ import About from '../views/About.vue'
 import Templates from '../views/Templates.vue'
 import TemplateMarket from '../views/TemplateMarket.vue'
 import Popular from '../views/Popular.vue'
-import Favorites from '../views/Favorites.vue'
-import Settings from '../views/Settings.vue'
-import Optimize from '../views/Optimize.vue'
-import Compare from '../views/Compare.vue'
-import Community from '../views/Community.vue'
-import VariableExtractor from '../views/VariableExtractor.vue'
-import PromptScore from '../views/PromptScore.vue'
-import PromptConvert from '../views/PromptConvert.vue'
-import PromptFormatter from '../views/PromptFormatter.vue'
-import QualityChecker from '../views/QualityChecker.vue'
 import PromptPlayground from '../views/PromptPlayground.vue'
-import PromptStyleTransfer from '../views/PromptStyleTransfer.vue'
 import Statistics from '../views/Statistics.vue'
 import PromptVariants from '../views/PromptVariants.vue'
-import TemplateEditor from '../views/TemplateEditor.vue'
-import StructureAnalyzer from '../views/StructureAnalyzer.vue'
-import PromptDebugger from '../views/PromptDebugger.vue'
 import PromptWorkflow from '../views/PromptWorkflow.vue'
-import PromptTranslator from '../views/PromptTranslator.vue'
 
 const routes = [
   {
@@ -51,64 +36,9 @@ const routes = [
     component: Popular
   },
   {
-    path: '/favorites',
-    name: 'Favorites',
-    component: Favorites
-  },
-  {
-    path: '/settings',
-    name: 'Settings',
-    component: Settings
-  },
-  {
-    path: '/optimize',
-    name: 'Optimize',
-    component: Optimize
-  },
-  {
-    path: '/compare',
-    name: 'Compare',
-    component: Compare
-  },
-  {
-    path: '/community',
-    name: 'Community',
-    component: Community
-  },
-  {
-    path: '/variable-extractor',
-    name: 'VariableExtractor',
-    component: VariableExtractor
-  },
-  {
-    path: '/prompt-score',
-    name: 'PromptScore',
-    component: PromptScore
-  },
-  {
-    path: '/prompt-convert',
-    name: 'PromptConvert',
-    component: PromptConvert
-  },
-  {
-    path: '/prompt-formatter',
-    name: 'PromptFormatter',
-    component: PromptFormatter
-  },
-  {
-    path: '/quality-checker',
-    name: 'QualityChecker',
-    component: QualityChecker
-  },
-  {
     path: '/playground',
     name: 'PromptPlayground',
     component: PromptPlayground
-  },
-  {
-    path: '/style-transfer',
-    name: 'PromptStyleTransfer',
-    component: PromptStyleTransfer
   },
   {
     path: '/statistics',
@@ -121,29 +51,9 @@ const routes = [
     component: PromptVariants
   },
   {
-    path: '/template-editor',
-    name: 'TemplateEditor',
-    component: TemplateEditor
-  },
-  {
-    path: '/structure-analyzer',
-    name: 'StructureAnalyzer',
-    component: StructureAnalyzer
-  },
-  {
-    path: '/debugger',
-    name: 'PromptDebugger',
-    component: PromptDebugger
-  },
-  {
     path: '/workflow',
     name: 'PromptWorkflow',
     component: PromptWorkflow
-  },
-  {
-    path: '/translator',
-    name: 'PromptTranslator',
-    component: PromptTranslator
   }
 ]
 

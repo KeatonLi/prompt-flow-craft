@@ -99,7 +99,7 @@ onMounted(() => loadData())
 
 <style scoped>
 .page-container { min-height: 100%; background: #f8fafc; margin: -24px; }
-.popular-banner { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+.popular-banner { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
 .banner { padding: 36px 40px; text-align: center; }
 .banner-title { font-size: 1.6rem; font-weight: 700; color: white; margin: 0 0 6px; }
 .banner-desc { color: rgba(255,255,255,0.85); font-size: 0.95rem; margin: 0; }
@@ -107,7 +107,7 @@ onMounted(() => loadData())
 .loading, .empty { text-align: center; padding: 40px; color: #94a3b8; }
 .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
 .prompt-card { background: white; border-radius: 14px; padding: 18px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s; }
-.prompt-card:hover { border-color: #f59e0b; box-shadow: 0 6px 20px rgba(245,158,11,0.15); transform: translateY(-2px); }
+.prompt-card:hover { border-color: #3b82f6; box-shadow: 0 6px 20px rgba(59,130,246,0.15); transform: translateY(-2px); }
 .card-rank { margin-bottom: 8px; }
 .rank-badge { font-size: 1.2rem; }
 .card-task { font-weight: 600; color: #1e293b; font-size: 0.95rem; margin-bottom: 10px; }

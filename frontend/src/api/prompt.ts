@@ -176,16 +176,5 @@ export const promptApi = {
   health(): Promise<{ status: string }> {
     return request.get<ApiResponse<{ status: string }>>('/health')
       .then(res => res.data.data);
-  },
-
-  // 调试提示词
-  async debug(prompt: string): Promise<ApiResponse<any>> {
-    try {
-      const response = await request.post<ApiResponse<any>>('/prompt/debug', { prompt });
-      return response.data;
-    } catch (error) {
-      console.error('调试失败:', error);
-      throw error;
-    }
   }
 };
