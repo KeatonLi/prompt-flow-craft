@@ -62,16 +62,19 @@
     <!-- 操作按钮 -->
     <div class="card-actions">
       <div class="like-wrapper">
-        <button class="action-btn btn-like liked" @click.stop="handleLike">
+        <button 
+          class="action-btn btn-like" 
+          @click.stop="handleLike"
+        >
           <span class="btn-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M7 11v9a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-9M7 11V6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5M7 11H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3m11 5h3a2 2 0 0 1 2 2v4m-5-9v9"/>
             </svg>
           </span>
+          <span class="like-text">{{ likeCount > 0 ? likeCount : '点赞' }}</span>
         </button>
         <span v-if="showLikeAnimation" class="like-count">+1</span>
       </div>
-      <span class="btn-text">{{ likeCount > 0 ? likeCount : '点赞' }}</span>
       <button class="action-btn btn-reuse" @click.stop="handleReuse">
         <span class="btn-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -106,7 +109,7 @@ export default {
   },
   data() {
     return {
-      isLiked: true,
+      isLiked: false,
       likeCount: 0,
       liking: false,
       showLikeAnimation: false
@@ -117,6 +120,7 @@ export default {
       immediate: true,
       handler(newVal) {
         this.likeCount = newVal?.likeCount || 0;
+        this.isLiked = (newVal?.likeCount || 0) > 0;
       }
     }
   },
@@ -194,36 +198,22 @@ export default {
       return text.slice(0, length) + '...'
     },
     
-    async handleLike() {
-      if (this.liking) return;
-      this.liking = true;
-      try {
-        const res = await historyApi.like(this.history.id);
-        // 如果返回false说明在冷却期内
-        if (res === false) {
-          this.$message.warning('操作太频繁，请稍后再点赞');
-          this.liking = false;
-          return;
-        }
-        this.likeCount = this.likeCount + 1;
-        this.isLiked = true;
-        // 触发动画
+    handleLike() {
+      const id = this.history?.id;
+      if (!id) {
+        console.error('历史记录ID不存在');
+        return;
+      }
+      
+      historyApi.like(id).then(() => {
+        this.likeCount += 1;
         this.showLikeAnimation = true;
         setTimeout(() => {
           this.showLikeAnimation = false;
         }, 600);
-      } catch (error) {
-        const msg = error?.response?.data?.message || '';
-        if (msg.includes('频繁') || msg.includes('冷却')) {
-          this.$message.warning('操作太频繁，请稍后再点赞');
-        } else {
-          this.$message.error('操作失败，请稍后重试');
-        }
-      } finally {
-        setTimeout(() => {
-          this.liking = false;
-        }, 500);
-      }
+      }).catch(err => {
+        console.error('点赞失败:', err);
+      });
     },
     
     handleReuse() {
@@ -446,33 +436,53 @@ export default {
 
 /* 点赞按钮 */
 .btn-like {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  color: white;
+  background: transparent;
+  color: #6b7280;
   border: none;
-  padding: 8px;
-  border-radius: 50%;
+  padding: 6px 10px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .btn-like:hover {
-  transform: scale(1.1);
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
 }
 
 .btn-like:active {
-  transform: scale(0.95);
+  transform: scale(0.9);
+}
+
+.btn-like .btn-icon {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s;
+}
+
+.btn-like:hover .btn-icon {
+  transform: scale(1.15);
+}
+
+.like-text {
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .like-wrapper {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
 }
 
 .like-count {
   position: absolute;
   top: -20px;
   right: -10px;
-  color: #ef4444;
+  color: #3b82f6;
   font-weight: bold;
   font-size: 14px;
   animation: likeFloat 0.6s ease-out forwards;
