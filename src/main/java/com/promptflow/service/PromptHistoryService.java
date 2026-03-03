@@ -121,7 +121,6 @@ public class PromptHistoryService {
             page = promptCacheRepository.findByFilters(
                 request.getCategoryId(),
                 request.getKeyword(),
-                sortBy,
                 pageable
             );
         }

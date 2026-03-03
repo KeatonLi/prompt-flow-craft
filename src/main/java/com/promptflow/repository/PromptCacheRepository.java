@@ -109,15 +109,13 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     Page<PromptCache> findByTagIds(@Param("tagIds") Set<Long> tagIds, Pageable pageable);
 
     /**
-     * 综合筛选查询（分类 + 关键词 + 排序方式）
+     * 综合筛选查询（分类 + 关键词）
      */
     @Query("SELECT p FROM PromptCache p WHERE " +
            "(:categoryId IS NULL OR p.categoryId = :categoryId) AND " +
-           "(:keyword IS NULL OR p.taskDescription LIKE %:keyword% OR p.generatedPrompt LIKE %:keyword%) " +
-           "ORDER BY CASE WHEN :sortBy = 'likeCount' THEN p.likeCount ELSE 0 END DESC, p.createdAt DESC")
+           "(:keyword IS NULL OR p.taskDescription LIKE %:keyword% OR p.generatedPrompt LIKE %:keyword%)")
     Page<PromptCache> findByFilters(@Param("categoryId") Long categoryId,
                                     @Param("keyword") String keyword,
-                                    @Param("sortBy") String sortBy,
                                     Pageable pageable);
 
     /**
@@ -129,7 +127,7 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     /**
      * 统计有点赞的记录数量
      */
-//     long countByLikeCountGreaterThan(int likeCount);
+    long countByLikeCountGreaterThan(int likeCount);
 
     /**
      * 查询需要自动打标签的提示词（未打过标签的）
@@ -178,23 +176,35 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     /**
      * 统计有评分的记录数
      */
-    @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.ratingCount > 0")
-//     long countRated();
-    
+    long countByRatingCountGreaterThan(int ratingCount);
+
     /**
      * 统计平均评分
      */
     @Query("SELECT AVG(p.averageRating) FROM PromptCache p WHERE p.averageRating IS NOT NULL")
     Double getAverageRating();
+
+    /**
+     * 统计今日创建的提示词数量
+     */
+    long countByCreatedAtAfter(java.time.LocalDateTime dateTime);
+
+    /**
+     * 统计本周创建的提示词数量
+     */
+    @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.createdAt >= :dateTime")
+    long countByCreatedAtThisWeek(@Param("dateTime") java.time.LocalDateTime dateTime);
+
+    /**
+     * 统计本月创建的提示词数量
+     */
+    @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.createdAt >= :dateTime")
+    long countByCreatedAtThisMonth(@Param("dateTime") java.time.LocalDateTime dateTime);
     
     /**
      * 统计每日创建数量（最近N天）
      */
-//     @Query("SELECT CAST(p.createdAt AS string), COUNT(p) FROM PromptCache p " +
-//            "WHERE p.createdAt >= CURRENT_DATE - :days " +
-//            "GROUP BY CAST(p.createdAt AS string) " +
-//            "ORDER BY CAST(p.createdAt AS string)")
-    List<Object[]> countByDay(@Param("days") int days);
+//    List<Object[]> countByDay(@Param("days") int days);
     
     /**
      * 统计每日创建数和点赞数（最近N天）
