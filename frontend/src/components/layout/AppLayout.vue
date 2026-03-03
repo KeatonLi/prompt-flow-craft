@@ -23,46 +23,6 @@
           <span class="nav-icon">🎨</span>
           <span>变体生成</span>
         </router-link>
-        <router-link to="/optimize" class="nav-link" :class="{ active: $route.path === '/optimize' }">
-          <span class="nav-icon">✨</span>
-          <span>优化器</span>
-        </router-link>
-        <router-link to="/compare" class="nav-link" :class="{ active: $route.path === '/compare' }">
-          <span class="nav-icon">⚖️</span>
-          <span>对比</span>
-        </router-link>
-        <router-link to="/variable-extractor" class="nav-link" :class="{ active: $route.path === '/variable-extractor' }">
-          <span class="nav-icon">🔧</span>
-          <span>变量提取</span>
-        </router-link>
-        <router-link to="/template-editor" class="nav-link" :class="{ active: $route.path === '/template-editor' }">
-          <span class="nav-icon">📝</span>
-          <span>模板编辑</span>
-        </router-link>
-        <router-link to="/prompt-score" class="nav-link" :class="{ active: $route.path === '/prompt-score' }">
-          <span class="nav-icon">📊</span>
-          <span>评分</span>
-        </router-link>
-        <router-link to="/prompt-convert" class="nav-link" :class="{ active: $route.path === '/prompt-convert' }">
-          <span class="nav-icon">🔄</span>
-          <span>转换</span>
-        </router-link>
-        <router-link to="/translator" class="nav-link" :class="{ active: $route.path === '/translator' }">
-          <span class="nav-icon">🌐</span>
-          <span>翻译</span>
-        </router-link>
-        <router-link to="/prompt-formatter" class="nav-link" :class="{ active: $route.path === '/prompt-formatter' }">
-          <span class="nav-icon">✨</span>
-          <span>格式化</span>
-        </router-link>
-        <router-link to="/quality-checker" class="nav-link" :class="{ active: $route.path === '/quality-checker' }">
-          <span class="nav-icon">🔍</span>
-          <span>质量检查</span>
-        </router-link>
-        <router-link to="/structure-analyzer" class="nav-link" :class="{ active: $route.path === '/structure-analyzer' }">
-          <span class="nav-icon">🏗️</span>
-          <span>结构分析</span>
-        </router-link>
         <router-link to="/playground" class="nav-link" :class="{ active: $route.path === '/playground' }">
           <span class="nav-icon">🧪</span>
           <span>测试场</span>
@@ -71,21 +31,9 @@
           <span class="nav-icon">🏆</span>
           <span>热门</span>
         </router-link>
-        <router-link to="/community" class="nav-link" :class="{ active: $route.path === '/community' }">
-          <span class="nav-icon">🌟</span>
-          <span>社区</span>
-        </router-link>
-        <router-link to="/favorites" class="nav-link" :class="{ active: $route.path === '/favorites' }">
-          <span class="nav-icon">⭐</span>
-          <span>收藏</span>
-        </router-link>
         <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
           <span class="nav-icon">ℹ️</span>
           <span>关于</span>
-        </router-link>
-        <router-link to="/settings" class="nav-link" :class="{ active: $route.path === '/settings' }">
-          <span class="nav-icon">⚙️</span>
-          <span>设置</span>
         </router-link>
         <router-link to="/workflow" class="nav-link" :class="{ active: $route.path === '/workflow' }">
           <span class="nav-icon">🔄</span>
