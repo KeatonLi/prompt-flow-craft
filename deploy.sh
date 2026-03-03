@@ -167,12 +167,6 @@ upload_files() {
         "frontend/dist" \
         "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/frontend-dist"
 
-    # 上传 .env 配置文件
-    echo -e "${YELLOW}上传环境变量配置文件...${NC}"
-    scp -i "${SSH_KEY_PATH/#\~/$HOME}" -P "$SERVER_PORT" \
-        ".env" \
-        "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/.env"
-
     echo -e "${GREEN}文件上传完成${NC}"
 }
 
