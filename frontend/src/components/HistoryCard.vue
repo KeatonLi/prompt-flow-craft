@@ -64,16 +64,19 @@
       <div class="like-wrapper">
         <button 
           class="action-btn btn-like" 
+          :class="{ 'is-liked': likeCount > 0 }"
           @click.stop="handleLike"
         >
           <span class="btn-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M7 11v9a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-9M7 11V6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5M7 11H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h3m11 5h3a2 2 0 0 1 2 2v4m-5-9v9"/>
+            <svg viewBox="0 0 24 24" fill="currentColor" class="heart-icon">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>
           </span>
           <span class="like-text">{{ likeCount > 0 ? likeCount : '点赞' }}</span>
         </button>
-        <span v-if="showLikeAnimation" class="like-count">+1</span>
+        <div class="like-particles" v-if="showLikeAnimation">
+          <span class="particle" v-for="n in 6" :key="n">❤️</span>
+        </div>
       </div>
       <button class="action-btn btn-reuse" @click.stop="handleReuse">
         <span class="btn-icon">
@@ -210,7 +213,7 @@ export default {
         this.showLikeAnimation = true;
         setTimeout(() => {
           this.showLikeAnimation = false;
-        }, 600);
+        }, 800);
       }).catch(err => {
         console.error('点赞失败:', err);
       });
@@ -437,34 +440,57 @@ export default {
 /* 点赞按钮 */
 .btn-like {
   background: transparent;
-  color: #6b7280;
+  color: #9ca3af;
   border: none;
   padding: 6px 10px;
   border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   gap: 4px;
 }
 
 .btn-like:hover {
-  background: rgba(59, 130, 246, 0.1);
-  color: #3b82f6;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
 }
 
 .btn-like:active {
   transform: scale(0.9);
 }
 
+.btn-like.is-liked {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
 .btn-like .btn-icon {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.2s;
+  width: 18px;
+  height: 18px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-like:hover .btn-icon {
-  transform: scale(1.15);
+  transform: scale(1.2);
+}
+
+.btn-like.is-liked .heart-icon {
+  animation: heartBeat 0.6s ease-in-out;
+}
+
+.heart-icon {
+  width: 100%;
+  height: 100%;
+  transition: all 0.3s;
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.3); }
+  50% { transform: scale(0.9); }
+  75% { transform: scale(1.15); }
+  100% { transform: scale(1); }
 }
 
 .like-text {
@@ -478,25 +504,40 @@ export default {
   align-items: center;
 }
 
-.like-count {
+.like-particles {
   position: absolute;
-  top: -20px;
-  right: -10px;
-  color: #3b82f6;
-  font-weight: bold;
-  font-size: 14px;
-  animation: likeFloat 0.6s ease-out forwards;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   pointer-events: none;
 }
 
-@keyframes likeFloat {
+.particle {
+  position: absolute;
+  font-size: 12px;
+  animation: particleFly 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.particle:nth-child(1) { animation-delay: 0ms; --angle: -60deg; --distance: 30px; }
+.particle:nth-child(2) { animation-delay: 50ms; --angle: -30deg; --distance: 35px; }
+.particle:nth-child(3) { animation-delay: 100ms; --angle: 0deg; --distance: 40px; }
+.particle:nth-child(4) { animation-delay: 150ms; --angle: 30deg; --distance: 35px; }
+.particle:nth-child(5) { animation-delay: 200ms; --angle: 60deg; --distance: 30px; }
+.particle:nth-child(6) { animation-delay: 250ms; --angle: 90deg; --distance: 25px; }
+
+@keyframes particleFly {
   0% {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate(0, 0) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(calc(cos(var(--angle)) * var(--distance)), calc(sin(var(--angle)) * var(--distance) - 20px)) scale(1.2);
   }
   100% {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translate(calc(cos(var(--angle)) * var(--distance)), calc(sin(var(--angle)) * var(--distance) - 40px)) scale(0.3);
   }
 }
 

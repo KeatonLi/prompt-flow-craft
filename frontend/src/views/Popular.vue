@@ -114,6 +114,7 @@ onMounted(() => loadData())
 .card-result { font-size: 0.85rem; color: #64748b; margin-bottom: 12px; }
 .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
 .tag { font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; }
-.card-footer { display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; }
-.card-likes { color: #ef4444; }
+.card-footer { display: flex; justify-content: space-between; font-size: 0.8rem; color: #94a3b8; align-items: center; }
+.card-likes { color: #ef4444; display: flex; align-items: center; gap: 4px; }
+.card-likes::before { content: '❤️'; font-size: 0.9rem; }
 </style>

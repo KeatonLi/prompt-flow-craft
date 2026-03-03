@@ -1,0 +1,162 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
+
+      - name: Cache Node modules
+        uses: actions/cache@v3
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+        shell: bash
+
+      - name: Build and Deploy
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SSH_KEY_PATH: ~/.ssh/id_ed25519
+          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+        run: |
+          cd /home/runner/work/_temp/_work
+
+          echo "=== 检查部署配置 ==="
+          if [ -z "$SERVER_HOST" ] || [ "$SERVER_HOST" = "your_server_ip" ]; then
+            echo "错误: 请配置 SERVER_HOST secret"
+            exit 1
+          fi
+
+          echo "=== 开始构建项目 ==="
+
+          echo "构建后端..."
+          mvn clean package -DskipTests
+
+          if [ ! -f "target/prompt-flow-craft-1.0.0.jar" ]; then
+            echo "错误: 后端构建失败"
+            exit 1
+          fi
+
+          echo "构建前端..."
+          cd frontend
+          npm install
+          npm run build
+
+          if [ ! -d "dist" ]; then
+            echo "错误: 前端构建失败"
+            exit 1
+          fi
+          cd ..
+
+          echo "=== 构建完成，开始部署 ==="
+
+          echo "准备服务器环境..."
+          ssh -i "$SSH_KEY_PATH" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" << 'ENDSSH'
+set -e
+
+cd $REMOTE_DIR
+
+echo "=== 停止现有服务 ==="
+
+if [ -f "backend.pid" ]; then
+    BACKEND_PID=$(cat backend.pid)
+    if kill -0 $BACKEND_PID 2>/dev/null; then
+        kill $BACKEND_PID 2>/dev/null || true
+        sleep 2
+    fi
+    rm -f backend.pid
+fi
+
+if [ -f "frontend.pid" ]; then
+    FRONTEND_PID=$(cat frontend.pid)
+    if kill -0 $FRONTEND_PID 2>/dev/null; then
+        kill $FRONTEND_PID 2>/dev/null || true
+        sleep 1
+    fi
+    rm -f frontend.pid
+fi
+
+echo "=== 服务已停止 ==="
+ENDSSH
+
+          echo "上传文件..."
+          ssh -i "$SSH_KEY_PATH" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" "cd $REMOTE_DIR && rm -f backend.jar && rm -rf frontend-dist"
+
+          scp -i "$SSH_KEY_PATH" -P "$SERVER_PORT" \
+              "target/prompt-flow-craft-1.0.0.jar" \
+              "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/backend.jar"
+
+          scp -i "$SSH_KEY_PATH" -P "$SERVER_PORT" -r \
+              "frontend/dist" \
+              "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/frontend-dist"
+
+          echo "启动服务..."
+          ssh -i "$SSH_KEY_PATH" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" << 'ENDSSH'
+set -e
+cd $REMOTE_DIR
+
+if [ ! -f "backend.jar" ]; then
+    echo "错误: backend.jar 不存在!"
+    exit 1
+fi
+
+which serve || npm install -g serve
+
+source ./.env
+
+nohup java -jar backend.jar > backend.log 2>&1 &
+BACKEND_PID=$!
+echo $BACKEND_PID > backend.pid
+echo "后端已启动，PID: $BACKEND_PID"
+
+cd frontend-dist
+nohup serve -s . -p 3000 > ../frontend.log 2>&1 &
+FRONTEND_PID=$!
+echo $FRONTEND_PID > ../frontend.pid
+echo "前端已启动，PID: $FRONTEND_PID"
+cd ..
+
+echo "等待服务启动..."
+sleep 10
+
+echo "=== 部署完成 ==="
+ENDSSH
+
+      - name: Deployment status
+        if: success()
+        run: echo "🎉 Deployment completed successfully!"
+
+      - name: Notify failure
+        if: failure()
+        run: echo "❌ Deployment failed. Please check the logs."
