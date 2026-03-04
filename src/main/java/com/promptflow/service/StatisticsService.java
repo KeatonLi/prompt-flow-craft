@@ -32,47 +32,75 @@ public class StatisticsService {
     public UsageStatistics getUsageStatistics() {
         UsageStatistics stats = new UsageStatistics();
 
-        // 计算日期
-        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
-        LocalDateTime weekStart = LocalDate.now().minusWeeks(1).atStartOfDay();
-        LocalDateTime monthStart = LocalDate.now().minusMonths(1).atStartOfDay();
+        try {
+            // 计算日期
+            LocalDateTime todayStart = LocalDate.now().atStartOfDay();
+            LocalDateTime weekStart = LocalDate.now().minusWeeks(1).atStartOfDay();
+            LocalDateTime monthStart = LocalDate.now().minusMonths(1).atStartOfDay();
 
-        // 基础统计
-        stats.setTotalPrompts(promptCacheRepository.count());
-        stats.setTodayCount(promptCacheRepository.countByCreatedAtAfter(todayStart));
-        stats.setWeekCount(promptCacheRepository.countByCreatedAtThisWeek(weekStart));
-        stats.setMonthCount(promptCacheRepository.countByCreatedAtThisMonth(monthStart));
-        stats.setTotalLikes(promptCacheRepository.sumTotalLikes());
-        stats.setTotalRatings(promptCacheRepository.countByRatingCountGreaterThan(0));
-        
-        // 平均评分
-        Double avgRating = promptCacheRepository.getAverageRating();
-        stats.setAverageRating(avgRating != null ? Math.round(avgRating * 10) / 10.0 : 0.0);
-        
-        // 缓存命中率
-        long totalHits = promptCacheRepository.sumTotalHits();
-        long totalPrompts = promptCacheRepository.count();
-        if (totalPrompts > 0) {
-            double hitRate = (double) totalHits / (totalPrompts + totalHits) * 100;
-            stats.setCacheHitRate(Math.round(hitRate * 10) / 10.0);
-        } else {
+            // 基础统计
+            stats.setTotalPrompts(promptCacheRepository.count());
+            stats.setTodayCount(promptCacheRepository.countByCreatedAtAfter(todayStart));
+            stats.setWeekCount(promptCacheRepository.countByCreatedAtThisWeek(weekStart));
+            stats.setMonthCount(promptCacheRepository.countByCreatedAtThisMonth(monthStart));
+            stats.setTotalLikes(promptCacheRepository.sumTotalLikes());
+            stats.setTotalRatings(promptCacheRepository.countByRatingCountGreaterThan(0));
+
+            // 平均评分
+            Double avgRating = promptCacheRepository.getAverageRating();
+            stats.setAverageRating(avgRating != null ? Math.round(avgRating * 10) / 10.0 : 0.0);
+
+            // 缓存命中率
+            long totalHits = promptCacheRepository.sumTotalHits();
+            long totalPrompts = promptCacheRepository.count();
+            if (totalPrompts > 0) {
+                double hitRate = (double) totalHits / (totalPrompts + totalHits) * 100;
+                stats.setCacheHitRate(Math.round(hitRate * 10) / 10.0);
+            } else {
+                stats.setCacheHitRate(0.0);
+            }
+        } catch (Exception e) {
+            // 设置默认值
+            stats.setTotalPrompts(0L);
+            stats.setTodayCount(0L);
+            stats.setWeekCount(0L);
+            stats.setMonthCount(0L);
+            stats.setTotalLikes(0L);
+            stats.setTotalRatings(0L);
+            stats.setAverageRating(0.0);
             stats.setCacheHitRate(0.0);
         }
-        
-        // 分类统计
-        stats.setCategoryStats(getCategoryStats());
-        
-        // 每日趋势（最近30天）
-        stats.setDailyTrends(getDailyTrends(30));
-        
-        // 最热提示词（按点赞数）
-        List<PromptCache> topPrompts = promptCacheRepository.findByLikeCountGreaterThanZeroOrderByLikeCountDesc(PageRequest.of(0, 10)).getContent();
-        stats.setTopPrompts(topPrompts);
-        
-        // 最近活动
-        List<Object[]> recent = promptCacheRepository.findRecentHistorySummary(PageRequest.of(0, 10));
-        stats.setRecentActivities(convertToPromptCacheList(recent));
-        
+
+        try {
+            // 分类统计
+            stats.setCategoryStats(getCategoryStats());
+        } catch (Exception e) {
+            stats.setCategoryStats(new ArrayList<>());
+        }
+
+        try {
+            // 每日趋势（最近30天）
+            stats.setDailyTrends(getDailyTrends(30));
+        } catch (Exception e) {
+            stats.setDailyTrends(new ArrayList<>());
+        }
+
+        try {
+            // 最热提示词（按点赞数）
+            List<PromptCache> topPrompts = promptCacheRepository.findByLikeCountGreaterThanZeroOrderByLikeCountDesc(PageRequest.of(0, 10)).getContent();
+            stats.setTopPrompts(topPrompts);
+        } catch (Exception e) {
+            stats.setTopPrompts(new ArrayList<>());
+        }
+
+        try {
+            // 最近活动
+            List<Object[]> recent = promptCacheRepository.findRecentHistorySummary(PageRequest.of(0, 10));
+            stats.setRecentActivities(convertToPromptCacheList(recent));
+        } catch (Exception e) {
+            stats.setRecentActivities(new ArrayList<>());
+        }
+
         return stats;
     }
     

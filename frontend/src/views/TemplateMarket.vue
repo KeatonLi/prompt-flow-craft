@@ -123,7 +123,9 @@ const loadCategories = async () => {
   try {
     const r = await fetch(`${API}/template/categories`)
     const d = await r.json()
-    categories.value = d.data || []
+    if (d.success) {
+      categories.value = d.data || []
+    }
   } catch (e) {
     console.error('[Template] Error loading categories:', e)
   }
@@ -139,7 +141,9 @@ const loadTemplates = async () => {
     }
     const r = await fetch(url)
     const d = await r.json()
-    list.value = d.data || []
+    if (d.success) {
+      list.value = d.data || []
+    }
   } catch (e) {
     console.error('[Template] Error loading templates:', e)
   }

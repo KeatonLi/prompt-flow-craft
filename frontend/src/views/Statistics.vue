@@ -1,243 +1,252 @@
 <template>
-  <div class="statistics-page">
-    <div class="page-header">
-      <h1>📊 使用统计分析</h1>
-      <p class="subtitle">了解您的提示词创作趋势和使用情况</p>
-    </div>
-
-    <!-- 加载状态 -->
-    <div v-if="loading" class="loading">
-      <div class="spinner"></div>
-      <p>加载统计数据中...</p>
-    </div>
-
-    <!-- 统计内容 -->
-    <div v-else-if="stats" class="stats-content">
-      
-      <!-- 核心指标卡片 -->
-      <div class="stats-cards">
-        <div class="stat-card primary">
-          <div class="stat-icon">📝</div>
-          <div class="stat-info">
-            <div class="stat-value">{{ formatNumber(stats.totalPrompts) }}</div>
-            <div class="stat-label">总提示词数</div>
-          </div>
-        </div>
-        
-        <div class="stat-card success">
-          <div class="stat-icon">✨</div>
-          <div class="stat-info">
-            <div class="stat-value">{{ formatNumber(stats.todayCount) }}</div>
-            <div class="stat-label">今日新增</div>
-          </div>
-        </div>
-        
-        <div class="stat-card info">
-          <div class="stat-icon">📅</div>
-          <div class="stat-info">
-            <div class="stat-value">{{ formatNumber(stats.weekCount) }}</div>
-            <div class="stat-label">本周新增</div>
-          </div>
-        </div>
-        
-        <div class="stat-card warning">
-          <div class="stat-icon">❤️</div>
-          <div class="stat-info">
-            <div class="stat-value">{{ formatNumber(stats.totalLikes) }}</div>
-            <div class="stat-label">总点赞数</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 第二行指标 -->
-      <div class="stats-cards secondary">
-        <div class="stat-card">
-          <div class="stat-icon">💾</div>
-          <div class="stat-info">
-            <div class="stat-value">{{ stats.cacheHitRate.toFixed(1) }}%</div>
-            <div class="stat-label">缓存命中率</div>
-          </div>
+  <AppLayout>
+    <template #main>
+      <div class="statistics-page">
+        <div class="page-header">
+          <h1>📊 使用统计分析</h1>
+          <p class="subtitle">了解您的提示词创作趋势和使用情况</p>
         </div>
 
-        <div class="stat-card">
-          <div class="stat-icon">📈</div>
-          <div class="stat-info">
-            <div class="stat-value">{{ formatNumber(stats.monthCount) }}</div>
-            <div class="stat-label">本月新增</div>
-          </div>
+        <!-- 加载状态 -->
+        <div v-if="loading" class="loading">
+          <div class="spinner"></div>
+          <p>加载统计数据中...</p>
         </div>
-      </div>
 
-      <!-- 趋势图表 -->
-      <div class="chart-section">
-        <h2>📈 30天趋势</h2>
-        <div class="trend-chart">
-          <div 
-            v-for="day in stats.dailyTrends" 
-            :key="day.date"
-            class="chart-bar"
-            :style="{ height: getBarHeight(day.count) + '%' }"
-            :title="`${day.date}: ${day.count}条`"
-          >
-            <span class="bar-value">{{ day.count }}</span>
-          </div>
-        </div>
-        <div class="chart-labels">
-          <span v-for="(day, index) in stats.dailyTrends" :key="day.date">
-            <span v-if="index % 5 === 0">{{ day.date.slice(5) }}</span>
-          </span>
-        </div>
-      </div>
+        <!-- 统计内容 -->
+        <div v-else-if="stats" class="stats-content">
 
-      <!-- 分类统计 -->
-      <div class="category-section">
-        <h2>🏷️ 分类分布</h2>
-        <div class="category-list">
-          <div 
-            v-for="cat in stats.categoryStats" 
-            :key="cat.categoryName"
-            class="category-item"
-          >
-            <div class="category-info">
-              <span class="category-name">{{ cat.categoryName }}</span>
-              <span class="category-count">{{ cat.count }} 条</span>
+          <!-- 核心指标卡片 -->
+          <div class="stats-cards">
+            <div class="stat-card primary">
+              <div class="stat-icon">📝</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ formatNumber(stats.totalPrompts) }}</div>
+                <div class="stat-label">总提示词数</div>
+              </div>
             </div>
-            <div class="category-bar">
-              <div 
-                class="category-bar-fill" 
-                :style="{ width: cat.percentage + '%' }"
-              ></div>
-            </div>
-            <span class="category-percentage">{{ cat.percentage }}%</span>
-          </div>
-        </div>
-      </div>
 
-      <!-- 热门提示词 -->
-      <div class="top-prompts-section">
-        <h2>🔥 热门提示词 Top 10</h2>
-        <div class="top-prompts-list">
-          <div 
-            v-for="(prompt, index) in stats.topPrompts" 
-            :key="prompt.id"
-            class="top-prompt-item"
-          >
-            <div class="prompt-rank">{{ index + 1 }}</div>
-            <div class="prompt-content">
-              <div class="prompt-title">{{ prompt.taskDescription || '未命名' }}</div>
-              <div class="prompt-meta">
-                <span>❤️ {{ prompt.likeCount }} 赞</span>
-                <span v-if="prompt.effectivenessScore">⭐ {{ prompt.effectivenessScore }}分</span>
-                <span v-if="prompt.averageRating">📊 {{ prompt.averageRating.toFixed(1) }}分</span>
+            <div class="stat-card success">
+              <div class="stat-icon">✨</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ formatNumber(stats.todayCount) }}</div>
+                <div class="stat-label">今日新增</div>
+              </div>
+            </div>
+
+            <div class="stat-card info">
+              <div class="stat-icon">📅</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ formatNumber(stats.weekCount) }}</div>
+                <div class="stat-label">本周新增</div>
+              </div>
+            </div>
+
+            <div class="stat-card warning">
+              <div class="stat-icon">❤️</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ formatNumber(stats.totalLikes) }}</div>
+                <div class="stat-label">总点赞数</div>
               </div>
             </div>
           </div>
-          <div v-if="!stats.topPrompts || stats.topPrompts.length === 0" class="empty-tip">
-            暂无热门提示词，快去创作吧！ 🚀
-          </div>
-        </div>
-      </div>
 
-      <!-- 最近活动 -->
-      <div class="recent-section">
-        <h2>🕐 最近活动</h2>
-        <div class="recent-list">
-          <div 
-            v-for="prompt in stats.recentActivities" 
-            :key="prompt.id"
-            class="recent-item"
-          >
-            <div class="recent-icon">📝</div>
-            <div class="recent-content">
-              <div class="recent-title">{{ prompt.taskDescription || '未命名' }}</div>
-              <div class="recent-time">{{ formatTime(prompt.createdAt) }}</div>
+          <!-- 第二行指标 -->
+          <div class="stats-cards secondary">
+            <div class="stat-card">
+              <div class="stat-icon">💾</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ stats.cacheHitRate?.toFixed(1) || 0 }}%</div>
+                <div class="stat-label">缓存命中率</div>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">📈</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ formatNumber(stats.monthCount) }}</div>
+                <div class="stat-label">本月新增</div>
+              </div>
             </div>
           </div>
-          <div v-if="!stats.recentActivities || stats.recentActivities.length === 0" class="empty-tip">
-            暂无最近活动
+
+          <!-- 趋势图表 -->
+          <div class="chart-section">
+            <h2>📈 30天趋势</h2>
+            <div class="trend-chart">
+              <div
+                v-for="day in stats.dailyTrends"
+                :key="day.date"
+                class="chart-bar"
+                :style="{ height: getBarHeight(day.count) + '%' }"
+                :title="`${day.date}: ${day.count}条`"
+              >
+                <span class="bar-value">{{ day.count }}</span>
+              </div>
+            </div>
+            <div class="chart-labels">
+              <span v-for="(day, index) in stats.dailyTrends" :key="day.date">
+                <span v-if="index % 5 === 0">{{ day.date.slice(5) }}</span>
+              </span>
+            </div>
           </div>
+
+          <!-- 分类统计 -->
+          <div class="category-section">
+            <h2>🏷️ 分类分布</h2>
+            <div class="category-list">
+              <div
+                v-for="cat in stats.categoryStats"
+                :key="cat.categoryName"
+                class="category-item"
+              >
+                <div class="category-info">
+                  <span class="category-name">{{ cat.categoryName }}</span>
+                  <span class="category-count">{{ cat.count }} 条</span>
+                </div>
+                <div class="category-bar">
+                  <div
+                    class="category-bar-fill"
+                    :style="{ width: cat.percentage + '%' }"
+                  ></div>
+                </div>
+                <span class="category-percentage">{{ cat.percentage }}%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 热门提示词 -->
+          <div class="top-prompts-section">
+            <h2>🔥 热门提示词 Top 10</h2>
+            <div class="top-prompts-list">
+              <div
+                v-for="(prompt, index) in stats.topPrompts"
+                :key="prompt.id"
+                class="top-prompt-item"
+              >
+                <div class="prompt-rank">{{ index + 1 }}</div>
+                <div class="prompt-content">
+                  <div class="prompt-title">{{ prompt.taskDescription || '未命名' }}</div>
+                  <div class="prompt-meta">
+                    <span>❤️ {{ prompt.likeCount || 0 }} 赞</span>
+                    <span v-if="prompt.effectivenessScore">⭐ {{ prompt.effectivenessScore }}分</span>
+                  </div>
+                </div>
+              </div>
+              <div v-if="!stats.topPrompts || stats.topPrompts.length === 0" class="empty-tip">
+                暂无热门提示词，快去创作吧！ 🚀
+              </div>
+            </div>
+          </div>
+
+          <!-- 最近活动 -->
+          <div class="recent-section">
+            <h2>🕐 最近活动</h2>
+            <div class="recent-list">
+              <div
+                v-for="prompt in stats.recentActivities"
+                :key="prompt.id"
+                class="recent-item"
+              >
+                <div class="recent-icon">📝</div>
+                <div class="recent-content">
+                  <div class="recent-title">{{ prompt.taskDescription || '未命名' }}</div>
+                  <div class="recent-time">{{ formatTime(prompt.createdAt) }}</div>
+                </div>
+              </div>
+              <div v-if="!stats.recentActivities || stats.recentActivities.length === 0" class="empty-tip">
+                暂无最近活动
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 错误提示 -->
+        <div v-else class="error-tip">
+          <p>加载失败，请稍后重试 😢</p>
+          <button @click="loadStats" class="retry-btn">重试</button>
         </div>
       </div>
-
-    </div>
-
-    <!-- 错误提示 -->
-    <div v-else class="error-tip">
-      <p>加载失败，请稍后重试 😢</p>
-      <button @click="loadStats" class="retry-btn">重试</button>
-    </div>
-  </div>
+    </template>
+  </AppLayout>
 </template>
 
-<script>
+<script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import AppLayout from '@/components/layout/AppLayout.vue'
 
-export default {
-  name: 'StatisticsPage',
-  setup() {
-    const loading = ref(true)
-    const stats = ref(null)
-    const maxDailyCount = ref(1)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
-    const loadStats = async () => {
-      loading.value = true
-      try {
-        const response = await axios.get('/api/statistics')
-        if (response.data.code === 200) {
-          stats.value = response.data.data
-          // 计算最大每日数量用于图表
-          if (stats.value.dailyTrends) {
-            maxDailyCount.value = Math.max(...stats.value.dailyTrends.map(d => d.count), 1)
-          }
-        }
-      } catch (error) {
-        console.error('Failed to load statistics:', error)
-      } finally {
-        loading.value = false
-      }
-    }
+const loading = ref(true)
+const stats = ref(null)
+const maxDailyCount = ref(1)
 
-    const formatNumber = (num) => {
-      if (num >= 10000) {
-        return (num / 10000).toFixed(1) + 'w'
-      }
-      return num.toString()
-    }
+const loadStats = async () => {
+  loading.value = true
+  stats.value = null
 
-    const formatTime = (timeStr) => {
-      if (!timeStr) return ''
-      const date = new Date(timeStr)
-      const now = new Date()
-      const diff = now - date
-      
-      if (diff < 60000) return '刚刚'
-      if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前'
-      if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前'
-      if (diff < 604800000) return Math.floor(diff / 86400000) + '天前'
-      
-      return timeStr.split('T')[0] || timeStr.substring(0, 10)
-    }
+  try {
+    console.log('Fetching from:', `${API_BASE_URL}/statistics`)
 
-    const getBarHeight = (count) => {
-      if (maxDailyCount.value === 0) return 0
-      return Math.max((count / maxDailyCount.value) * 100, 5)
-    }
-
-    onMounted(() => {
-      loadStats()
+    const url = API_BASE_URL ? `${API_BASE_URL}/statistics` : '/api/statistics'
+    const response = await axios.get(url, {
+      timeout: 10000
     })
 
-    return {
-      loading,
-      stats,
-      formatNumber,
-      formatTime,
-      getBarHeight,
-      loadStats
+    console.log('Response:', response.data)
+
+    if (response.data && response.data.success) {
+      stats.value = response.data.data
+      // 计算最大每日数量用于图表
+      if (stats.value.dailyTrends && stats.value.dailyTrends.length > 0) {
+        maxDailyCount.value = Math.max(...stats.value.dailyTrends.map(d => d.count || 0), 1)
+      }
+    } else {
+      console.error('API returned unsuccessful:', response.data)
     }
+  } catch (error) {
+    console.error('Failed to load statistics:', error.message, error)
+  } finally {
+    loading.value = false
   }
 }
+
+const formatNumber = (num) => {
+  if (num === null || num === undefined) return '0'
+  if (num >= 10000) {
+    return (num / 10000).toFixed(1) + 'w'
+  }
+  return num.toString()
+}
+
+const formatTime = (timeStr) => {
+  if (!timeStr) return ''
+  try {
+    const date = new Date(timeStr)
+    const now = new Date()
+    const diff = now - date
+
+    if (diff < 60000) return '刚刚'
+    if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前'
+    if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前'
+    if (diff < 604800000) return Math.floor(diff / 86400000) + '天前'
+
+    return timeStr.split('T')[0] || timeStr.substring(0, 10)
+  } catch (e) {
+    return timeStr
+  }
+}
+
+const getBarHeight = (count) => {
+  if (!count || maxDailyCount.value === 0) return 0
+  return Math.max((count / maxDailyCount.value) * 100, 5)
+}
+
+onMounted(() => {
+  loadStats()
+})
 </script>
 
 <style scoped>
@@ -540,7 +549,7 @@ export default {
   .stats-cards {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .stat-value {
     font-size: 22px;
   }
