@@ -11,6 +11,10 @@
           <span class="nav-icon">🏠</span>
           <span>首页</span>
         </router-link>
+        <router-link to="/popular" class="nav-link" :class="{ active: $route.path === '/popular' }">
+          <span class="nav-icon">🏆</span>
+          <span>热门</span>
+        </router-link>
         <router-link to="/templates" class="nav-link" :class="{ active: $route.path === '/templates' }">
           <span class="nav-icon">💡</span>
           <span>提示词大全</span>
@@ -19,29 +23,21 @@
           <span class="nav-icon">📦</span>
           <span>模板市场</span>
         </router-link>
-        <router-link to="/variants" class="nav-link" :class="{ active: $route.path === '/variants' }">
-          <span class="nav-icon">🎨</span>
-          <span>变体生成</span>
-        </router-link>
         <router-link to="/playground" class="nav-link" :class="{ active: $route.path === '/playground' }">
           <span class="nav-icon">🧪</span>
           <span>测试场</span>
         </router-link>
-        <router-link to="/popular" class="nav-link" :class="{ active: $route.path === '/popular' }">
-          <span class="nav-icon">🏆</span>
-          <span>热门</span>
-        </router-link>
-        <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
-          <span class="nav-icon">ℹ️</span>
-          <span>关于</span>
-        </router-link>
-        <router-link to="/workflow" class="nav-link" :class="{ active: $route.path === '/workflow' }">
-          <span class="nav-icon">🔄</span>
-          <span>工作流</span>
+        <router-link to="/variants" class="nav-link" :class="{ active: $route.path === '/variants' }">
+          <span class="nav-icon">🎨</span>
+          <span>变体生成</span>
         </router-link>
         <router-link to="/statistics" class="nav-link" :class="{ active: $route.path === '/statistics' }">
           <span class="nav-icon">📊</span>
           <span>统计</span>
+        </router-link>
+        <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
+          <span class="nav-icon">ℹ️</span>
+          <span>关于</span>
         </router-link>
       </nav>
       <div class="navbar-actions">

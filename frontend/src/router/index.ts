@@ -7,7 +7,6 @@ import Popular from '../views/Popular.vue'
 import PromptPlayground from '../views/PromptPlayground.vue'
 import Statistics from '../views/Statistics.vue'
 import PromptVariants from '../views/PromptVariants.vue'
-import PromptWorkflow from '../views/PromptWorkflow.vue'
 
 const routes = [
   {
@@ -49,11 +48,6 @@ const routes = [
     path: '/variants',
     name: 'PromptVariants',
     component: PromptVariants
-  },
-  {
-    path: '/workflow',
-    name: 'PromptWorkflow',
-    component: PromptWorkflow
   }
 ]
 
