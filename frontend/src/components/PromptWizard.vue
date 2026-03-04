@@ -152,10 +152,23 @@ const selectOption = (idx) => {
   if (idx !== 2) {
     customAnswer.value = ''
   }
+  // 自动进入下一步
+  setTimeout(() => {
+    if (!isLastStep.value && canProceed.value) {
+      nextStep()
+    }
+  }, 300)
 }
 
 const onCustomInput = () => {
-  // Custom input handling
+  // 自定义输入时检查是否可以自动进入下一步
+  if (selectedOption.value === 2 && customAnswer.value.trim().length > 0) {
+    setTimeout(() => {
+      if (!isLastStep.value) {
+        nextStep()
+      }
+    }, 500)
+  }
 }
 
 const nextStep = () => {
@@ -270,7 +283,7 @@ watch(() => props.visible, (val) => {
 
 .wizard-progress { padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
 .progress-bar { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
-.progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 3px; transition: width 0.3s; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 3px; transition: width 0.3s; }
 .progress-text { font-size: 0.85rem; color: #64748b; white-space: nowrap; }
 
 .wizard-content { padding: 24px; }
