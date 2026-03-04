@@ -170,7 +170,7 @@ public class TemplateController {
 
     // 获取所有模板
     @GetMapping("/list")
-    public Map<String, Object> getTemplates(@RequestParam(required = false) String category) {
+    public Map<String, Object> getTemplates(@RequestParam(name = "category", required = false) String category) {
         List<Map<String, Object>> result;
         try {
             if (category != null && !category.isEmpty()) {

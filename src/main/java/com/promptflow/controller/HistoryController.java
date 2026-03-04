@@ -223,10 +223,53 @@ public class HistoryController {
     }
 
     /**
-     * 分页查询历史记录（支持筛选和排序）
+     * 分页查询历史记录（支持筛选和排序）- GET版本
+     */
+    @GetMapping("/page")
+    public ResponseEntity<Map<String, Object>> getHistoryPageGet(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "20") int size,
+            @RequestParam(name = "categoryId", required = false) Long categoryId,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "sortBy", defaultValue = "createdAt") String sortBy) {
+        try {
+            HistoryQueryRequest request = new HistoryQueryRequest();
+            request.setPage(page);
+            request.setSize(size);
+            request.setCategoryId(categoryId);
+            request.setKeyword(keyword);
+            request.setSortBy(sortBy);
+            
+            return getHistoryPageInternal(request);
+        } catch (Exception e) {
+            logger.error("分页查询历史记录失败(GET)", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "分页查询历史记录失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+    
+    /**
+     * 分页查询历史记录（支持筛选和排序）- POST版本
      */
     @PostMapping("/page")
-    public ResponseEntity<Map<String, Object>> getHistoryPage(@RequestBody HistoryQueryRequest request) {
+    public ResponseEntity<Map<String, Object>> getHistoryPagePost(@RequestBody HistoryQueryRequest request) {
+        try {
+            return getHistoryPageInternal(request);
+        } catch (Exception e) {
+            logger.error("分页查询历史记录失败(POST)", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "分页查询历史记录失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+    
+    /**
+     * 内部方法：分页查询历史记录
+     */
+    private ResponseEntity<Map<String, Object>> getHistoryPageInternal(HistoryQueryRequest request) {
         try {
             PagedResult<PromptCache> result = promptHistoryService.getHistoryPage(request);
             List<HistoryResponse> responseList = result.getList().stream()
