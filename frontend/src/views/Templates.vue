@@ -107,7 +107,8 @@ const loadData = async (reset = false) => {
   
   try {
     const p = reset ? 1 : page.value
-    let url = `${API}/history/recent?page=${p}&limit=${size.value}`
+    // Use /history/page endpoint which supports category filtering
+    let url = `${API}/history/page?page=${p}&size=${size.value}`
     if (categoryId.value) {
       url += `&categoryId=${categoryId.value}`
     }
