@@ -88,6 +88,7 @@
             <!-- 流程图预览 -->
             <div class="flow-preview" v-if="form.steps.length > 1">
               <svg class="flow-svg" :viewBox="flowViewBox">
+                <!-- 连接线 -->
                 <g class="connections">
                   <line 
                     v-for="(conn, idx) in flowConnections" 
@@ -97,11 +98,12 @@
                     class="flow-line"
                   />
                 </g>
+                <!-- 步骤节点 -->
                 <g 
                   v-for="(step, idx) in form.steps" 
                   :key="'node-' + idx"
                   class="flow-node"
-                  @click="editingStepIndex = idx"
+                  @click="editStep(idx)"
                 >
                   <rect 
                     :x="flowNodes[idx].x" 
@@ -141,7 +143,7 @@
               </el-form-item>
               
               <el-form-item label="步骤">
-                <div class="steps-editor">
+                <div class="steps-editor" @dragover.prevent @drop="onDrop">
                   <div 
                     v-for="(step, idx) in form.steps" 
                     :key="idx" 
@@ -423,6 +425,14 @@ const onDragOver = (idx) => {
   editingStepIndex.value = idx
 }
 
+const onDrop = () => {
+  draggedIndex.value = null
+}
+
+const editStep = (idx) => {
+  editingStepIndex.value = idx
+}
+
 // 图标列表
 const icons = ['📋', '📝', '📚', '💡', '🎨', '🔧', '📊', '🌟', '🚀', '💼', '📰', '🎬', '🛠️', '🎯']
 
@@ -544,8 +554,8 @@ const saveWorkflow = () => {
 
 const runWorkflow = (wf) => {
   runningWorkflow.value = JSON.parse(JSON.stringify(wf))
-  currentStep.value = 0
-  runProgress.value = 0
+ = 0
+  runProgress.value  currentStep.value = 0
   runComplete.value = false
   stepResults.value = []
   showRunDialog.value = true
@@ -618,80 +628,393 @@ loadWorkflows()
 </script>
 
 <style scoped>
-.page-container { min-height: 100%; background: #f8fafc; margin: -24px; }
-.banner { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 36px 40px; text-align: center; }
-.banner-title { font-size: 1.6rem; font-weight: 700; color: white; margin: 0 0 6px; }
-.banner-desc { color: rgba(255,255,255,0.85); font-size: 0.95rem; margin: 0; }
+.page-container {
+  min-height: 100%;
+  background: #f8fafc;
+  margin: -24px;
+}
 
-.section { padding: 24px 40px; }
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.section-title { font-size: 1.2rem; font-weight: 600; color: #1e293b; margin: 0; }
+.banner {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  padding: 36px 40px;
+  text-align: center;
+}
 
-.empty-state { text-align: center; padding: 80px 40px; color: #94a3b8; background: white; border-radius: 20px; border: 2px dashed #e2e8f0; }
-.empty-icon { font-size: 5rem; margin-bottom: 20px; display: inline-block; padding: 24px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 50%; }
-.empty-tip { font-size: 0.95rem; margin-top: 12px; color: #64748b; }
+.banner-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 6px;
+}
 
-.workflows-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
+.banner-desc {
+  color: rgba(255,255,255,0.85);
+  font-size: 0.95rem;
+  margin: 0;
+}
 
-.workflow-card { background: white; border-radius: 16px; padding: 24px; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.3s ease; display: flex; gap: 18px; position: relative; overflow: hidden; }
-.workflow-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #3b82f6, #60a5fa); opacity: 0; transition: opacity 0.3s; }
-.workflow-card:hover { border-color: #3b82f6; box-shadow: 0 12px 40px rgba(59,130,246,0.18); transform: translateY(-4px); }
-.workflow-card:hover::before { opacity: 1; }
-.workflow-card.recommended { border-color: #3b82f6; background: linear-gradient(135deg, #fff 0%, #f8fafc 100%); }
+.section {
+  padding: 24px 40px;
+}
 
-.workflow-icon { font-size: 3rem; flex-shrink: 0; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 16px; }
-.workflow-info { flex: 1; min-width: 0; }
-.workflow-name { font-weight: 600; color: #1e293b; font-size: 1rem; margin-bottom: 4px; }
-.workflow-desc { font-size: 0.85rem; color: #64748b; margin-bottom: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.workflow-meta { display: flex; gap: 12px; font-size: 0.75rem; color: #94a3b8; }
-.workflow-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-.tag { font-size: 0.7rem; padding: 2px 8px; background: #f1f5f9; color: #64748b; border-radius: 10px; }
-.workflow-actions { display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
 
-.dialog-content { max-height: 70vh; overflow-y: auto; }
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
 
-.flow-preview { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
-.flow-svg { width: 100%; height: 90px; }
-.flow-line { stroke: #94a3b8; stroke-width: 2; stroke-dasharray: 5, 5; }
-.flow-node { cursor: pointer; }
-.node-rect { fill: white; stroke: #3b82f6; stroke-width: 2; transition: all 0.2s; }
-.node-rect.active { fill: #eff6ff; stroke: #1d4ed8; stroke-width: 3; }
-.node-text { fill: #1e293b; font-size: 12px; font-weight: 600; text-anchor: middle; }
-.node-subtext { fill: #64748b; font-size: 10px; text-anchor: middle; }
+.empty-state {
+  text-align: center;
+  padding: 80px 40px;
+  color: #94a3b8;
+  background: white;
+  border-radius: 20px;
+  border: 2px dashed #e2e8f0;
+}
 
-.steps-editor { display: flex; flex-direction: column; gap: 16px; }
-.step-item { background: linear-gradient(135deg, #f8fafc 0%, #fff 100%); border-radius: 16px; padding: 20px; border: 2px solid #e2e8f0; position: relative; transition: all 0.2s; }
-.step-item:hover { border-color: #3b82f6; box-shadow: 0 4px 16px rgba(59,130,246,0.1); }
-.step-item.active { border-color: #3b82f6; background: #eff6ff; }
-.step-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-.drag-handle { cursor: grab; color: #94a3b8; font-size: 18px; padding: 4px 8px; border-radius: 4px; }
-.drag-handle:hover { background: #f1f5f9; color: #64748b; }
-.step-number { font-weight: 700; color: white; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
-.step-name-input { margin-bottom: 12px; }
-.step-var-tip { font-size: 0.8rem; color: #3b82f6; margin-bottom: 12px; padding: 8px 12px; background: #eff6ff; border-radius: 6px; }
-.step-var-tip code { background: #dbeafe; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-.step-params { display: flex; gap: 12px; margin-top: 12px; }
-.step-params .el-select { flex: 1; }
-.add-step-btn { width: 100%; border-style: dashed; }
+.empty-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  display: inline-block;
+  padding: 24px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 50%;
+}
 
-.run-progress { padding: 28px; background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 20px; }
-.run-header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
-.run-icon { font-size: 2.5rem; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 14px; }
-.run-name { font-size: 1.3rem; font-weight: 700; color: #1e293b; }
+.empty-tip {
+  font-size: 0.95rem;
+  margin-top: 12px;
+  color: #64748b;
+}
 
-.run-flow { background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); border-radius: 12px; padding: 16px; margin-bottom: 20px; }
-.run-flow-svg { width: 100%; height: 70px; }
-.run-flow-svg .flow-line { stroke: #e2e8f0; stroke-width: 2; }
-.run-flow-svg .flow-line.completed { stroke: #3b82f6; }
-.run-flow-svg .node-rect { fill: white; stroke: #e2e8f0; }
-.run-flow-svg .node-rect.completed { fill: #dbeafe; stroke: #3b82f6; }
-.run-flow-svg .node-rect.active { fill: #eff6ff; stroke: #3b82f6; stroke-width: 2; }
+.workflows-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
 
-.run-progress-bar { margin-bottom: 28px; background: #f1f5f9; border-radius: 8px; height: 8px; overflow: hidden; }
+.workflow-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
 
-.run-steps { display: flex; flex-direction: column; gap: 16px; max-height: 500px; overflow-y: auto; }
-.run-step { display: flex; gap: 16px; padding: 20px; border-radius: 14px; background: #f8fafc; border: 1px solid #e2e8f0; transition: all 0.2s; }
-.run-step.active { border-color: #3b82f6; background: #eff6ff; }
-.run-step.completed { border-color: #3b82f6; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); }
-.step-status { width: 32px; height: 32px; border-radius: 10px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 600; color: #64748b; flex-shrink: 0; }
-.run-step.completed .step-status { background: linear-gradient(135deg, #3b82
+.workflow-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.workflow-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.18);
+  transform: translateY(-4px);
+}
+
+.workflow-card:hover::before {
+  opacity: 1;
+}
+
+.workflow-card.recommended {
+  border-color: #3b82f6;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.workflow-icon {
+  font-size: 3rem;
+  flex-shrink: 0;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 16px;
+}
+
+.workflow-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.workflow-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.workflow-desc {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.workflow-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.workflow-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  background: #f1f5f9;
+  color: #64748b;
+  border-radius: 10px;
+}
+
+.workflow-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* 弹窗内容 */
+.dialog-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* 流程图预览 */
+.flow-preview {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.flow-svg {
+  width: 100%;
+  height: 90px;
+}
+
+.flow-line {
+  stroke: #94a3b8;
+  stroke-width: 2;
+  stroke-dasharray: 5, 5;
+}
+
+.flow-node {
+  cursor: pointer;
+}
+
+.node-rect {
+  fill: white;
+  stroke: #3b82f6;
+  stroke-width: 2;
+  transition: all 0.2s;
+}
+
+.node-rect.active {
+  fill: #eff6ff;
+  stroke: #1d4ed8;
+  stroke-width: 3;
+}
+
+.node-text {
+  fill: #1e293b;
+  font-size: 12px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.node-subtext {
+  fill: #64748b;
+  font-size: 10px;
+  text-anchor: middle;
+}
+
+/* 步骤编辑器 */
+.steps-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.step-item {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  border-radius: 16px;
+  padding: 20px;
+  border: 2px solid #e2e8f0;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.step-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.1);
+}
+
+.step-item.active {
+  border-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: #94a3b8;
+  font-size: 18px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.drag-handle:hover {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.step-number {
+  font-weight: 700;
+  color: white;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+}
+
+.step-name-input {
+  margin-bottom: 12px;
+}
+
+.step-var-tip {
+  font-size: 0.8rem;
+  color: #3b82f6;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #eff6ff;
+  border-radius: 6px;
+}
+
+.step-var-tip code {
+  background: #dbeafe;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+}
+
+.step-params {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.step-params .el-select {
+  flex: 1;
+}
+
+.add-step-btn {
+  width: 100%;
+  border-style: dashed;
+}
+
+/* 运行进度 */
+.run-progress {
+  padding: 28px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
+}
+
+.run-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.run-icon {
+  font-size: 2.5rem;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-radius: 14px;
+}
+
+.run-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+/* 运行流程图 */
+.run-flow {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.run-flow-svg {
+  width: 100%;
+  height: 70px;
+}
+
+.run-flow-svg .flow-line {
+  stroke: #e2e8f0;
+  stroke-width: 2;
+}
+
+.run-flow-svg .flow-line.completed {
+  stroke: #3b82f6;
+}
+
+.run-flow-svg .node-rect {
+  fill: white;
+  stroke: #e2e8f0;
+}
+
+.run-flow-svg .node-rect.completed {
+  fill: #dbeafe;
+  stroke: #3b82f
