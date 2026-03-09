@@ -110,7 +110,6 @@ public class PromptHistoryService {
      * 分页查询历史记录（支持筛选和排序）
      */
     public PagedResult<PromptCache> getHistoryPage(HistoryQueryRequest request) {
-        String sortOrder = request.getSortOrder() != null ? request.getSortOrder().toUpperCase() : "DESC";
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
         String sortBy = request.getSortBy();
@@ -123,7 +122,6 @@ public class PromptHistoryService {
                 request.getCategoryId(),
                 request.getKeyword(),
                 request.getSortBy(),
-                sortOrder,
                 pageable
             );
         }

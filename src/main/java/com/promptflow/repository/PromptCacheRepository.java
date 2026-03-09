@@ -111,15 +111,17 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     /**
      * 综合筛选查询（分类 + 关键词 + 排序方式）
      */
-    @Query("SELECT p FROM PromptCache p WHERE " +
-           "(:categoryId IS NULL OR p.categoryId = :categoryId) AND " +
-           "(:keyword IS NULL OR p.taskDescription LIKE %:keyword% OR p.generatedPrompt LIKE %:keyword%) " +
-           "ORDER BY CASE WHEN :sortBy = 'likeCount' THEN p.likeCount ELSE p.createdAt END " +
-           ":sortOrder, p.createdAt :sortOrder")
+    @Query(value = "SELECT * FROM prompt_cache p WHERE " +
+           "(:categoryId IS NULL OR p.category_id = :categoryId) AND " +
+           "(:keyword IS NULL OR p.task_description LIKE CONCAT('%', :keyword, '%') OR p.generated_prompt LIKE CONCAT('%', :keyword, '%')) " +
+           "ORDER BY CASE WHEN :sortBy = 'likeCount' THEN p.like_count ELSE 0 END DESC, p.created_at DESC",
+           countQuery = "SELECT COUNT(*) FROM prompt_cache p WHERE " +
+           "(:categoryId IS NULL OR p.category_id = :categoryId) AND " +
+           "(:keyword IS NULL OR p.task_description LIKE CONCAT('%', :keyword, '%') OR p.generated_prompt LIKE CONCAT('%', :keyword, '%'))",
+           nativeQuery = true)
     Page<PromptCache> findByFilters(@Param("categoryId") Long categoryId,
                                     @Param("keyword") String keyword,
                                     @Param("sortBy") String sortBy,
-                                    @Param("sortOrder") String sortOrder,
                                     Pageable pageable);
 
     /**
@@ -182,16 +184,6 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
      */
     @Query("SELECT AVG(p.averageRating) FROM PromptCache p WHERE p.averageRating IS NOT NULL")
     Double getAverageRating();
-    
-    /**
-     * 统计每日创建数量（最近N天）
-     */
-//     @Query("SELECT CAST(p.createdAt AS string), COUNT(p) FROM PromptCache p " +
-//            "WHERE p.createdAt >= CURRENT_DATE - :days " +
-//            "GROUP BY CAST(p.createdAt AS string) " +
-//            "ORDER BY CAST(p.createdAt AS string)")
-    List<Object[]> countByDay(@Param("days") int days);
-    
     /**
      * 统计每日创建数和点赞数（最近N天）
      */

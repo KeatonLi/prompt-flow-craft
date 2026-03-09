@@ -95,9 +95,6 @@
           <span class="nav-icon">⚙️</span>
           <span>设置</span>
         </router-link>
-          <span class="nav-icon">🔄</span>
-          <span>工作流</span>
-        </router-link>
         <router-link to="/statistics" class="nav-link" :class="{ active: $route.path === '/statistics' }">
           <span class="nav-icon">📊</span>
           <span>统计</span>
