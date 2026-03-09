@@ -74,6 +74,7 @@ export interface HistoryQueryRequest {
   keyword?: string;
   tagIds?: number[];
   sortBy?: 'createdAt' | 'likeCount';
+  sortOrder?: 'ASC' | 'DESC';
 }
 
 // 分类结果

@@ -10,6 +10,7 @@ public class HistoryQueryRequest {
     private Long categoryId;
     private String keyword;
     private String sortBy = "createdAt";
+    private String sortOrder = "DESC";
 
     public HistoryQueryRequest() {}
 
@@ -51,5 +52,13 @@ public class HistoryQueryRequest {
 
     public void setSortBy(String sortBy) {
         this.sortBy = sortBy;
+    }
+
+    public String getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(String sortOrder) {
+        this.sortOrder = sortOrder;
     }
 }

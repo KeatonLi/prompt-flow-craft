@@ -17,7 +17,8 @@ export const useHistoryStore = defineStore('history', () => {
     size: 20,
     categoryId: undefined,
     keyword: '',
-    sortBy: 'createdAt'
+    sortBy: 'createdAt',
+    sortOrder: 'DESC'
   });
 
   const filteredRecords = computed(() => {
@@ -85,7 +86,8 @@ export const useHistoryStore = defineStore('history', () => {
       size: 20,
       categoryId: undefined,
       keyword: '',
-      sortBy: 'createdAt'
+      sortBy: 'createdAt',
+      sortOrder: 'DESC'
     };
   }
 

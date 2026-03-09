@@ -127,6 +127,7 @@ function setTab(tab: 'recent' | 'popular') {
   const sortBy = tab === 'popular' ? 'likeCount' : 'createdAt';
   historyStore.setQueryParams({
     sortBy: sortBy,
+    sortOrder: 'DESC',
     page: 1
   });
   historyStore.fetchRecords();
