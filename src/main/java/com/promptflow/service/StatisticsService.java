@@ -10,10 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,76 +28,43 @@ public class StatisticsService {
      */
     public UsageStatistics getUsageStatistics() {
         UsageStatistics stats = new UsageStatistics();
-
-        try {
-            // 计算日期
-            LocalDateTime todayStart = LocalDate.now().atStartOfDay();
-            LocalDateTime weekStart = LocalDate.now().minusWeeks(1).atStartOfDay();
-            LocalDateTime monthStart = LocalDate.now().minusMonths(1).atStartOfDay();
-
-            // 基础统计
-            stats.setTotalPrompts(promptCacheRepository.count());
-            stats.setTodayCount(promptCacheRepository.countByCreatedAtAfter(todayStart));
-            stats.setWeekCount(promptCacheRepository.countByCreatedAtThisWeek(weekStart));
-            stats.setMonthCount(promptCacheRepository.countByCreatedAtThisMonth(monthStart));
-            stats.setTotalLikes(promptCacheRepository.sumTotalLikes());
-            stats.setTotalRatings(promptCacheRepository.countByRatingCountGreaterThan(0));
-
-            // 平均评分
-            Double avgRating = promptCacheRepository.getAverageRating();
-            stats.setAverageRating(avgRating != null ? Math.round(avgRating * 10) / 10.0 : 0.0);
-
-            // 缓存命中率
-            long totalHits = promptCacheRepository.sumTotalHits();
-            long totalPrompts = promptCacheRepository.count();
-            if (totalPrompts > 0) {
-                double hitRate = (double) totalHits / (totalPrompts + totalHits) * 100;
-                stats.setCacheHitRate(Math.round(hitRate * 10) / 10.0);
-            } else {
-                stats.setCacheHitRate(0.0);
-            }
-        } catch (Exception e) {
-            // 设置默认值
-            stats.setTotalPrompts(0L);
-            stats.setTodayCount(0L);
-            stats.setWeekCount(0L);
-            stats.setMonthCount(0L);
-            stats.setTotalLikes(0L);
-            stats.setTotalRatings(0L);
-            stats.setAverageRating(0.0);
+        
+        // 基础统计
+        stats.setTotalPrompts(promptCacheRepository.count());
+        stats.setTodayCount(0L);
+        stats.setWeekCount(0L);
+        stats.setMonthCount(0L);
+        stats.setTotalLikes(promptCacheRepository.sumTotalLikes());
+        stats.setTotalRatings(0L);
+        
+        // 平均评分
+        Double avgRating = promptCacheRepository.getAverageRating();
+        stats.setAverageRating(avgRating != null ? Math.round(avgRating * 10) / 10.0 : 0.0);
+        
+        // 缓存命中率
+        long totalHits = promptCacheRepository.sumTotalHits();
+        long totalPrompts = promptCacheRepository.count();
+        if (totalPrompts > 0) {
+            double hitRate = (double) totalHits / (totalPrompts + totalHits) * 100;
+            stats.setCacheHitRate(Math.round(hitRate * 10) / 10.0);
+        } else {
             stats.setCacheHitRate(0.0);
         }
-
-        try {
-            // 分类统计
-            stats.setCategoryStats(getCategoryStats());
-        } catch (Exception e) {
-            stats.setCategoryStats(new ArrayList<>());
-        }
-
-        try {
-            // 每日趋势（最近30天）
-            stats.setDailyTrends(getDailyTrends(30));
-        } catch (Exception e) {
-            stats.setDailyTrends(new ArrayList<>());
-        }
-
-        try {
-            // 最热提示词（按点赞数）
-            List<PromptCache> topPrompts = promptCacheRepository.findByLikeCountGreaterThanZeroOrderByLikeCountDesc(PageRequest.of(0, 10)).getContent();
-            stats.setTopPrompts(topPrompts);
-        } catch (Exception e) {
-            stats.setTopPrompts(new ArrayList<>());
-        }
-
-        try {
-            // 最近活动
-            List<Object[]> recent = promptCacheRepository.findRecentHistorySummary(PageRequest.of(0, 10));
-            stats.setRecentActivities(convertToPromptCacheList(recent));
-        } catch (Exception e) {
-            stats.setRecentActivities(new ArrayList<>());
-        }
-
+        
+        // 分类统计
+        stats.setCategoryStats(getCategoryStats());
+        
+        // 每日趋势（最近30天）
+        stats.setDailyTrends(getDailyTrends(30));
+        
+        // 最热提示词（按点赞数）
+        List<PromptCache> topPrompts = promptCacheRepository.findByLikeCountGreaterThanZeroOrderByLikeCountDesc(PageRequest.of(0, 10)).getContent();
+        stats.setTopPrompts(topPrompts);
+        
+        // 最近活动
+        List<Object[]> recent = promptCacheRepository.findRecentHistorySummary(PageRequest.of(0, 10));
+        stats.setRecentActivities(convertToPromptCacheList(recent));
+        
         return stats;
     }
     
@@ -184,6 +148,8 @@ public class StatisticsService {
      * 将查询结果转换为PromptCache列表
      */
     private List<PromptCache> convertToPromptCacheList(List<Object[]> results) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        
         return results.stream()
                 .map(row -> {
                     PromptCache p = new PromptCache();
@@ -192,24 +158,7 @@ public class StatisticsService {
                     p.setTargetAudience((String) row[2]);
                     p.setPromptSummary((String) row[3]);
                     if (row[4] != null) {
-                        // 直接使用LocalDateTime类型转换，处理各种日期格式
-                        if (row[4] instanceof java.time.LocalDateTime) {
-                            p.setCreatedAt((java.time.LocalDateTime) row[4]);
-                        } else {
-                            String dateStr = String.valueOf(row[4]);
-                            // 尝试多种日期格式
-                            try {
-                                if (dateStr.contains(".")) {
-                                    // 处理带纳秒的格式
-                                    p.setCreatedAt(java.time.LocalDateTime.parse(dateStr.substring(0, 23)));
-                                } else {
-                                    p.setCreatedAt(java.time.LocalDateTime.parse(dateStr));
-                                }
-                            } catch (Exception e) {
-                                // 如果解析失败，使用当前时间
-                                p.setCreatedAt(java.time.LocalDateTime.now());
-                            }
-                        }
+                        p.setCreatedAt(LocalDate.parse(String.valueOf(row[4]), formatter).atStartOfDay());
                     }
                     p.setHitCount((Integer) row[5]);
                     p.setCategoryId((Long) row[6]);
@@ -228,16 +177,12 @@ public class StatisticsService {
      */
     public Map<String, Object> getSimpleStats() {
         Map<String, Object> stats = new HashMap<>();
-
-        // 计算日期
-        LocalDateTime todayStart = LocalDate.now().atStartOfDay();
-        LocalDateTime weekStart = LocalDate.now().minusWeeks(1).atStartOfDay();
-
+        
         stats.put("totalPrompts", promptCacheRepository.count());
-        stats.put("todayCount", promptCacheRepository.countByCreatedAtAfter(todayStart));
-        stats.put("weekCount", promptCacheRepository.countByCreatedAtThisWeek(weekStart));
+        stats.put("todayCount", 0L);
+        stats.put("weekCount", 0L);
         stats.put("totalLikes", promptCacheRepository.sumTotalLikes());
-
+        
         return stats;
     }
 }
