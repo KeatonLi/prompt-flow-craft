@@ -347,33 +347,51 @@ const resetForm = () => {
 <style scoped>
 .page-container {
   min-height: 100%;
-  background: #f8fafc;
-  margin: -24px;
 }
 
 .banner {
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  padding: 36px 40px;
+  padding: 40px 32px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.3; }
 }
 
 .banner-title {
-  font-size: 1.6rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: white;
-  margin: 0 0 6px;
+  margin: 0 0 8px;
+  position: relative;
 }
 
 .banner-desc {
   color: rgba(255,255,255,0.85);
-  font-size: 0.95rem;
+  font-size: 1rem;
   margin: 0;
+  position: relative;
 }
 
 .content-wrapper {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 30px 40px 40px;
+  padding: 24px;
 }
 
 /* 输入区域 */
@@ -722,9 +740,71 @@ const resetForm = () => {
   line-height: 1.5;
 }
 
+/* 暗黑模式 */
+:root.dark .banner {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+:root.dark .input-section,
+:root.dark .variant-card {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(51, 65, 85, 0.6);
+}
+
+:root.dark .prompt-textarea,
+:root.dark .option-select {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+:root.dark .form-label,
+:root.dark .option-label {
+  color: #e2e8f0;
+}
+
+:root.dark .section-header h2 {
+  color: #f1f5f9;
+}
+
+:root.dark .variant-content {
+  color: #cbd5e1;
+}
+
+:root.dark .variant-meta {
+  border-color: rgba(51, 65, 85, 0.6);
+}
+
+:root.dark .comparison-section,
+:root.dark .tips-section {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(51, 65, 85, 0.6);
+}
+
+:root.dark .comparison-section h3,
+:root.dark .tips-section h3 {
+  color: #f1f5f9;
+}
+
+:root.dark .comparison-text {
+  color: #cbd5e1;
+}
+
+:root.dark .tip-card {
+  background: rgba(15, 23, 42, 0.5);
+}
+
+:root.dark .tip-card h4 {
+  color: #f1f5f9;
+}
+
+:root.dark .tip-card p {
+  color: #94a3b8;
+}
+
 @media (max-width: 768px) {
   .content-wrapper {
-    padding: 20px 16px;
+    padding: 16px;
   }
   
   .variants-grid {

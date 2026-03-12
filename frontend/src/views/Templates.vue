@@ -1,61 +1,121 @@
 <template>
   <AppLayout>
     <template #main>
-      <div class="page-container">
+      <div class="page-wrapper">
         <div class="banner">
           <h1 class="banner-title">💡 提示词大全</h1>
-          <p class="banner-desc">你生成的所有提示词</p>
+          <p class="banner-desc">探索和管理您生成的所有提示词</p>
         </div>
 
-        <div class="filter-bar">
-          <div class="search-box">
-            <input v-model="search" type="text" placeholder="搜索提示词..." class="search-input" @input="onSearch" />
-          </div>
-          <div class="category-tabs">
-            <button 
-              :class="['cat-btn', { active: categoryId === null }]" 
-              @click="selectCategory(null)"
-            >全部</button>
-            <button 
-              v-for="cat in categories" 
-              :key="cat.id"
-              :class="['cat-btn', { active: categoryId === cat.id }]"
-              @click="selectCategory(cat.id)"
-            >
-              {{ cat.icon }} {{ cat.name }}
-            </button>
-          </div>
-        </div>
-
-        <div class="grid-container" ref="gridRef">
-          <div v-if="pending && list.length === 0" class="loading">加载中...</div>
-          <div v-else-if="list.length === 0" class="empty">暂无记录</div>
-          <div v-else class="cards-grid">
-            <div v-for="item in list" :key="item.id" class="prompt-card" @click="open(item)">
-              <div class="card-header">
-                <span v-if="item.category" class="card-category" :style="{ color: item.category.color }">
-                  {{ item.category.icon }} {{ item.category.name }}
-                </span>
-              </div>
-              <div class="card-task">{{ item.taskDescription?.substring(0, 50) }}{{ item.taskDescription?.length > 50 ? '...' : '' }}</div>
-              <div class="card-result">{{ item.promptSummary || item.generatedPrompt?.substring(0, 50) }}...</div>
-              <div class="card-tags">
-                <template v-if="item.tags?.length">
-                  <span v-for="t in item.tags" :key="t.id" class="tag" :style="{ background: t.color+'15', color: t.color, borderColor: t.color+'30' }">{{ t.name }}</span>
-                </template>
-                <template v-else-if="item.aiTags?.length">
-                  <span v-for="(tag, idx) in item.aiTags" :key="idx" class="tag" :style="getTagStyle(idx)">{{ tag }}</span>
-                </template>
-                <span v-else class="tag-empty">无标签</span>
-              </div>
-              <div class="card-footer">
-                <span class="card-time">{{ fmt(item.createdAt) }}</span>
-                <span v-if="item.hitCount" class="card-hits">👁 {{ item.hitCount }}</span>
-              </div>
+        <div class="content-container">
+          <div class="filter-bar">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input 
+                v-model="search" 
+                type="text" 
+                placeholder="搜索提示词..." 
+                class="search-input" 
+                @input="onSearch" 
+              />
+            </div>
+            <div class="category-tabs">
+              <button 
+                :class="['cat-btn', { active: categoryId === null }]" 
+                @click="selectCategory(null)"
+              >
+                全部
+              </button>
+              <button 
+                v-for="cat in categories" 
+                :key="cat.id"
+                :class="['cat-btn', { active: categoryId === cat.id }]"
+                @click="selectCategory(cat.id)"
+              >
+                <span class="cat-icon">{{ cat.icon }}</span>
+                {{ cat.name }}
+              </button>
             </div>
           </div>
-          <div v-if="pending && list.length > 0" class="loading-more">加载中...</div>
-          <div v-else-if="hasMore" class="load-more" @click="loadMore">点击加载更多</div>
+
+          <div class="grid-container" ref="gridRef">
+            <div v-if="pending && list.length === 0" class="loading-state">
+              <div class="loading-spinner"></div>
+              <span>加载中...</span>
+            </div>
+            
+            <div v-else-if="list.length === 0" class="empty-state">
+              <div class="empty-icon">📭</div>
+              <h3>暂无记录</h3>
+              <p>开始生成您的第一个提示词吧</p>
+            </div>
+            
+            <div v-else class="cards-grid">
+              <div 
+                v-for="item in list" 
+                :key="item.id" 
+                class="prompt-card" 
+                @click="open(item)"
+              >
+                <div class="card-header">
+                  <span 
+                    v-if="item.category" 
+                    class="card-category" 
+                    :style="{ background: item.category.color + '15', color: item.category.color }"
+                  >
+                    <span class="category-icon">{{ item.category.icon }}</span>
+                    {{ item.category.name }}
+                  </span>
+                  <span v-else class="card-category default">
+                    <span class="category-icon">📄</span>
+                    未分类
+                  </span>
+                </div>
+                <div class="card-body">
+                  <div class="card-task">{{ item.taskDescription?.substring(0, 60) }}{{ item.taskDescription?.length > 60 ? '...' : '' }}</div>
+                  <div class="card-result">{{ item.promptSummary || item.generatedPrompt?.substring(0, 80) }}...</div>
+                </div>
+                <div class="card-tags">
+                  <template v-if="item.tags?.length">
+                    <span 
+                      v-for="t in item.tags.slice(0, 3)" 
+                      :key="t.id" 
+                      class="tag"
+                      :style="{ background: t.color + '15', color: t.color, borderColor: t.color + '30' }"
+                    >
+                      {{ t.name }}
+                    </span>
+                    <span v-if="item.tags.length > 3" class="tag-more">+{{ item.tags.length - 3 }}</span>
+                  </template>
+                  <template v-else-if="item.aiTags?.length">
+                    <span 
+                      v-for="(tag, idx) in item.aiTags.slice(0, 3)" 
+                      :key="idx" 
+                      class="tag ai-tag"
+                      :style="getTagStyle(idx)"
+                    >
+                      {{ tag }}
+                    </span>
+                  </template>
+                  <span v-else class="tag-empty">暂无标签</span>
+                </div>
+                <div class="card-footer">
+                  <span class="card-time">{{ fmt(item.createdAt) }}</span>
+                  <span v-if="item.hitCount" class="card-hits">
+                    <span class="hit-icon">👁</span>
+                    {{ item.hitCount }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div v-if="pending && list.length > 0" class="loading-more">
+              <div class="loading-spinner small"></div>
+            </div>
+            <div v-else-if="hasMore" class="load-more-trigger" @click="loadMore">
+              点击加载更多
+            </div>
+          </div>
         </div>
 
         <PromptDetailModal :item="cur" :loading="detailLoading" @close="cur = null" @use="usePrompt" />
@@ -107,7 +167,6 @@ const loadData = async (reset = false) => {
   
   try {
     const p = reset ? 1 : page.value
-    // Use /history/page endpoint which supports category filtering
     let url = `${API}/history/page?page=${p}&size=${size.value}`
     if (categoryId.value) {
       url += `&categoryId=${categoryId.value}`
@@ -128,7 +187,7 @@ const loadData = async (reset = false) => {
   pending.value = false
 }
 
-// 点击卡片查看详情 - 调用API获取完整数据
+// 点击卡片查看详情
 const open = async (item) => {
   detailLoading.value = true
   cur.value = item
@@ -177,10 +236,23 @@ const onSearch = () => {
 const fmt = (t) => {
   if (!t) return ''
   const d = new Date(t)
+  const now = new Date()
+  const diff = now - d
+  
+  // 小于1小时显示 relative time
+  if (diff < 3600000) {
+    const mins = Math.floor(diff / 60000)
+    return mins < 1 ? '刚刚' : `${mins}分钟前`
+  }
+  // 小于24小时
+  if (diff < 86400000) {
+    return `${Math.floor(diff / 3600000)}小时前`
+  }
+  
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
-  return `${y}${m}${day}`
+  return `${y}-${m}-${day}`
 }
 
 // 标签颜色数组
@@ -202,7 +274,6 @@ const getTagStyle = (idx) => {
 
 const usePrompt = (item) => {
   if (!item) return
-  // 跳转到首页并回填表单数据
   router.push({ 
     path: '/', 
     query: { 
@@ -220,42 +291,424 @@ const usePrompt = (item) => {
 </script>
 
 <style scoped>
-.page-container { min-height: 100%; background: #f8fafc; margin: -24px; }
-.banner { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 36px 40px; text-align: center; }
-.banner-title { font-size: 1.6rem; font-weight: 700; color: white; margin: 0 0 6px; }
-.banner-desc { color: rgba(255,255,255,0.85); font-size: 0.95rem; margin: 0; }
+.page-wrapper {
+  min-height: 100%;
+}
 
-.filter-bar { padding: 16px 40px; background: white; border-bottom: 1px solid #e2e8f0; }
-.search-box { margin-bottom: 12px; }
-.search-input { width: 100%; max-width: 400px; display: block; padding: 10px 16px; font-size: 14px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; transition: border-color 0.2s; }
-.search-input:focus { border-color: #3b82f6; }
+.banner {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  padding: 40px 32px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
 
-.category-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
-.cat-btn { padding: 6px 14px; font-size: 13px; border: 1px solid #e2e8f0; border-radius: 20px; background: white; color: #64748b; cursor: pointer; transition: all 0.2s; }
-.cat-btn:hover { border-color: #3b82f6; color: #3b82f6; }
-.cat-btn.active { background: #3b82f6; color: white; border-color: #3b82f6; }
+.banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  animation: pulse 4s ease-in-out infinite;
+}
 
-.grid-container { padding: 20px 40px 40px; min-height: 400px; }
-.loading, .empty, .loading-more, .load-more { text-align: center; padding: 30px; color: #94a3b8; }
-.load-more { cursor: pointer; color: #3b82f6; font-weight: 500; }
-.load-more:hover { color: #1d4ed8; }
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.3; }
+}
 
-.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.banner-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px;
+  position: relative;
+}
 
-.prompt-card { background: white; border-radius: 14px; padding: 18px; cursor: pointer; border: 1px solid #e2e8f0; transition: all 0.2s; }
-.prompt-card:hover { border-color: #3b82f6; box-shadow: 0 6px 20px rgba(59,130,246,0.12); transform: translateY(-2px); }
+.banner-desc {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1rem;
+  margin: 0;
+  position: relative;
+}
 
-.card-header { margin-bottom: 8px; }
-.card-category { font-size: 12px; font-weight: 500; }
+.content-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
-.card-task { font-weight: 600; color: #1e293b; font-size: 0.95rem; margin-bottom: 10px; line-height: 1.5; }
-.card-result { font-size: 0.85rem; color: #64748b; margin-bottom: 12px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.filter-bar {
+  background: white;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+}
 
-.card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; min-height: 24px; }
-.tag { font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; border: 1px solid; font-weight: 500; }
-.tag-empty { font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; background: #f1f5f9; color: #94a3b8; }
+.search-box {
+  position: relative;
+  margin-bottom: 16px;
+}
 
-.card-footer { display: flex; justify-content: space-between; align-items: center; }
-.card-time { font-size: 0.75rem; color: #94a3b8; }
-.card-hits { font-size: 0.75rem; color: #94a3b8; }
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  opacity: 0.5;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  font-size: 0.95rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.2s;
+  background: #f8fafc;
+}
+
+.search-input:focus {
+  border-color: #3b82f6;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cat-btn {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  background: white;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cat-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.cat-btn.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+}
+
+.cat-icon {
+  font-size: 0.9rem;
+}
+
+.grid-container {
+  min-height: 400px;
+}
+
+.loading-state,
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #64748b;
+  margin: 0 0 8px;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(148, 163, 184, 0.3);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+
+.loading-spinner.small {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+}
+
+.prompt-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.prompt-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12);
+  transform: translateY(-3px);
+}
+
+.card-header {
+  margin-bottom: 12px;
+}
+
+.card-category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.card-category.default {
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.category-icon {
+  font-size: 0.85rem;
+}
+
+.card-body {
+  flex: 1;
+  margin-bottom: 12px;
+}
+
+.card-task {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-result {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  min-height: 24px;
+}
+
+.tag {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid;
+  font-weight: 500;
+}
+
+.tag.ai-tag {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #e2e8f0;
+}
+
+.tag-more {
+  font-size: 0.7rem;
+  padding: 4px 8px;
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.tag-empty {
+  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #94a3b8;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.card-time {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.card-hits {
+  font-size: 0.8rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hit-icon {
+  font-size: 0.75rem;
+}
+
+.loading-more {
+  text-align: center;
+  padding: 24px;
+}
+
+.load-more-trigger {
+  text-align: center;
+  padding: 20px;
+  color: #3b82f6;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.load-more-trigger:hover {
+  color: #1d4ed8;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .content-container {
+    padding: 16px;
+  }
+  
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .category-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+  
+  .cat-btn {
+    white-space: nowrap;
+  }
+}
+
+/* 暗黑模式 */
+:root.dark .banner {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+}
+
+:root.dark .filter-bar {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(51, 65, 85, 0.6);
+}
+
+:root.dark .search-input {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+:root.dark .search-input:focus {
+  border-color: #3b82f6;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+:root.dark .cat-btn {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+:root.dark .cat-btn:hover {
+  border-color: #3b82f6;
+  color: #60a5fa;
+}
+
+:root.dark .prompt-card {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(51, 65, 85, 0.6);
+}
+
+:root.dark .prompt-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+}
+
+:root.dark .card-task {
+  color: #f1f5f9;
+}
+
+:root.dark .card-result {
+  color: #94a3b8;
+}
+
+:root.dark .card-footer {
+  border-color: rgba(51, 65, 85, 0.6);
+}
+
+:root.dark .tag-empty,
+:root.dark .tag-more,
+:root.dark .tag.ai-tag {
+  background: rgba(51, 65, 85, 0.6);
+  color: #94a3b8;
+}
+
+:root.dark .card-category.default {
+  background: rgba(51, 65, 85, 0.6);
+  color: #94a3b8;
+}
 </style>

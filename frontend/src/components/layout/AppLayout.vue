@@ -6,104 +6,29 @@
         <span class="brand-icon">🎨</span>
         <span class="brand-text">PromptFlow</span>
       </div>
-      <nav class="navbar-nav">
-        <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
-          <span class="nav-icon">🏠</span>
-          <span>首页</span>
-        </router-link>
-        <router-link to="/templates" class="nav-link" :class="{ active: $route.path === '/templates' }">
-          <span class="nav-icon">💡</span>
-          <span>提示词大全</span>
-        </router-link>
-        <router-link to="/template-market" class="nav-link" :class="{ active: $route.path === '/template-market' }">
-          <span class="nav-icon">📦</span>
-          <span>模板市场</span>
-        </router-link>
-        <router-link to="/variants" class="nav-link" :class="{ active: $route.path === '/variants' }">
-          <span class="nav-icon">🎨</span>
-          <span>变体生成</span>
-        </router-link>
-        <router-link to="/optimize" class="nav-link" :class="{ active: $route.path === '/optimize' }">
-          <span class="nav-icon">✨</span>
-          <span>优化器</span>
-        </router-link>
-        <router-link to="/compare" class="nav-link" :class="{ active: $route.path === '/compare' }">
-          <span class="nav-icon">⚖️</span>
-          <span>对比</span>
-        </router-link>
-        <router-link to="/variable-extractor" class="nav-link" :class="{ active: $route.path === '/variable-extractor' }">
-          <span class="nav-icon">🔧</span>
-          <span>变量提取</span>
-        </router-link>
-        <router-link to="/template-editor" class="nav-link" :class="{ active: $route.path === '/template-editor' }">
-          <span class="nav-icon">📝</span>
-          <span>模板编辑</span>
-        </router-link>
-        <router-link to="/prompt-score" class="nav-link" :class="{ active: $route.path === '/prompt-score' }">
-          <span class="nav-icon">📊</span>
-          <span>评分</span>
-        </router-link>
-        <router-link to="/prompt-convert" class="nav-link" :class="{ active: $route.path === '/prompt-convert' }">
-          <span class="nav-icon">🔄</span>
-          <span>转换</span>
-        </router-link>
-        <router-link to="/translator" class="nav-link" :class="{ active: $route.path === '/translator' }">
-          <span class="nav-icon">🌐</span>
-          <span>翻译</span>
-        </router-link>
-        <router-link to="/import-export" class="nav-link" :class="{ active: $route.path === '/import-export' }">
-          <span class="nav-icon">📥</span>
-          <span>导入导出</span>
-        </router-link>
-        <router-link to="/prompt-formatter" class="nav-link" :class="{ active: $route.path === '/prompt-formatter' }">
-          <span class="nav-icon">✨</span>
-          <span>格式化</span>
-        </router-link>
-        <router-link to="/quality-checker" class="nav-link" :class="{ active: $route.path === '/quality-checker' }">
-          <span class="nav-icon">🔍</span>
-          <span>质量检查</span>
-        </router-link>
-        <router-link to="/structure-analyzer" class="nav-link" :class="{ active: $route.path === '/structure-analyzer' }">
-          <span class="nav-icon">🏗️</span>
-          <span>结构分析</span>
-        </router-link>
-        <router-link to="/playground" class="nav-link" :class="{ active: $route.path === '/playground' }">
-          <span class="nav-icon">🧪</span>
-          <span>测试场</span>
-        </router-link>
-        <router-link to="/popular" class="nav-link" :class="{ active: $route.path === '/popular' }">
-          <span class="nav-icon">🏆</span>
-          <span>热门</span>
-        </router-link>
-        <router-link to="/cases" class="nav-link" :class="{ active: $route.path === '/cases' }">
-          <span class="nav-icon">📚</span>
-          <span>案例库</span>
-        </router-link>
-        <router-link to="/community" class="nav-link" :class="{ active: $route.path === '/community' }">
-          <span class="nav-icon">🌟</span>
-          <span>社区</span>
-        </router-link>
-        <router-link to="/favorites" class="nav-link" :class="{ active: $route.path === '/favorites' }">
-          <span class="nav-icon">⭐</span>
-          <span>收藏</span>
-        </router-link>
-        <router-link to="/about" class="nav-link" :class="{ active: $route.path === '/about' }">
-          <span class="nav-icon">ℹ️</span>
-          <span>关于</span>
-        </router-link>
-        <router-link to="/settings" class="nav-link" :class="{ active: $route.path === '/settings' }">
-          <span class="nav-icon">⚙️</span>
-          <span>设置</span>
-        </router-link>
-        <router-link to="/statistics" class="nav-link" :class="{ active: $route.path === '/statistics' }">
-          <span class="nav-icon">📊</span>
-          <span>统计</span>
+      
+      <!-- 桌面端导航 -->
+      <nav class="navbar-nav desktop-nav">
+        <router-link 
+          v-for="item in navItems" 
+          :key="item.path"
+          :to="item.path" 
+          class="nav-link"
+          :class="{ active: $route.path === item.path }"
+        >
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-text">{{ item.label }}</span>
         </router-link>
       </nav>
+
+      <!-- 移动端菜单按钮 -->
+      <button class="mobile-menu-btn" @click="isMobileMenuOpen = !isMobileMenuOpen">
+        <span class="menu-icon">{{ isMobileMenuOpen ? '✕' : '☰' }}</span>
+      </button>
+      
       <div class="navbar-actions">
         <!-- 主题切换 -->
         <button class="theme-btn" @click="toggleTheme" :title="isDark ? '切换亮色模式' : '切换暗黑模式'">
-          <!-- 太阳图标 -->
           <svg v-if="!isDark" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="5"></circle>
             <line x1="12" y1="1" x2="12" y2="3"></line>
@@ -115,7 +40,6 @@
             <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
           </svg>
-          <!-- 月亮图标 -->
           <svg v-else xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
           </svg>
@@ -127,6 +51,23 @@
         </a>
       </div>
     </header>
+
+    <!-- 移动端导航菜单 -->
+    <Transition name="slide-down">
+      <nav v-if="isMobileMenuOpen" class="mobile-nav">
+        <router-link 
+          v-for="item in navItems" 
+          :key="item.path"
+          :to="item.path" 
+          class="mobile-nav-link"
+          :class="{ active: $route.path === item.path }"
+          @click="isMobileMenuOpen = false"
+        >
+          <span class="nav-icon">{{ item.icon }}</span>
+          <span class="nav-text">{{ item.label }}</span>
+        </router-link>
+      </nav>
+    </Transition>
 
     <div class="layout-body">
       <!-- 左侧分类导航 -->
@@ -152,7 +93,7 @@
       </aside>
 
       <!-- 中间主内容区 -->
-      <main class="main-content">
+      <main class="main-content" :class="{ 'full-width': !showSidebars }">
         <slot name="main" />
       </main>
 
@@ -182,14 +123,26 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
-const route = useRoute()
+const route = useRoute();
 const isLeftCollapsed = ref(false);
 const isRightCollapsed = ref(false);
 const isDark = ref(false);
+const isMobileMenuOpen = ref(false);
+
+// 导航项配置
+const navItems = [
+  { path: '/', label: '首页', icon: '🏠' },
+  { path: '/generate', label: '提示词生成', icon: '✨' },
+  { path: '/templates', label: '提示词大全', icon: '💡' },
+  { path: '/template-market', label: '模板市场', icon: '📦' },
+  { path: '/variants', label: '变体生成', icon: '🎨' },
+  { path: '/popular', label: '热门', icon: '🏆' },
+  { path: '/statistics', label: '统计', icon: '📊' },
+];
 
 // 根据路由控制侧边栏显示
 const showSidebars = computed(() => {
-  return route.path === '/' || route.path === '/home'
+  return route.path === '/generate';
 });
 
 const toggleLeft = () => {
@@ -221,20 +174,20 @@ onMounted(() => {
   flex-direction: column;
   height: 100vh;
   overflow: hidden;
-  background: #f1f5f9;
+  background: var(--bg-primary, #f1f5f9);
 }
 
 /* 顶部导航条 */
 .top-navbar {
   height: 56px;
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(226, 232, 240, 0.6);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 20px;
   flex-shrink: 0;
   z-index: 100;
   position: relative;
@@ -254,6 +207,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
 }
 
 .brand-icon {
@@ -263,48 +217,120 @@ onMounted(() => {
 .brand-text {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  white-space: nowrap;
 }
 
+/* 桌面端导航 */
 .navbar-nav {
   display: flex;
-  gap: 8px;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  margin: 0 16px;
+  flex: 1;
+  justify-content: center;
+}
+
+.navbar-nav::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-link {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 8px;
   color: #64748b;
   text-decoration: none;
   font-size: 0.875rem;
   font-weight: 500;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-link:hover {
-  background: #f1f5f9;
-  color: #334155;
+  background: rgba(59, 130, 246, 0.08);
+  color: #3b82f6;
 }
 
 .nav-link.active {
-  background: #eff6ff;
-  color: #2563eb;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
 }
 
 .nav-icon {
   font-size: 1rem;
 }
 
-.navbar-actions {
+/* 移动端菜单按钮 */
+.mobile-menu-btn {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: #f1f5f9;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.mobile-menu-btn:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+/* 移动端导航 */
+.mobile-nav {
+  display: none;
+  position: absolute;
+  top: 56px;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #e2e8f0;
+  padding: 12px;
+  z-index: 99;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-nav-link {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: #64748b;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.mobile-nav-link:hover {
+  background: #f1f5f9;
+  color: #3b82f6;
+}
+
+.mobile-nav-link.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .action-link {
@@ -338,12 +364,13 @@ onMounted(() => {
 /* 左侧边栏 */
 .sidebar-left {
   width: 260px;
-  background: white;
-  border-right: 1px solid #e2e8f0;
+  background: rgba(255, 255, 255, 0.7);
+  border-right: 1px solid rgba(226, 232, 240, 0.6);
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
+  backdrop-filter: blur(8px);
 }
 
 .sidebar-left.collapsed {
@@ -352,13 +379,14 @@ onMounted(() => {
 
 /* 右侧边栏 */
 .sidebar-right {
-  width: 380px;
-  background: white;
-  border-left: 1px solid #e2e8f0;
+  width: 360px;
+  background: rgba(255, 255, 255, 0.7);
+  border-left: 1px solid rgba(226, 232, 240, 0.6);
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
+  backdrop-filter: blur(8px);
 }
 
 .sidebar-right.collapsed {
@@ -371,12 +399,12 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
   height: 56px;
 }
 
 .sidebar-title {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #475569;
   margin: 0;
@@ -390,7 +418,7 @@ onMounted(() => {
   width: 28px;
   height: 28px;
   border: none;
-  background: #f1f5f9;
+  background: rgba(241, 245, 249, 0.8);
   border-radius: 6px;
   cursor: pointer;
   display: flex;
@@ -429,16 +457,53 @@ onMounted(() => {
   overflow-y: auto;
   padding: 24px;
   background: 
-    radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.06) 0%, transparent 50%),
     linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   position: relative;
+}
+
+.main-content.full-width {
+  padding: 0;
+  background: #f8fafc;
+}
+
+/* 主题切换按钮 */
+.theme-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.theme-btn:hover {
+  background: #f1f5f9;
+  color: #f59e0b;
+}
+
+/* 动画 */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-down-enter-from,
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 /* 滚动条样式 */
 .sidebar-content::-webkit-scrollbar,
 .main-content::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 
 .sidebar-content::-webkit-scrollbar-track,
@@ -463,11 +528,25 @@ onMounted(() => {
     width: 220px;
   }
   .sidebar-right {
-    width: 320px;
+    width: 300px;
   }
 }
 
 @media (max-width: 992px) {
+  .desktop-nav {
+    display: none;
+  }
+  
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .mobile-nav {
+    display: block;
+  }
+  
   .sidebar-left {
     position: absolute;
     left: 0;
@@ -475,10 +554,12 @@ onMounted(() => {
     bottom: 0;
     z-index: 50;
     box-shadow: 4px 0 12px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.98);
   }
   
   .sidebar-left.collapsed {
     transform: translateX(-100%);
+    width: 220px;
   }
   
   .sidebar-right {
@@ -488,116 +569,116 @@ onMounted(() => {
     bottom: 0;
     z-index: 50;
     box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.98);
   }
   
   .sidebar-right.collapsed {
     transform: translateX(100%);
+    width: 300px;
   }
 }
 
-/* 主题切换按钮 */
-.theme-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: transparent;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #64748b;
-  transition: all 0.2s;
+@media (max-width: 640px) {
+  .brand-text {
+    font-size: 1.1rem;
+  }
+  
+  .top-navbar {
+    padding: 0 12px;
+  }
+  
+  .sidebar-right {
+    width: 100%;
+  }
 }
 
-.theme-btn:hover {
-  background: #f1f5f9;
-  color: #334155;
-}
-
-/* 暗黑模式 */
-:root {
-  --bg-primary: #f1f5f9;
-  --bg-secondary: #ffffff;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
-  --border-color: #e2e8f0;
-  --hover-bg: #f1f5f9;
-}
-
-:root.dark {
-  --bg-primary: #0f172a;
-  --bg-secondary: #1e293b;
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --border-color: #334155;
-  --hover-bg: #334155;
-}
-
+/* ===== 暗黑模式 ===== */
 :root.dark .app-layout {
-  background: var(--bg-primary);
+  background: var(--bg-primary, #0f172a);
 }
 
-:root.dark .top-navbar {
-  background: rgba(30, 41, 59, 0.8);
-  border-bottom-color: var(--border-color);
+:root.dark .top-navbar,
+:root.dark .mobile-nav {
+  background: rgba(30, 41, 59, 0.9);
+  border-bottom-color: rgba(51, 65, 85, 0.6);
 }
 
 :root.dark .brand-text {
-  color: #60a5fa;
+  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 :root.dark .nav-link {
-  color: var(--text-secondary);
+  color: #94a3b8;
 }
 
 :root.dark .nav-link:hover {
-  background: var(--hover-bg);
-  color: var(--text-primary);
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
 }
 
-:root.dark .nav-link.active {
-  background: rgba(59, 130, 246, 0.2);
+:root.dark .mobile-nav-link {
+  color: #94a3b8;
+}
+
+:root.dark .mobile-nav-link:hover {
+  background: rgba(59, 130, 246, 0.15);
   color: #60a5fa;
 }
 
 :root.dark .sidebar-left,
 :root.dark .sidebar-right {
-  background: var(--bg-secondary);
-  border-color: var(--border-color);
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(51, 65, 85, 0.6);
 }
 
 :root.dark .sidebar-title {
-  color: var(--text-primary);
+  color: #e2e8f0;
 }
 
 :root.dark .toggle-btn {
-  background: var(--hover-bg);
-  color: var(--text-secondary);
+  background: rgba(51, 65, 85, 0.8);
+  color: #94a3b8;
 }
 
 :root.dark .toggle-btn:hover {
   background: #475569;
+  color: #e2e8f0;
 }
 
 :root.dark .main-content {
   background: 
-    radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
     linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
 }
 
+:root.dark .main-content.full-width {
+  background: #0f172a;
+}
+
 :root.dark .theme-btn {
-  color: var(--text-secondary);
+  color: #94a3b8;
 }
 
 :root.dark .theme-btn:hover {
-  background: var(--hover-bg);
+  background: rgba(51, 65, 85, 0.8);
   color: #fbbf24;
 }
 
 :root.dark .action-link:hover {
-  background: var(--hover-bg);
-  color: var(--text-primary);
+  background: rgba(51, 65, 85, 0.8);
+  color: #e2e8f0;
+}
+
+:root.dark .mobile-menu-btn {
+  background: rgba(51, 65, 85, 0.8);
+  color: #94a3b8;
+}
+
+:root.dark .mobile-menu-btn:hover {
+  background: #475569;
+  color: #e2e8f0;
 }
 </style>
