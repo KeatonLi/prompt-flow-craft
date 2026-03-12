@@ -177,7 +177,7 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
      * 统计总点赞数
      */
     @Query("SELECT COALESCE(SUM(p.likeCount), 0) FROM PromptCache p")
-    long sumTotalLikes();
+    Long sumTotalLikes();
     
     /**
      * 统计平均评分
@@ -186,13 +186,22 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     Double getAverageRating();
     /**
      * 统计每日创建数和点赞数（最近N天）
+     * 使用标准SQL以保证跨数据库兼容
      */
-    @Query(value = "SELECT DATE_FORMAT(created_at, '%Y-%m-%d') as day, COUNT(*) as count, COALESCE(SUM(like_count), 0) as likes FROM prompt_cache WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL :days DAY) GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d') ORDER BY day", nativeQuery = true)
-    List<Object[]> countByDayWithLikes(@Param("days") int days);
+    @Query(value = "SELECT CAST(created_at AS DATE) as day, COUNT(*) as count, COALESCE(SUM(like_count), 0) as likes " +
+           "FROM prompt_cache WHERE created_at >= :startDate GROUP BY CAST(created_at AS DATE) ORDER BY day", 
+           nativeQuery = true)
+    List<Object[]> countByDayWithLikes(@Param("startDate") java.time.LocalDateTime startDate);
+    
+    /**
+     * 统计每日创建数和点赞数（使用JPQL，兼容性更好）
+     */
+    @Query("SELECT FUNCTION('DATE', p.createdAt), COUNT(p), COALESCE(SUM(p.likeCount), 0) FROM PromptCache p WHERE p.createdAt >= :startDate GROUP BY FUNCTION('DATE', p.createdAt) ORDER BY FUNCTION('DATE', p.createdAt)")
+    List<Object[]> countByDayWithLikesJpql(@Param("startDate") java.time.LocalDateTime startDate);
     
     /**
      * 获取总浏览次数
      */
     @Query("SELECT COALESCE(SUM(p.hitCount), 0) FROM PromptCache p")
-    long sumTotalHits();
+    Long sumTotalHits();
 }

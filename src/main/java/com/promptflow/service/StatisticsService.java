@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -34,7 +35,10 @@ public class StatisticsService {
         stats.setTodayCount(0L);
         stats.setWeekCount(0L);
         stats.setMonthCount(0L);
-        stats.setTotalLikes(promptCacheRepository.sumTotalLikes());
+        
+        // 总点赞数（处理null）
+        Long totalLikes = promptCacheRepository.sumTotalLikes();
+        stats.setTotalLikes(totalLikes != null ? totalLikes : 0L);
         stats.setTotalRatings(0L);
         
         // 平均评分
@@ -42,9 +46,9 @@ public class StatisticsService {
         stats.setAverageRating(avgRating != null ? Math.round(avgRating * 10) / 10.0 : 0.0);
         
         // 缓存命中率
-        long totalHits = promptCacheRepository.sumTotalHits();
+        Long totalHits = promptCacheRepository.sumTotalHits();
         long totalPrompts = promptCacheRepository.count();
-        if (totalPrompts > 0) {
+        if (totalHits != null && totalHits > 0 && totalPrompts > 0) {
             double hitRate = (double) totalHits / (totalPrompts + totalHits) * 100;
             stats.setCacheHitRate(Math.round(hitRate * 10) / 10.0);
         } else {
@@ -112,7 +116,22 @@ public class StatisticsService {
      * 获取每日趋势
      */
     private List<UsageStatistics.DailyTrend> getDailyTrends(int days) {
-        List<Object[]> results = promptCacheRepository.countByDayWithLikes(days);
+        // 计算起始日期
+        LocalDateTime startDate = LocalDateTime.now().minusDays(days);
+        List<Object[]> results;
+        
+        try {
+            // 尝试使用原生SQL查询
+            results = promptCacheRepository.countByDayWithLikes(startDate);
+        } catch (Exception e) {
+            // 如果失败，使用JPQL查询
+            try {
+                results = promptCacheRepository.countByDayWithLikesJpql(startDate);
+            } catch (Exception ex) {
+                // 如果都失败，返回空数据
+                results = new ArrayList<>();
+            }
+        }
         
         // 补全缺失的日期
         LocalDate today = LocalDate.now();
@@ -127,12 +146,16 @@ public class StatisticsService {
         
         // 填充数据
         for (Object[] row : results) {
+            if (row[0] == null) continue;
             String dateStr = String.valueOf(row[0]);
             long count = ((Number) row[1]).longValue();
-            long likes = ((Number) row[2]).longValue();
+            long likes = row.length > 2 && row[2] != null ? ((Number) row[2]).longValue() : 0;
             
-            // 处理日期格式
-            if (dateStr.length() == 8) { // yyyyMMdd
+            // 处理日期格式 - 支持 java.sql.Date, LocalDate, String 等多种类型
+            if (dateStr.contains(" ")) {
+                dateStr = dateStr.substring(0, dateStr.indexOf(" "));
+            }
+            if (dateStr.length() == 8 && !dateStr.contains("-")) { // yyyyMMdd
                 dateStr = dateStr.substring(0, 4) + "-" + dateStr.substring(4, 6) + "-" + dateStr.substring(6);
             }
             
@@ -178,10 +201,12 @@ public class StatisticsService {
     public Map<String, Object> getSimpleStats() {
         Map<String, Object> stats = new HashMap<>();
         
+        Long totalLikes = promptCacheRepository.sumTotalLikes();
+        
         stats.put("totalPrompts", promptCacheRepository.count());
         stats.put("todayCount", 0L);
         stats.put("weekCount", 0L);
-        stats.put("totalLikes", promptCacheRepository.sumTotalLikes());
+        stats.put("totalLikes", totalLikes != null ? totalLikes : 0L);
         
         return stats;
     }
