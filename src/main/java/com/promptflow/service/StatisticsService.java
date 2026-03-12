@@ -32,9 +32,9 @@ public class StatisticsService {
         
         // 基础统计
         stats.setTotalPrompts(promptCacheRepository.count());
-        stats.setTodayCount(0L);
-        stats.setWeekCount(0L);
-        stats.setMonthCount(0L);
+        stats.setTodayCount(promptCacheRepository.countToday());
+        stats.setWeekCount(promptCacheRepository.countThisWeek());
+        stats.setMonthCount(promptCacheRepository.countThisMonth());
         
         // 总点赞数（处理null）
         Long totalLikes = promptCacheRepository.sumTotalLikes();
@@ -119,7 +119,7 @@ public class StatisticsService {
         // 计算起始日期
         LocalDateTime startDate = LocalDateTime.now().minusDays(days);
         List<Object[]> results;
-        
+
         try {
             // 尝试使用原生SQL查询
             results = promptCacheRepository.countByDayWithLikes(startDate);
@@ -132,38 +132,44 @@ public class StatisticsService {
                 results = new ArrayList<>();
             }
         }
-        
+
         // 补全缺失的日期
         LocalDate today = LocalDate.now();
         Map<String, UsageStatistics.DailyTrend> trendMap = new LinkedHashMap<>();
-        
+
         // 初始化最近N天
         for (int i = days - 1; i >= 0; i--) {
             LocalDate date = today.minusDays(i);
             String dateStr = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
             trendMap.put(dateStr, new UsageStatistics.DailyTrend(dateStr, 0, 0));
         }
-        
+
         // 填充数据
         for (Object[] row : results) {
             if (row[0] == null) continue;
             String dateStr = String.valueOf(row[0]);
             long count = ((Number) row[1]).longValue();
             long likes = row.length > 2 && row[2] != null ? ((Number) row[2]).longValue() : 0;
-            
-            // 处理日期格式 - 支持 java.sql.Date, LocalDate, String 等多种类型
-            if (dateStr.contains(" ")) {
+
+            // 处理日期格式 - 支持多种格式
+            // 1. ISO格式: 2026-03-04T16:47:49.190167 -> 2026-03-04
+            if (dateStr.contains("T")) {
+                dateStr = dateStr.substring(0, dateStr.indexOf("T"));
+            }
+            // 2. 带时间格式: 2026-03-04 16:47:49 -> 2026-03-04
+            else if (dateStr.contains(" ")) {
                 dateStr = dateStr.substring(0, dateStr.indexOf(" "));
             }
-            if (dateStr.length() == 8 && !dateStr.contains("-")) { // yyyyMMdd
+            // 3. yyyyMMdd格式
+            else if (dateStr.length() == 8 && !dateStr.contains("-")) {
                 dateStr = dateStr.substring(0, 4) + "-" + dateStr.substring(4, 6) + "-" + dateStr.substring(6);
             }
-            
+
             if (trendMap.containsKey(dateStr)) {
                 trendMap.put(dateStr, new UsageStatistics.DailyTrend(dateStr, count, likes));
             }
         }
-        
+
         return new ArrayList<>(trendMap.values());
     }
     
@@ -171,8 +177,6 @@ public class StatisticsService {
      * 将查询结果转换为PromptCache列表
      */
     private List<PromptCache> convertToPromptCacheList(List<Object[]> results) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        
         return results.stream()
                 .map(row -> {
                     PromptCache p = new PromptCache();
@@ -181,7 +185,25 @@ public class StatisticsService {
                     p.setTargetAudience((String) row[2]);
                     p.setPromptSummary((String) row[3]);
                     if (row[4] != null) {
-                        p.setCreatedAt(LocalDate.parse(String.valueOf(row[4]), formatter).atStartOfDay());
+                        // 支持多种日期格式解析
+                        String dateStr = String.valueOf(row[4]);
+                        try {
+                            if (dateStr.contains("T")) {
+                                // ISO格式: 2026-03-04T16:47:49.190167
+                                LocalDateTime dateTime = LocalDateTime.parse(dateStr);
+                                p.setCreatedAt(dateTime);
+                            } else if (dateStr.contains(" ")) {
+                                // 标准格式: 2026-03-04 16:47:49
+                                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                                p.setCreatedAt(LocalDateTime.parse(dateStr, formatter));
+                            } else {
+                                // 只有日期: 2026-03-04
+                                p.setCreatedAt(LocalDate.parse(dateStr).atStartOfDay());
+                            }
+                        } catch (Exception e) {
+                            // 解析失败，使用当前时间
+                            p.setCreatedAt(LocalDateTime.now());
+                        }
                     }
                     p.setHitCount((Integer) row[5]);
                     p.setCategoryId((Long) row[6]);

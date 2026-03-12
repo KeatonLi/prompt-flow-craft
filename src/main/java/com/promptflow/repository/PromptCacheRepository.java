@@ -154,24 +154,24 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     Page<PromptCache> findByAverageRatingIsNotNullOrderByAverageRatingDesc(Pageable pageable);
     
     // ==================== 统计相关查询 ====================
-    
+
     /**
      * 统计今日创建的提示词数量
      */
-//     @Query("SELECT COUNT(p) FROM PromptCache p WHERE CAST(p.createdAt AS java.time.LocalDate) = CURRENT_DATE")
-//     long countToday();
-    
+    @Query(value = "SELECT COUNT(*) FROM prompt_cache WHERE DATE(created_at) = CURDATE()", nativeQuery = true)
+    long countToday();
+
     /**
      * 统计本周创建的提示词数量
      */
-//     @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.createdAt >= CURRENT_DATE - 7")
-//     long countThisWeek();
-    
+    @Query(value = "SELECT COUNT(*) FROM prompt_cache WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)", nativeQuery = true)
+    long countThisWeek();
+
     /**
      * 统计本月创建的提示词数量
      */
-//    @Query("SELECT COUNT(p) FROM PromptCache p WHERE p.createdAt >= CURRENT_DATE - 30")
-//     long countThisMonth();
+    @Query(value = "SELECT COUNT(*) FROM prompt_cache WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)", nativeQuery = true)
+    long countThisMonth();
     
     /**
      * 统计总点赞数
