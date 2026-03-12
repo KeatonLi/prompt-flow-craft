@@ -12,8 +12,7 @@ export const useCategoryStore = defineStore('category', () => {
   // 分类统计
   const categoryStats = ref({
     categoryCounts: {} as Record<number, number>,
-    totalCount: 0,
-    favoriteCount: 0
+    totalCount: 0
   });
 
   // Getters
@@ -36,9 +35,6 @@ export const useCategoryStore = defineStore('category', () => {
   
   // 获取总数量
   const totalCount = computed(() => categoryStats.value.totalCount);
-  
-  // 获取收藏数量
-  const favoriteCount = computed(() => categoryStats.value.favoriteCount);
 
   // Actions
   async function fetchCategories() {
@@ -83,7 +79,6 @@ export const useCategoryStore = defineStore('category', () => {
     currentCategory,
     categoryStats,
     totalCount,
-    favoriteCount,
     getCategoryCount,
     fetchCategories,
     fetchCategoryStats,

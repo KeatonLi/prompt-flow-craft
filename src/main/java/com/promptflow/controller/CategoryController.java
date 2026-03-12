@@ -135,10 +135,6 @@ public class CategoryController {
         long totalCount = promptCacheRepository.count();
         stats.put("totalCount", totalCount);
         
-        // 统计有点赞的数量
-        long likeCount = 0L;
-        stats.put("favoriteCount", likeCount);
-        
         return ApiResponse.success(stats);
     }
 }

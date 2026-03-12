@@ -6,19 +6,17 @@ import TemplateMarket from '../views/TemplateMarket.vue'
 import Popular from '../views/Popular.vue'
 import Statistics from '../views/Statistics.vue'
 import PromptVariants from '../views/PromptVariants.vue'
-import TemplateEditor from '../views/TemplateEditor.vue'
-import PromptPlayground from '../views/PromptPlayground.vue'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: HomeView
+    component: About
   },
   {
-    path: '/about',
-    name: 'About',
-    component: About
+    path: '/generate',
+    name: 'Generate',
+    component: HomeView
   },
   {
     path: '/templates',
@@ -44,16 +42,6 @@ const routes = [
     path: '/variants',
     name: 'PromptVariants',
     component: PromptVariants
-  },
-  {
-    path: '/template-editor',
-    name: 'TemplateEditor',
-    component: TemplateEditor
-  },
-  {
-    path: '/playground',
-    name: 'PromptPlayground',
-    component: PromptPlayground
   }
 ]
 
