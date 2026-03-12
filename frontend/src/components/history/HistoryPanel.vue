@@ -339,47 +339,4 @@ onMounted(() => {
   opacity: 0;
   transform: translateX(-20px);
 }
-
-/* 暗黑模式 */
-:root.dark .panel-header {
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .search-input {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: #334155;
-  color: #e2e8f0;
-}
-
-:root.dark .search-input:focus {
-  border-color: #3b82f6;
-  background: rgba(30, 41, 59, 0.9);
-}
-
-:root.dark .tab-btn {
-  background: rgba(51, 65, 85, 0.6);
-  color: #94a3b8;
-}
-
-:root.dark .tab-btn:hover {
-  background: #475569;
-  color: #e2e8f0;
-}
-
-:root.dark .load-btn {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: #334155;
-  color: #94a3b8;
-}
-
-:root.dark .load-btn:hover:not(:disabled) {
-  border-color: #3b82f6;
-  color: #60a5fa;
-  background: rgba(59, 130, 246, 0.1);
-}
-
-:root.dark .panel-footer {
-  border-color: rgba(51, 65, 85, 0.6);
-  background: rgba(30, 41, 59, 0.3);
-}
 </style>

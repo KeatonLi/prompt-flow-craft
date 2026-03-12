@@ -740,68 +740,6 @@ const resetForm = () => {
   line-height: 1.5;
 }
 
-/* 暗黑模式 */
-:root.dark .banner {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
-}
-
-:root.dark .input-section,
-:root.dark .variant-card {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .prompt-textarea,
-:root.dark .option-select {
-  background: rgba(15, 23, 42, 0.5);
-  border-color: #334155;
-  color: #e2e8f0;
-}
-
-:root.dark .form-label,
-:root.dark .option-label {
-  color: #e2e8f0;
-}
-
-:root.dark .section-header h2 {
-  color: #f1f5f9;
-}
-
-:root.dark .variant-content {
-  color: #cbd5e1;
-}
-
-:root.dark .variant-meta {
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .comparison-section,
-:root.dark .tips-section {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .comparison-section h3,
-:root.dark .tips-section h3 {
-  color: #f1f5f9;
-}
-
-:root.dark .comparison-text {
-  color: #cbd5e1;
-}
-
-:root.dark .tip-card {
-  background: rgba(15, 23, 42, 0.5);
-}
-
-:root.dark .tip-card h4 {
-  color: #f1f5f9;
-}
-
-:root.dark .tip-card p {
-  color: #94a3b8;
-}
-
 @media (max-width: 768px) {
   .content-wrapper {
     padding: 16px;

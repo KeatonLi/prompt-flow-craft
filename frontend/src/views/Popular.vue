@@ -130,7 +130,7 @@ const tagColors = [
 const getTagStyle = (idx) => tagColors[idx % tagColors.length]
 
 const usePrompt = (item) => {
-  router.push({ path: '/', query: { task: item.taskDescription } })
+  router.push({ path: '/generate', query: { task: item.taskDescription } })
   cur.value = null
 }
 
@@ -373,42 +373,5 @@ onMounted(() => loadData())
   .cards-grid {
     grid-template-columns: 1fr;
   }
-}
-
-/* 暗黑模式 */
-:root.dark .banner {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-}
-
-:root.dark .prompt-card {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .prompt-card:hover {
-  border-color: #f59e0b;
-  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
-}
-
-:root.dark .card-task {
-  color: #f1f5f9;
-}
-
-:root.dark .card-result {
-  color: #94a3b8;
-}
-
-:root.dark .card-footer {
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .tag.ai-tag {
-  background: rgba(51, 65, 85, 0.6);
-  color: #94a3b8;
-}
-
-:root.dark .rank-badge {
-  background: rgba(51, 65, 85, 0.8);
-  color: #94a3b8;
 }
 </style>

@@ -148,7 +148,7 @@ const API = 'http://111.231.107.210:8080/api'
 // 加载分类
 const loadCategories = async () => {
   try {
-    const r = await fetch(`${API}/category/all`)
+    const r = await fetch(`${API}/categories`)
     const d = await r.json()
     categories.value = d.data || []
   } catch (e) { console.error(e) }
@@ -274,17 +274,17 @@ const getTagStyle = (idx) => {
 
 const usePrompt = (item) => {
   if (!item) return
-  router.push({ 
-    path: '/', 
-    query: { 
-      task: item.taskDescription, 
+  router.push({
+    path: '/generate',
+    query: {
+      task: item.taskDescription,
       audience: item.targetAudience,
       format: item.outputFormat,
       tone: item.tone,
       length: item.length,
       constraints: item.constraints,
       examples: item.examples
-    } 
+    }
   })
   cur.value = null
 }
@@ -644,71 +644,5 @@ const usePrompt = (item) => {
   .cat-btn {
     white-space: nowrap;
   }
-}
-
-/* 暗黑模式 */
-:root.dark .banner {
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
-}
-
-:root.dark .filter-bar {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .search-input {
-  background: rgba(15, 23, 42, 0.5);
-  border-color: #334155;
-  color: #e2e8f0;
-}
-
-:root.dark .search-input:focus {
-  border-color: #3b82f6;
-  background: rgba(15, 23, 42, 0.8);
-}
-
-:root.dark .cat-btn {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: #334155;
-  color: #94a3b8;
-}
-
-:root.dark .cat-btn:hover {
-  border-color: #3b82f6;
-  color: #60a5fa;
-}
-
-:root.dark .prompt-card {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .prompt-card:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
-}
-
-:root.dark .card-task {
-  color: #f1f5f9;
-}
-
-:root.dark .card-result {
-  color: #94a3b8;
-}
-
-:root.dark .card-footer {
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .tag-empty,
-:root.dark .tag-more,
-:root.dark .tag.ai-tag {
-  background: rgba(51, 65, 85, 0.6);
-  color: #94a3b8;
-}
-
-:root.dark .card-category.default {
-  background: rgba(51, 65, 85, 0.6);
-  color: #94a3b8;
 }
 </style>

@@ -303,35 +303,4 @@ onMounted(() => {
   color: #94a3b8;
   font-style: italic;
 }
-
-/* 暗黑模式 */
-:root.dark .title-text {
-  color: #e2e8f0;
-}
-
-:root.dark .nav-item {
-  color: #94a3b8;
-}
-
-:root.dark .nav-item:hover {
-  background: rgba(59, 130, 246, 0.1);
-  color: #60a5fa;
-}
-
-:root.dark .nav-count {
-  background: rgba(51, 65, 85, 0.8);
-  color: #94a3b8;
-}
-
-:root.dark .nav-divider {
-  background: linear-gradient(90deg, transparent, #334155, transparent);
-}
-
-:root.dark .section-title {
-  color: #64748b;
-}
-
-:root.dark .tags-empty {
-  color: #64748b;
-}
 </style>

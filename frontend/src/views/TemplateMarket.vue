@@ -178,16 +178,16 @@ const openTemplate = (item) => {
 
 const useTemplate = (item) => {
   if (!item) return
-  router.push({ 
-    path: '/', 
-    query: { 
-      task: item.taskDescription, 
+  router.push({
+    path: '/generate',
+    query: {
+      task: item.taskDescription,
       audience: item.targetAudience,
       format: item.outputFormat,
       tone: item.tone,
       examples: item.examples,
       fromTemplate: 'true'
-    } 
+    }
   })
   showDetail.value = false
 }
@@ -545,79 +545,9 @@ onMounted(() => {
     flex-wrap: nowrap;
     padding-bottom: 4px;
   }
-  
+
   .cat-btn {
     white-space: nowrap;
   }
-}
-
-/* 暗黑模式 */
-:root.dark .banner {
-  background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
-}
-
-:root.dark .filter-bar {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .cat-btn {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: #334155;
-  color: #94a3b8;
-}
-
-:root.dark .cat-btn:hover {
-  border-color: #8b5cf6;
-  color: #a78bfa;
-}
-
-:root.dark .template-card {
-  background: rgba(30, 41, 59, 0.6);
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .template-card:hover {
-  border-color: #8b5cf6;
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.2);
-}
-
-:root.dark .card-name {
-  color: #f1f5f9;
-}
-
-:root.dark .card-desc {
-  color: #94a3b8;
-}
-
-:root.dark .badge {
-  background: rgba(51, 65, 85, 0.8);
-  color: #94a3b8;
-}
-
-:root.dark .card-action {
-  border-color: rgba(51, 65, 85, 0.6);
-}
-
-:root.dark .detail-label {
-  color: #94a3b8;
-}
-
-:root.dark .detail-value {
-  color: #cbd5e1;
-}
-
-:root.dark .detail-value.code,
-:root.dark .param-item {
-  background: rgba(15, 23, 42, 0.6);
-  border-color: #334155;
-}
-
-:root.dark .param-value {
-  color: #e2e8f0;
-}
-
-:root.dark .param-label {
-  color: #94a3b8;
 }
 </style>
