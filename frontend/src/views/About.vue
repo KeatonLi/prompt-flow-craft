@@ -4,8 +4,16 @@
       <div class="about-page">
         <div class="hero-section">
           <div class="hero-icon">🎨</div>
-          <h1 class="hero-title">关于 Prompt Flow Craft</h1>
+          <h1 class="hero-title">Prompt Flow Craft</h1>
           <p class="hero-subtitle">企业级 AI 提示词工程平台，让 AI 对话更精准、更高效</p>
+          
+          <!-- 核心跳转按钮 -->
+          <div class="hero-actions">
+            <router-link to="/generate" class="btn-primary">
+              <span class="btn-icon">✨</span>
+              开始生成提示词
+            </router-link>
+          </div>
         </div>
 
         <div id="overview" class="preview-section">
@@ -135,41 +143,98 @@ import AppLayout from '../components/layout/AppLayout.vue'
 
 .hero-section {
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  padding: 60px 40px;
+  padding: 80px 40px 100px;
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.3; }
 }
 
 .hero-icon {
-  font-size: 4rem;
-  margin-bottom: 16px;
+  font-size: 5rem;
+  margin-bottom: 20px;
+  position: relative;
 }
 
 .hero-title {
-  font-size: 2.2rem;
-  font-weight: 700;
+  font-size: 2.8rem;
+  font-weight: 800;
   color: white;
-  margin: 0 0 12px;
+  margin: 0 0 16px;
+  position: relative;
+  letter-spacing: -0.02em;
 }
 
 .hero-subtitle {
-  color: rgba(255,255,255,0.8);
-  font-size: 1.1rem;
-  margin: 0;
+  color: rgba(255,255,255,0.85);
+  font-size: 1.25rem;
+  margin: 0 auto 40px;
   max-width: 600px;
-  margin: 0 auto;
+  position: relative;
+  line-height: 1.6;
+}
+
+.hero-actions {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 36px;
+  background: white;
+  color: #3b82f6;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+}
+
+.btn-icon {
+  font-size: 1.3rem;
 }
 
 .section-title {
-  font-size: 1.4rem;
-  font-weight: 600;
+  font-size: 1.5rem;
+  font-weight: 700;
   color: #1e293b;
-  margin: 0 0 24px;
+  margin: 0 0 32px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 3px solid #e2e8f0;
 }
 
 .preview-section, .features-section, .tech-section {
-  padding: 48px 40px;
+  padding: 64px 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -177,36 +242,37 @@ import AppLayout from '../components/layout/AppLayout.vue'
 .preview-grid, .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
+  gap: 24px;
 }
 
 .preview-card, .feature-item {
   background: white;
   border-radius: 16px;
-  padding: 24px;
+  padding: 28px;
   border: 1px solid #e2e8f0;
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .preview-card:hover, .feature-item:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+  border-color: #3b82f6;
 }
 
 .preview-icon, .feature-icon {
-  font-size: 2.2rem;
-  margin-bottom: 12px;
+  font-size: 2.5rem;
+  margin-bottom: 16px;
 }
 
 .preview-card h3, .feature-content h4 {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 600;
   color: #1e293b;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 }
 
 .preview-card p, .feature-content p {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: #64748b;
   margin: 0;
   line-height: 1.6;
@@ -221,27 +287,27 @@ import AppLayout from '../components/layout/AppLayout.vue'
 .tech-category {
   background: white;
   border-radius: 16px;
-  padding: 24px;
+  padding: 28px;
   border: 1px solid #e2e8f0;
 }
 
 .tech-category h4 {
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
   color: #1e293b;
-  margin: 0 0 16px;
+  margin: 0 0 20px;
 }
 
 .tech-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .tech-tag {
-  padding: 6px 14px;
+  padding: 8px 16px;
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 500;
 }
 
@@ -258,21 +324,91 @@ import AppLayout from '../components/layout/AppLayout.vue'
 .tech-tag.ml { background: #14b8a620; color: #14b8a6; }
 
 .footer-section {
-  padding: 40px;
+  padding: 48px 40px;
   text-align: center;
   background: white;
   border-top: 1px solid #e2e8f0;
 }
 
 .footer-text {
-  font-size: 1rem;
-  color: #64748b;
+  font-size: 1.1rem;
+  color: #475569;
   margin: 0 0 8px;
+  font-weight: 500;
 }
 
 .footer-version {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #94a3b8;
   margin: 0;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 60px 24px 80px;
+  }
+  
+  .hero-icon {
+    font-size: 4rem;
+  }
+  
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.05rem;
+  }
+  
+  .btn-primary {
+    padding: 14px 28px;
+    font-size: 1rem;
+  }
+  
+  .preview-section, .features-section, .tech-section {
+    padding: 48px 24px;
+  }
+}
+
+/* 暗黑模式 */
+:root.dark .about-page {
+  background: #0f172a;
+}
+
+:root.dark .preview-card,
+:root.dark .feature-item,
+:root.dark .tech-category,
+:root.dark .footer-section {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(51, 65, 85, 0.6);
+}
+
+:root.dark .section-title {
+  color: #f1f5f9;
+  border-color: #334155;
+}
+
+:root.dark .preview-card h3,
+:root.dark .feature-content h4,
+:root.dark .tech-category h4,
+:root.dark .footer-text {
+  color: #f1f5f9;
+}
+
+:root.dark .preview-card p,
+:root.dark .feature-content p,
+:root.dark .footer-version {
+  color: #94a3b8;
+}
+
+:root.dark .btn-primary {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+:root.dark .btn-primary:hover {
+  background: linear-gradient(135deg, #334155 0%, #1e293b 100%);
 }
 </style>
