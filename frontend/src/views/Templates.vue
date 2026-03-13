@@ -80,9 +80,13 @@
                     {{ item.category?.name || '未分类' }}
                   </span>
                   <div class="card-stats">
-                    <span v-if="item.likeCount" class="card-likes">
-                      <span class="stat-icon">❤️</span>
-                      {{ item.likeCount }}
+                    <span
+                      class="card-likes"
+                      :class="{ 'is-liked': item.isLiked }"
+                      @click.stop="handleLike(item)"
+                    >
+                      <span class="stat-icon">{{ item.isLiked ? '❤️' : '🤍' }}</span>
+                      {{ item.likeCount || 0 }}
                     </span>
                   </div>
                 </div>
@@ -210,6 +214,25 @@ const loadData = async (reset = false) => {
     console.error('[Templates] Error:', e) 
   }
   pending.value = false
+}
+
+// 点赞/取消点赞
+const handleLike = async (item) => {
+  try {
+    if (item.isLiked) {
+      // 取消点赞
+      await fetch(`${API}/history/${item.id}/unlike`, { method: 'POST' })
+      item.isLiked = false
+      item.likeCount = (item.likeCount || 1) - 1
+    } else {
+      // 点赞
+      await fetch(`${API}/history/${item.id}/like`, { method: 'POST' })
+      item.isLiked = true
+      item.likeCount = (item.likeCount || 0) + 1
+    }
+  } catch (e) {
+    console.error('[Templates] Like error:', e)
+  }
 }
 
 // 点击卡片查看详情
@@ -634,11 +657,22 @@ const usePrompt = (item) => {
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .card-likes {
   color: #ef4444;
   background: #fef2f2;
+}
+
+.card-likes:hover {
+  transform: scale(1.05);
+  background: #fee2e2;
+}
+
+.card-likes.is-liked {
+  background: #fee2e2;
 }
 
 .card-hits {
