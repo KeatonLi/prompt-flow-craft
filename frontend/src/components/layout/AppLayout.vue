@@ -134,10 +134,7 @@ const navItems = [
   { path: '/', label: '首页', icon: '🏠' },
   { path: '/generate', label: '提示词生成', icon: '✨' },
   { path: '/templates', label: '提示词大全', icon: '💡' },
-  { path: '/template-market', label: '模板市场', icon: '📦' },
-  { path: '/variants', label: '变体生成', icon: '🎨' },
-  { path: '/popular', label: '热门', icon: '🏆' },
-  { path: '/statistics', label: '统计', icon: '📊' },
+  { path: '/statistics', label: '数据统计', icon: '📊' },
 ];
 
 // 根据路由控制侧边栏显示

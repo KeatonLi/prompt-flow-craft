@@ -29,6 +29,10 @@
           热门
         </button>
       </div>
+
+      <button class="go-templates-btn" @click="goToTemplates">
+        查看提示词大全 →
+      </button>
     </div>
 
     <!-- 历史记录列表 -->
@@ -79,6 +83,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { useHistoryStore } from '@/stores';
 import { historyApi } from '@/api/history';
 import type { PromptRecord } from '@/types';
@@ -87,6 +92,11 @@ import HistoryCard from '@/components/HistoryCard.vue';
 import PromptDetailModal from '@/components/PromptDetailModal.vue';
 
 const historyStore = useHistoryStore();
+const router = useRouter();
+
+const goToTemplates = () => {
+  router.push('/templates');
+};
 
 const searchKeyword = ref('');
 const activeTab = ref<'recent' | 'popular'>('recent');
@@ -180,6 +190,27 @@ onMounted(() => {
 .panel-header {
   padding: 16px;
   border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.go-templates-btn {
+  width: 100%;
+  padding: 10px;
+  margin-top: 12px;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.go-templates-btn:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+  transform: translateY(-1px);
 }
 
 .search-box {

@@ -33,6 +33,18 @@
         </el-input>
       </div>
 
+      <div class="action-section">
+        <el-button
+          type="primary"
+          size="small"
+          @click="goToTemplates"
+          class="go-templates-btn"
+        >
+          <el-icon><Collection /></el-icon>
+          查看提示词大全
+        </el-button>
+      </div>
+
       <div class="filter-section">
         <el-select
           v-model="limit"
@@ -152,18 +164,36 @@
 </template>
 
 <script>
+import { useRouter } from 'vue-router'
 import { historyApi } from '@/api/history'
 import HistoryCard from './HistoryCard.vue'
-import { Search, Clock, ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import { Search, Clock, ArrowLeft, ArrowRight, Collection } from '@element-plus/icons-vue'
 
 export default {
   name: 'HistorySidebar',
+  components: {
+    Search,
+    Clock,
+    ArrowLeft,
+    ArrowRight,
+    Collection
+  },
   components: {
     HistoryCard,
     Search,
     Clock,
     ArrowLeft,
     ArrowRight
+  },
+  setup() {
+    const router = useRouter()
+    const goToTemplates = () => {
+      router.push('/templates')
+    }
+    return {
+      router,
+      goToTemplates
+    }
   },
   data() {
     return {
@@ -435,6 +465,20 @@ export default {
   border-color: #3b82f6;
   background: rgba(255, 255, 255, 0.98);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.action-section {
+  margin-bottom: 16px;
+}
+
+.go-templates-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border: none;
+}
+
+.go-templates-btn:hover {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
 }
 
 .filter-section {
