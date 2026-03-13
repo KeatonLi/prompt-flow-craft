@@ -5,9 +5,9 @@
       <div class="header">
         <h1 class="title">
           <el-icon class="title-icon"><MagicStick /></el-icon>
-          AI 提示词生成器
+          智能提示词引擎
         </h1>
-        <p class="subtitle">让AI更懂你的想法，一键生成专业级提示词</p>
+        <p class="subtitle">基于四层架构模型，一键生成高质量AI提示词</p>
         <div class="action-buttons">
           <el-button 
             type="primary" 
