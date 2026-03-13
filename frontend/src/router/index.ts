@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
+import About from '../views/About.vue'
 import HomeView from '../views/HomeView.vue'
 import Templates from '../views/Templates.vue'
 import Statistics from '../views/Statistics.vue'
@@ -8,7 +8,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: About
   },
   {
     path: '/generate',
