@@ -84,7 +84,7 @@
                       class="card-likes"
                       @click.stop="handleLike(item)"
                     >
-                      <span class="stat-icon">🤍</span>
+                      <span class="stat-icon">❤️</span>
                       {{ item.likeCount || 0 }}
                     </span>
                   </div>
@@ -640,29 +640,31 @@ const usePrompt = (item) => {
 
 .card-likes,
 .card-hits {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   display: flex;
   align-items: center;
   gap: 4px;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 16px;
+  padding: 6px 12px;
+  border-radius: 20px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .card-likes {
   color: #ef4444;
-  background: #fef2f2;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 1px solid #fecaca;
 }
 
 .card-likes:hover {
-  transform: scale(1.05);
-  background: #fee2e2;
+  transform: scale(1.08);
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
-.card-likes.is-liked {
-  background: #fee2e2;
+.card-likes:active {
+  transform: scale(0.95);
 }
 
 .card-hits {
