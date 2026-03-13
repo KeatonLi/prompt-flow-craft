@@ -142,6 +142,12 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
     List<PromptCache> findUnTaggedPrompts();
 
     /**
+     * 查询需要自动打标签的提示词（分页）
+     */
+    @Query("SELECT p FROM PromptCache p WHERE p.isAutoTagged = false OR p.isAutoTagged IS NULL ORDER BY p.createdAt DESC")
+    Page<PromptCache> findUnTaggedPromptsPage(Pageable pageable);
+
+    /**
      * 查询最近创建的提示词（用于批量打标签）
      */
     @Query("SELECT p FROM PromptCache p ORDER BY p.createdAt DESC")
@@ -204,4 +210,16 @@ public interface PromptCacheRepository extends JpaRepository<PromptCache, Long> 
      */
     @Query("SELECT COALESCE(SUM(p.hitCount), 0) FROM PromptCache p")
     Long sumTotalHits();
+
+    /**
+     * 获取总输入 Tokens
+     */
+    @Query("SELECT COALESCE(SUM(p.inputTokens), 0) FROM PromptCache p")
+    Long sumTotalInputTokens();
+
+    /**
+     * 获取总输出 Tokens
+     */
+    @Query("SELECT COALESCE(SUM(p.outputTokens), 0) FROM PromptCache p")
+    Long sumTotalOutputTokens();
 }

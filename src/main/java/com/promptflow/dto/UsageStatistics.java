@@ -32,7 +32,16 @@ public class UsageStatistics {
     
     /** 缓存命中率 */
     private double cacheHitRate;
-    
+
+    /** 总输入 Tokens */
+    private long totalInputTokens;
+
+    /** 总输出 Tokens */
+    private long totalOutputTokens;
+
+    /** 总 Tokens */
+    private long totalTokens;
+
     /** 分类统计 */
     private List<CategoryStat> categoryStats;
     
@@ -109,7 +118,31 @@ public class UsageStatistics {
     public void setCacheHitRate(double cacheHitRate) {
         this.cacheHitRate = cacheHitRate;
     }
-    
+
+    public long getTotalInputTokens() {
+        return totalInputTokens;
+    }
+
+    public void setTotalInputTokens(long totalInputTokens) {
+        this.totalInputTokens = totalInputTokens;
+    }
+
+    public long getTotalOutputTokens() {
+        return totalOutputTokens;
+    }
+
+    public void setTotalOutputTokens(long totalOutputTokens) {
+        this.totalOutputTokens = totalOutputTokens;
+    }
+
+    public long getTotalTokens() {
+        return totalTokens;
+    }
+
+    public void setTotalTokens(long totalTokens) {
+        this.totalTokens = totalTokens;
+    }
+
     public List<CategoryStat> getCategoryStats() {
         return categoryStats;
     }

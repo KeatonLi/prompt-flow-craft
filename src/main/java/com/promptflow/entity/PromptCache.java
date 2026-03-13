@@ -95,6 +95,14 @@ public class PromptCache {
     @Column(name = "average_rating")
     private Double averageRating;
 
+    // 输入 tokens 数量
+    @Column(name = "input_tokens")
+    private Long inputTokens = 0L;
+
+    // 输出 tokens 数量
+    @Column(name = "output_tokens")
+    private Long outputTokens = 0L;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
     private PromptCategory category;
@@ -321,6 +329,27 @@ public class PromptCache {
 
     public void setAverageRating(Double averageRating) {
         this.averageRating = averageRating;
+    }
+
+    public Long getInputTokens() {
+        return inputTokens;
+    }
+
+    public void setInputTokens(Long inputTokens) {
+        this.inputTokens = inputTokens;
+    }
+
+    public Long getOutputTokens() {
+        return outputTokens;
+    }
+
+    public void setOutputTokens(Long outputTokens) {
+        this.outputTokens = outputTokens;
+    }
+
+    // 便捷方法：获取总 tokens
+    public Long getTotalTokens() {
+        return (inputTokens != null ? inputTokens : 0L) + (outputTokens != null ? outputTokens : 0L);
     }
 
     public PromptCategory getCategory() {

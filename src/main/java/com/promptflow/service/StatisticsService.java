@@ -54,7 +54,14 @@ public class StatisticsService {
         } else {
             stats.setCacheHitRate(0.0);
         }
-        
+
+        // Tokens 统计
+        Long totalInputTokens = promptCacheRepository.sumTotalInputTokens();
+        Long totalOutputTokens = promptCacheRepository.sumTotalOutputTokens();
+        stats.setTotalInputTokens(totalInputTokens != null ? totalInputTokens : 0L);
+        stats.setTotalOutputTokens(totalOutputTokens != null ? totalOutputTokens : 0L);
+        stats.setTotalTokens(stats.getTotalInputTokens() + stats.getTotalOutputTokens());
+
         // 分类统计
         stats.setCategoryStats(getCategoryStats());
         
