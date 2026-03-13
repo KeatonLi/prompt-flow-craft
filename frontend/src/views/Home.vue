@@ -80,13 +80,6 @@
               </div>
             </div>
             <div class="feature-item">
-              <div class="feature-icon">🔄</div>
-              <div class="feature-content">
-                <h4>迭代优化生成</h4>
-                <p>多轮优化持续改进，直到生成满意的提示词</p>
-              </div>
-            </div>
-            <div class="feature-item">
               <div class="feature-icon">👥</div>
               <div class="feature-content">
                 <h4>团队协作</h4>
@@ -155,62 +148,6 @@
               <span class="cat-name">智能对话</span>
               <span class="cat-desc">客服话术、聊天机器人...</span>
             </router-link>
-          </div>
-        </div>
-
-        <!-- 工作流模板区域 -->
-        <div id="workflows" class="workflows-section">
-          <h2 class="section-title">🔀 工作流模板</h2>
-          <p class="section-desc">多步骤串联创作，满足复杂场景需求</p>
-          <div class="workflows-grid">
-            <div class="workflow-card">
-              <div class="workflow-header">
-                <span class="workflow-icon">📰</span>
-                <span class="workflow-name">文章创作流</span>
-              </div>
-              <div class="workflow-steps">
-                <span class="step">大纲 →</span>
-                <span class="step">正文 →</span>
-                <span class="step">摘要</span>
-              </div>
-              <p class="workflow-desc">从大纲到正文，一键生成完整文章</p>
-            </div>
-            <div class="workflow-card">
-              <div class="workflow-header">
-                <span class="workflow-icon">🔧</span>
-                <span class="workflow-name">代码审查流</span>
-              </div>
-              <div class="workflow-steps">
-                <span class="step">审查 →</span>
-                <span class="step">检查 →</span>
-                <span class="step">优化</span>
-              </div>
-              <p class="workflow-desc">全面代码质量分析与优化建议</p>
-            </div>
-            <div class="workflow-card">
-              <div class="workflow-header">
-                <span class="workflow-icon">📖</span>
-                <span class="workflow-name">学习工作流</span>
-              </div>
-              <div class="workflow-steps">
-                <span class="step">大纲 →</span>
-                <span class="step">卡片 →</span>
-                <span class="step">习题</span>
-              </div>
-              <p class="workflow-desc">系统化学习内容生成</p>
-            </div>
-            <div class="workflow-card">
-              <div class="workflow-header">
-                <span class="workflow-icon">🎥</span>
-                <span class="workflow-name">视频制作流</span>
-              </div>
-              <div class="workflow-steps">
-                <span class="step">创意 →</span>
-                <span class="step">脚本 →</span>
-                <span class="step">开场</span>
-              </div>
-              <p class="workflow-desc">完整视频内容创作流程</p>
-            </div>
           </div>
         </div>
 
@@ -541,7 +478,7 @@ import AppLayout from '../components/layout/AppLayout.vue'
   border-radius: 2px;
 }
 
-.preview-section, .features-section, .tech-section, .categories-section, .workflows-section {
+.preview-section, .features-section, .tech-section, .categories-section {
   padding: 64px 40px;
   max-width: 1200px;
   margin: 0 auto;
@@ -639,68 +576,6 @@ import AppLayout from '../components/layout/AppLayout.vue'
   font-size: 0.85rem;
   color: #64748b;
   text-align: center;
-}
-
-/* 工作流模板区域 */
-.workflows-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-}
-
-.workflow-card {
-  background: white;
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid #e2e8f0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.workflow-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.12);
-  border-color: #3b82f6;
-}
-
-.workflow-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.workflow-icon {
-  font-size: 2rem;
-  padding: 10px;
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.15) 0%, rgba(59, 130, 246, 0.15) 100%);
-  border-radius: 12px;
-}
-
-.workflow-name {
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.workflow-steps {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
-.workflow-steps .step {
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: white;
-  border-radius: 16px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.workflow-desc {
-  font-size: 0.9rem;
-  color: #64748b;
-  margin: 0;
 }
 
 .tech-grid {
