@@ -82,10 +82,9 @@
                   <div class="card-stats">
                     <span
                       class="card-likes"
-                      :class="{ 'is-liked': item.isLiked }"
                       @click.stop="handleLike(item)"
                     >
-                      <span class="stat-icon">{{ item.isLiked ? '❤️' : '🤍' }}</span>
+                      <span class="stat-icon">🤍</span>
                       {{ item.likeCount || 0 }}
                     </span>
                   </div>
@@ -216,20 +215,11 @@ const loadData = async (reset = false) => {
   pending.value = false
 }
 
-// 点赞/取消点赞
+// 点赞（每次点击+1）
 const handleLike = async (item) => {
   try {
-    if (item.isLiked) {
-      // 取消点赞
-      await fetch(`${API}/history/${item.id}/unlike`, { method: 'POST' })
-      item.isLiked = false
-      item.likeCount = (item.likeCount || 1) - 1
-    } else {
-      // 点赞
-      await fetch(`${API}/history/${item.id}/like`, { method: 'POST' })
-      item.isLiked = true
-      item.likeCount = (item.likeCount || 0) + 1
-    }
+    await fetch(`${API}/history/${item.id}/like`, { method: 'POST' })
+    item.likeCount = (item.likeCount || 0) + 1
   } catch (e) {
     console.error('[Templates] Like error:', e)
   }
