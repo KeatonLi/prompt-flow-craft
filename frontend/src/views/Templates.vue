@@ -9,25 +9,41 @@
 
         <div class="content-container">
           <div class="filter-bar">
-            <div class="search-box">
-              <span class="search-icon">🔍</span>
-              <input 
-                v-model="search" 
-                type="text" 
-                placeholder="搜索提示词..." 
-                class="search-input" 
-                @input="onSearch" 
-              />
+            <div class="filter-top">
+              <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input
+                  v-model="search"
+                  type="text"
+                  placeholder="搜索提示词..."
+                  class="search-input"
+                  @input="onSearch"
+                />
+              </div>
+              <div class="sort-box">
+                <button
+                  :class="['sort-btn', { active: sortBy === 'createdAt' }]"
+                  @click="changeSort('createdAt')"
+                >
+                  时间优先
+                </button>
+                <button
+                  :class="['sort-btn', { active: sortBy === 'likeCount' }]"
+                  @click="changeSort('likeCount')"
+                >
+                  点赞优先
+                </button>
+              </div>
             </div>
             <div class="category-tabs">
-              <button 
-                :class="['cat-btn', { active: categoryId === null }]" 
+              <button
+                :class="['cat-btn', { active: categoryId === null }]"
                 @click="selectCategory(null)"
               >
                 全部
               </button>
-              <button 
-                v-for="cat in categories" 
+              <button
+                v-for="cat in categories"
                 :key="cat.id"
                 :class="['cat-btn', { active: categoryId === cat.id }]"
                 @click="selectCategory(cat.id)"
@@ -58,53 +74,61 @@
                 @click="open(item)"
               >
                 <div class="card-header">
-                  <span 
-                    v-if="item.category" 
-                    class="card-category" 
-                    :style="{ background: item.category.color + '15', color: item.category.color }"
-                  >
-                    <span class="category-icon">{{ item.category.icon }}</span>
-                    {{ item.category.name }}
+                  <span class="card-category" :class="{ default: !item.category }">
+                    <span v-if="item.category" class="category-icon">{{ item.category.icon }}</span>
+                    <span v-else class="category-icon">📄</span>
+                    {{ item.category?.name || '未分类' }}
                   </span>
-                  <span v-else class="card-category default">
-                    <span class="category-icon">📄</span>
-                    未分类
-                  </span>
+                  <div class="card-stats">
+                    <span v-if="item.likeCount" class="card-likes">
+                      <span class="stat-icon">❤️</span>
+                      {{ item.likeCount }}
+                    </span>
+                  </div>
                 </div>
+
                 <div class="card-body">
-                  <div class="card-task">{{ item.taskDescription?.substring(0, 60) }}{{ item.taskDescription?.length > 60 ? '...' : '' }}</div>
-                  <div class="card-result">{{ item.promptSummary || item.generatedPrompt?.substring(0, 80) }}...</div>
+                  <div class="card-task-label">任务描述</div>
+                  <div class="card-task">{{ item.taskDescription || '暂无描述' }}</div>
+
+                  <div class="card-result-label">生成结果</div>
+                  <div class="card-result">
+                    <template v-if="item.promptSummary">{{ item.promptSummary }}</template>
+                    <template v-else-if="item.generatedPrompt">{{ item.generatedPrompt.substring(0, 150) }}{{ item.generatedPrompt.length > 150 ? '...' : '' }}</template>
+                    <template v-else class="result-empty">暂无生成结果</template>
+                  </div>
                 </div>
-                <div class="card-tags">
-                  <template v-if="item.tags?.length">
-                    <span 
-                      v-for="t in item.tags.slice(0, 3)" 
-                      :key="t.id" 
-                      class="tag"
-                      :style="{ background: t.color + '15', color: t.color, borderColor: t.color + '30' }"
-                    >
-                      {{ t.name }}
-                    </span>
-                    <span v-if="item.tags.length > 3" class="tag-more">+{{ item.tags.length - 3 }}</span>
-                  </template>
-                  <template v-else-if="item.aiTags?.length">
-                    <span 
-                      v-for="(tag, idx) in item.aiTags.slice(0, 3)" 
-                      :key="idx" 
-                      class="tag ai-tag"
-                      :style="getTagStyle(idx)"
-                    >
-                      {{ tag }}
-                    </span>
-                  </template>
-                  <span v-else class="tag-empty">暂无标签</span>
+
+                <div class="card-tags-section">
+                  <div class="tags-label">标签</div>
+                  <div class="card-tags">
+                    <template v-if="item.tags?.length">
+                      <span
+                        v-for="t in item.tags.slice(0, 4)"
+                        :key="t.id"
+                        class="tag"
+                        :style="{ background: t.color + '15', color: t.color, borderColor: t.color + '30' }"
+                      >
+                        {{ t.name }}
+                      </span>
+                      <span v-if="item.tags.length > 4" class="tag-more">+{{ item.tags.length - 4 }}</span>
+                    </template>
+                    <template v-else-if="item.aiTags?.length">
+                      <span
+                        v-for="(tag, idx) in item.aiTags.slice(0, 4)"
+                        :key="idx"
+                        class="tag ai-tag"
+                        :style="getTagStyle(idx)"
+                      >
+                        {{ tag }}
+                      </span>
+                    </template>
+                    <span v-else class="tag-empty">暂无标签</span>
+                  </div>
                 </div>
+
                 <div class="card-footer">
                   <span class="card-time">{{ fmt(item.createdAt) }}</span>
-                  <span v-if="item.hitCount" class="card-hits">
-                    <span class="hit-icon">👁</span>
-                    {{ item.hitCount }}
-                  </span>
                 </div>
               </div>
             </div>
@@ -133,6 +157,7 @@ import PromptDetailModal from '../components/PromptDetailModal.vue'
 const router = useRouter()
 const search = ref('')
 const categoryId = ref(null)
+const sortBy = ref('createdAt')
 const categories = ref([])
 const pending = ref(false)
 const detailLoading = ref(false)
@@ -164,10 +189,10 @@ const selectCategory = (id) => {
 const loadData = async (reset = false) => {
   if (pending.value) return
   pending.value = true
-  
+
   try {
     const p = reset ? 1 : page.value
-    let url = `${API}/history/page?page=${p}&size=${size.value}`
+    let url = `${API}/history/page?page=${p}&size=${size.value}&sortBy=${sortBy.value}&sortOrder=desc`
     if (categoryId.value) {
       url += `&categoryId=${categoryId.value}`
     }
@@ -228,6 +253,13 @@ const loadMore = () => {
 }
 
 const onSearch = () => {
+  page.value = 1
+  hasMore.value = true
+  loadData(true)
+}
+
+const changeSort = (sort) => {
+  sortBy.value = sort
   page.value = 1
   hasMore.value = true
   loadData(true)
@@ -297,7 +329,7 @@ const usePrompt = (item) => {
 
 .banner {
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  padding: 40px 32px;
+  padding: 48px 32px;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -310,8 +342,18 @@ const usePrompt = (item) => {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
   animation: pulse 4s ease-in-out infinite;
+}
+
+.banner::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to top, rgba(0,0,0,0.1), transparent);
 }
 
 @keyframes pulse {
@@ -320,18 +362,20 @@ const usePrompt = (item) => {
 }
 
 .banner-title {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 800;
   color: white;
-  margin: 0 0 8px;
+  margin: 0 0 12px;
   position: relative;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
 .banner-desc {
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.1rem;
   margin: 0;
   position: relative;
+  font-weight: 500;
 }
 
 .content-container {
@@ -342,16 +386,51 @@ const usePrompt = (item) => {
 
 .filter-bar {
   background: white;
-  border-radius: 16px;
-  padding: 20px 24px;
+  border-radius: 20px;
+  padding: 24px 28px;
   margin-bottom: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(226, 232, 240, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .search-box {
   position: relative;
+  flex: 1;
+}
+
+.filter-top {
+  display: flex;
+  gap: 16px;
+  align-items: center;
   margin-bottom: 16px;
+}
+
+.sort-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-btn {
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: #64748b;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sort-btn:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.sort-btn.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-color: transparent;
 }
 
 .search-icon {
@@ -470,113 +549,226 @@ const usePrompt = (item) => {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 24px;
 }
 
 .prompt-card {
   background: white;
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 20px;
+  padding: 24px;
   cursor: pointer;
   border: 1px solid #e2e8f0;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 380px;
+  position: relative;
+  overflow: hidden;
+}
+
+.prompt-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .prompt-card:hover {
   border-color: #3b82f6;
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12);
-  transform: translateY(-3px);
+  box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
+  transform: translateY(-6px);
+}
+
+.prompt-card:hover::before {
+  opacity: 1;
 }
 
 .card-header {
-  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .card-category {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 20px;
+  padding: 8px 14px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
 }
 
 .card-category.default {
-  background: #f1f5f9;
-  color: #94a3b8;
+  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+  box-shadow: 0 2px 8px rgba(148, 163, 184, 0.25);
 }
 
 .category-icon {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+}
+
+.card-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-likes,
+.card-hits {
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 16px;
+}
+
+.card-likes {
+  color: #ef4444;
+  background: #fef2f2;
+}
+
+.card-hits {
+  color: #f97316;
+  background: #fff7ed;
+}
+
+.stat-icon {
+  font-size: 0.8rem;
 }
 
 .card-body {
   flex: 1;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.card-task-label,
+.card-result-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.card-task-label::before {
+  content: '📌';
+  font-size: 0.7rem;
+}
+
+.card-result-label::before {
+  content: '✨';
+  font-size: 0.7rem;
 }
 
 .card-task {
-  font-weight: 600;
+  font-weight: 700;
   color: #1e293b;
-  font-size: 1rem;
-  margin-bottom: 10px;
-  line-height: 1.5;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  padding: 14px;
+  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  border-left: 4px solid #3b82f6;
 }
 
 .card-result {
-  font-size: 0.85rem;
-  color: #64748b;
-  line-height: 1.6;
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.7;
+  background: linear-gradient(145deg, #fefefe 0%, #f8fafc 100%);
+  padding: 16px;
+  border-radius: 14px;
+  border-left: 4px solid #8b5cf6;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.result-empty {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.card-tags-section {
+  margin-bottom: 20px;
+  padding-top: 20px;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.tags-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
 }
 
 .card-tags {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 16px;
-  min-height: 24px;
+  min-height: 32px;
 }
 
 .tag {
-  font-size: 0.7rem;
-  padding: 4px 10px;
-  border-radius: 12px;
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 16px;
   border: 1px solid;
-  font-weight: 500;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.tag:hover {
+  transform: scale(1.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .tag.ai-tag {
-  background: #f1f5f9;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
   color: #64748b;
-  border-color: #e2e8f0;
+  border-color: #cbd5e1;
 }
 
 .tag-more {
-  font-size: 0.7rem;
-  padding: 4px 8px;
+  font-size: 0.75rem;
+  padding: 6px 10px;
   background: #f1f5f9;
-  color: #94a3b8;
-  border-radius: 12px;
-  font-weight: 500;
+  color: #64748b;
+  border-radius: 16px;
+  font-weight: 600;
 }
 
 .tag-empty {
-  font-size: 0.7rem;
-  padding: 4px 10px;
-  border-radius: 12px;
+  font-size: 0.75rem;
+  padding: 6px 12px;
+  border-radius: 16px;
   background: #f1f5f9;
   color: #94a3b8;
 }
@@ -585,26 +777,17 @@ const usePrompt = (item) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 12px;
+  padding-top: 16px;
   border-top: 1px solid #f1f5f9;
 }
 
 .card-time {
   font-size: 0.8rem;
   color: #94a3b8;
-  font-weight: 500;
-}
-
-.card-hits {
-  font-size: 0.8rem;
-  color: #64748b;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.hit-icon {
-  font-size: 0.75rem;
+  font-weight: 600;
+  background: #f8fafc;
+  padding: 6px 12px;
+  border-radius: 16px;
 }
 
 .loading-more {
