@@ -1,14 +1,21 @@
 package com.promptflow.controller;
 
 import com.promptflow.dto.ApiResponse;
+import com.promptflow.entity.PromptCache;
 import com.promptflow.entity.PromptTag;
+import com.promptflow.repository.PromptCacheRepository;
 import com.promptflow.repository.PromptTagRepository;
+import com.promptflow.service.PromptClassificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -20,6 +27,12 @@ public class TagController {
 
     @Autowired
     private PromptTagRepository tagRepository;
+
+    @Autowired
+    private PromptCacheRepository promptCacheRepository;
+
+    @Autowired
+    private PromptClassificationService classificationService;
 
     /**
      * 获取所有标签
@@ -164,5 +177,112 @@ public class TagController {
         logger.info("获取提示词的标签: {}", promptId);
         Set<PromptTag> tags = tagRepository.findByPromptId(promptId);
         return ApiResponse.success(tags);
+    }
+
+    /**
+     * 获取未打标签的提示词数量
+     */
+    @GetMapping("/admin/untagged-count")
+    public ApiResponse<Map<String, Object>> getUntaggedCount() {
+        logger.info("获取未打标签的提示词数量");
+        try {
+            // 使用分页查询避免一次性加载太多数据
+            Page<PromptCache> page = promptCacheRepository.findUnTaggedPromptsPage(PageRequest.of(0, 1));
+            long total = page.getTotalElements();
+            Map<String, Object> result = new HashMap<>();
+            result.put("count", total);
+            return ApiResponse.success(result);
+        } catch (Exception e) {
+            logger.error("获取未打标签数量失败", e);
+            return ApiResponse.error(500, "获取失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 批量自动打标签
+     * @param batchSize 每次处理的条数，默认50
+     */
+    @PostMapping("/admin/auto-tag")
+    public ApiResponse<Map<String, Object>> autoTagPrompts(@RequestParam(name = "batchSize", defaultValue = "50") Integer batchSize) {
+        logger.info("开始批量自动打标签，批量大小: {}", batchSize);
+
+        try {
+            // 使用分页查询获取未打标签的提示词
+            int pageSize = Math.min(batchSize, 100); // 最多一次查100条
+            Page<PromptCache> page = promptCacheRepository.findUnTaggedPromptsPage(PageRequest.of(0, pageSize));
+            List<PromptCache> untagged = page.getContent();
+            long totalRemaining = page.getTotalElements() - pageSize;
+
+            if (untagged.isEmpty()) {
+                Map<String, Object> result = new HashMap<>();
+                result.put("total", 0);
+                result.put("processed", 0);
+                result.put("message", "所有提示词都已经有标签");
+                return ApiResponse.success(result);
+            }
+
+            int successCount = 0;
+            int failCount = 0;
+            String lastError = null;
+
+            for (int i = 0; i < untagged.size(); i++) {
+                try {
+                    PromptCache prompt = untagged.get(i);
+                    classificationService.autoClassifyAndTag(prompt);
+                    successCount++;
+
+                    // 添加小延迟避免请求过快
+                    if (i % 10 == 0) {
+                        Thread.sleep(100);
+                    }
+                } catch (Exception e) {
+                    failCount++;
+                    lastError = e.getMessage();
+                    logger.error("自动打标签失败: id={}, error={}", untagged.get(i).getId(), e.getMessage());
+                }
+            }
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("total", page.getTotalElements());
+            result.put("processed", successCount);
+            result.put("failed", failCount);
+            result.put("remaining", totalRemaining + failCount);
+            if (lastError != null) {
+                result.put("lastError", lastError);
+            }
+            result.put("message", String.format("成功处理 %d 条，剩余约 %d 条", successCount, Math.max(0, totalRemaining)));
+
+            logger.info("批量自动打标签完成: 总数 {}, 成功 {}, 失败 {}, 剩余 {}",
+                        page.getTotalElements(), successCount, failCount, Math.max(0, totalRemaining));
+
+            return ApiResponse.success(result);
+        } catch (Exception e) {
+            logger.error("批量打标签异常", e);
+            return ApiResponse.error(500, "批量打标签失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 为指定提示词打标签
+     */
+    @PostMapping("/admin/tag/{promptId}")
+    public ApiResponse<Map<String, Object>> tagSinglePrompt(@PathVariable Long promptId) {
+        logger.info("为提示词打标签: {}", promptId);
+
+        return promptCacheRepository.findById(promptId)
+                .map(prompt -> {
+                    try {
+                        classificationService.autoClassifyAndTag(prompt);
+                        Map<String, Object> result = new HashMap<>();
+                        result.put("promptId", promptId);
+                        result.put("success", true);
+                        result.put("aiTags", prompt.getAiTags());
+                        return ApiResponse.<Map<String, Object>>success(result);
+                    } catch (Exception e) {
+                        logger.error("打标签失败: id={}", promptId, e);
+                        return ApiResponse.<Map<String, Object>>error(500, "打标签失败: " + e.getMessage());
+                    }
+                })
+                .orElse(ApiResponse.<Map<String, Object>>error(404, "提示词不存在"));
     }
 }
