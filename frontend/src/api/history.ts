@@ -41,13 +41,6 @@ export const historyApi = {
       .then(res => res.data.data);
   },
 
-  // 获取点赞数最高的提示词
-  getTopLiked(page: number = 1, size: number = 20): Promise<PagedResult<PromptRecord>> {
-    return request.get<ApiResponse<PagedResult<PromptRecord>>>('/history/top-liked', {
-      params: { page, size }
-    }).then(res => res.data.data);
-  },
-
   // 搜索历史记录
   search(keyword: string): Promise<PromptRecord[]> {
     return request.get<ApiResponse<PromptRecord[]>>('/history/search', {
@@ -67,13 +60,6 @@ export const historyApi = {
       .then(() => undefined);
   },
 
-  // 更新分类
-  updateCategory(id: number, categoryId: number): Promise<void> {
-    return request.put<ApiResponse<void>>(`/history/${id}/category`, null, {
-      params: { categoryId }
-    }).then(() => undefined);
-  },
-
   // 删除历史记录
   delete(id: number): Promise<void> {
     return request.delete<ApiResponse<void>>(`/history/${id}`)
@@ -84,44 +70,5 @@ export const historyApi = {
   batchDelete(ids: number[]): Promise<{ deletedCount: number }> {
     return request.post<ApiResponse<{ deletedCount: number }>>('/history/batch-delete', ids)
       .then(res => res.data.data);
-  },
-
-  // 手动触发分类
-  classify(id: number): Promise<ClassificationResult> {
-    return request.post<ApiResponse<ClassificationResult>>(`/history/${id}/classify`)
-      .then(res => res.data.data);
-  },
-
-  // 批量分类
-  batchClassify(batchSize: number = 10): Promise<void> {
-    return request.post<ApiResponse<void>>('/history/batch-classify', null, {
-      params: { batchSize }
-    }).then(() => undefined);
-  },
-
-  // 评分提示词
-  rate(id: number, data: { rating: number; comment?: string }): Promise<void> {
-    return request.post<ApiResponse<any>>(`/history/${id}/rate`, data)
-      .then(() => undefined);
-  },
-
-  // 获取提示词评分
-  getRating(id: number): Promise<{
-    userRating: number;
-    ratingComment: string;
-    averageRating: number;
-    ratingCount: number;
-  }> {
-    return request.get<ApiResponse<any>>(`/history/${id}/rating`)
-      .then(res => res.data.data);
-  },
-
-  // 获取评分最高的提示词
-  getTopRated(page: number = 1, size: number = 20): Promise<PagedResult<PromptRecord>> {
-    return request.get<ApiResponse<PagedResult<PromptRecord>>>('/history/top-rated', {
-      params: { page, size }
-    }).then(res => res.data.data);
   }
 };
-
-import type { ClassificationResult } from '@/types';

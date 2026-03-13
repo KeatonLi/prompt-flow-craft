@@ -1,17 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import Home from '../views/Home.vue'
 import HomeView from '../views/HomeView.vue'
-import About from '../views/About.vue'
 import Templates from '../views/Templates.vue'
-import TemplateMarket from '../views/TemplateMarket.vue'
-import Popular from '../views/Popular.vue'
 import Statistics from '../views/Statistics.vue'
-import PromptVariants from '../views/PromptVariants.vue'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: About
+    component: Home
   },
   {
     path: '/generate',
@@ -24,24 +21,9 @@ const routes = [
     component: Templates
   },
   {
-    path: '/template-market',
-    name: 'TemplateMarket',
-    component: TemplateMarket
-  },
-  {
-    path: '/popular',
-    name: 'Popular',
-    component: Popular
-  },
-  {
     path: '/statistics',
     name: 'Statistics',
     component: Statistics
-  },
-  {
-    path: '/variants',
-    name: 'PromptVariants',
-    component: PromptVariants
   }
 ]
 
