@@ -51,8 +51,32 @@
             </div>
           </div>
 
-          <!-- 第二行指标 -->
+          <!-- 第二行指标：Tokens 统计 -->
           <div class="stats-cards secondary">
+            <div class="stat-card tokens">
+              <div class="stat-icon">🔢</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ formatTokens(stats.totalInputTokens) }}</div>
+                <div class="stat-label">输入 Tokens</div>
+              </div>
+            </div>
+
+            <div class="stat-card tokens">
+              <div class="stat-icon">📝</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ formatTokens(stats.totalOutputTokens) }}</div>
+                <div class="stat-label">输出 Tokens</div>
+              </div>
+            </div>
+
+            <div class="stat-card tokens">
+              <div class="stat-icon">⚡</div>
+              <div class="stat-info">
+                <div class="stat-value">{{ formatTokens(stats.totalTokens) }}</div>
+                <div class="stat-label">总 Tokens</div>
+              </div>
+            </div>
+
             <div class="stat-card">
               <div class="stat-icon">💾</div>
               <div class="stat-info">
@@ -60,7 +84,10 @@
                 <div class="stat-label">缓存命中率</div>
               </div>
             </div>
+          </div>
 
+          <!-- 第三行指标 -->
+          <div class="stats-cards secondary">
             <div class="stat-card">
               <div class="stat-icon">📈</div>
               <div class="stat-info">
@@ -221,6 +248,18 @@ const formatNumber = (num) => {
   return num.toString()
 }
 
+// 格式化 Tokens 数量
+const formatTokens = (num) => {
+  if (num === null || num === undefined) return '0'
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M'
+  }
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K'
+  }
+  return num.toString()
+}
+
 const formatTime = (timeStr) => {
   if (!timeStr) return ''
   try {
@@ -319,6 +358,7 @@ onMounted(() => {
 .stat-card.success { border-left: 4px solid #52c41a; }
 .stat-card.info { border-left: 4px solid #1890ff; }
 .stat-card.warning { border-left: 4px solid #faad14; }
+.stat-card.tokens { border-left: 4px solid #8b5cf6; }
 
 .stat-icon {
   font-size: 32px;
