@@ -3,20 +3,6 @@
     <div class="editor-header">
       <h2>提示词生成器</h2>
       <p class="subtitle">输入任务描述，AI 将为您生成专业级提示词</p>
-      <div class="mode-switch">
-        <button 
-          :class="['mode-btn', { active: !isMultiStep }]" 
-          @click="isMultiStep = false"
-        >
-          简单模式
-        </button>
-        <button 
-          :class="['mode-btn', { active: isMultiStep }]" 
-          @click="isMultiStep = true"
-        >
-          🔄 工作流模式
-        </button>
-      </div>
     </div>
 
     <div class="editor-form">
@@ -56,16 +42,6 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">输出格式</label>
-          <select v-model="form.outputFormat" class="form-select">
-            <option value="text">文本</option>
-            <option value="list">列表</option>
-            <option value="table">表格</option>
-            <option value="code">代码</option>
-          </select>
-        </div>
-
-        <div class="form-group">
           <label class="form-label">语调风格</label>
           <select v-model="form.tone" class="form-select">
             <option value="">请选择</option>
@@ -74,6 +50,16 @@
             <option value="professional">专业</option>
             <option value="creative">创意</option>
             <option value="concise">简洁</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">输出格式</label>
+          <select v-model="form.outputFormat" class="form-select">
+            <option value="text">文本</option>
+            <option value="list">列表</option>
+            <option value="table">表格</option>
+            <option value="code">代码</option>
           </select>
         </div>
 
@@ -117,73 +103,8 @@
         />
       </div>
 
-      <!-- 多步骤模式 -->
-      <div v-if="isMultiStep" class="multi-step-section">
-        <div class="steps-header">
-          <h3>步骤列表</h3>
-          <button class="btn btn-secondary" @click="addStep">
-            <span>+</span> 添加步骤
-          </button>
-        </div>
-        
-        <div class="steps-list">
-          <div 
-            v-for="(step, index) in steps" 
-            :key="index"
-            class="step-card"
-            :class="{ active: runningStep === index, completed: runningStep > index }"
-            draggable="true"
-            @dragstart="onDragStart(index, $event)"
-            @dragover.prevent
-            @drop="onDrop(index)"
-          >
-            <div class="step-drag-handle">⋮⋮</div>
-            <div class="step-number">{{ index + 1 }}</div>
-            <div class="step-content">
-              <div class="step-header-row">
-                <span class="step-label">步骤 {{ index + 1 }}</span>
-                <button v-if="steps.length > 1" class="btn-remove-step" @click="removeStep(index)">×</button>
-              </div>
-              <textarea
-                v-model="step.taskDescription"
-                class="step-textarea"
-                rows="2"
-                placeholder="请输入任务描述..."
-              />
-              <div class="step-options">
-                <select v-model="step.targetAudience" class="step-select">
-                  <option value="general">普通用户</option>
-                  <option value="professional">专业人士</option>
-                  <option value="student">学生</option>
-                  <option value="developer">开发者</option>
-                  <option value="creator">创作者</option>
-                </select>
-                <select v-model="step.outputFormat" class="step-select">
-                  <option value="text">文本</option>
-                  <option value="list">列表</option>
-                  <option value="table">表格</option>
-                  <option value="code">代码</option>
-                </select>
-                <select v-model="step.tone" class="step-select">
-                  <option value="formal">正式</option>
-                  <option value="friendly">友好</option>
-                  <option value="professional">专业</option>
-                  <option value="creative">创意</option>
-                  <option value="concise">简洁</option>
-                </select>
-              </div>
-              <div v-if="stepResults[index]" class="step-result">
-                <pre>{{ stepResults[index] }}</pre>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="form-actions">
-        <!-- 单步模式按钮 -->
         <button
-          v-if="!isMultiStep"
           class="btn btn-primary"
           :disabled="!canGenerate || loading"
           @click="generate"
@@ -192,20 +113,9 @@
           <span v-else>🚀</span>
           {{ loading ? '生成中...' : '生成提示词' }}
         </button>
-        <!-- 多步骤模式按钮 -->
         <button
-          v-else
-          class="btn btn-primary"
-          :disabled="loading"
-          @click="runMultiStep"
-        >
-          <span v-if="loading" class="loading-spinner"></span>
-          <span v-else>🚀</span>
-          {{ loading ? '生成中...' : '运行全部步骤' }}
-        </button>
-        <button 
-          v-if="loading && cancelStream" 
-          class="btn btn-secondary" 
+          v-if="loading && cancelStream"
+          class="btn btn-secondary"
           @click="cancelGeneration"
         >
           停止
@@ -277,14 +187,6 @@ const showResult = ref(false);
 const isStreaming = ref(false);
 const cancelStream = ref<(() => void) | null>(null);
 const showExportMenu = ref(false);
-
-const isMultiStep = ref(false);
-const steps = ref([
-  { taskDescription: '', targetAudience: 'general', outputFormat: 'text', tone: 'professional', length: 'short' }
-]);
-const stepResults = ref<string[]>([]);
-const runningStep = ref(-1);
-const draggedStepIndex = ref<number | null>(null);
 
 const form = ref<PromptRequest>({
   taskDescription: '',
@@ -420,80 +322,6 @@ function cancelGeneration() {
   isStreaming.value = false;
   loading.value = false;
   showToast('已停止生成', 'info');
-}
-
-function addStep() {
-  steps.value.push({
-    taskDescription: '',
-    targetAudience: 'general',
-    outputFormat: 'text',
-    tone: 'professional',
-    length: 'short'
-  });
-}
-
-function removeStep(index: number) {
-  if (steps.value.length > 1) {
-    steps.value.splice(index, 1);
-    stepResults.value.splice(index, 1);
-  }
-}
-
-function onDragStart(index: number, event: DragEvent) {
-  draggedStepIndex.value = index;
-  event.dataTransfer?.setData('text/plain', String(index));
-}
-
-function onDrop(targetIndex: number) {
-  if (draggedStepIndex.value === null || draggedStepIndex.value === targetIndex) return;
-  const newSteps = [...steps.value];
-  const [removed] = newSteps.splice(draggedStepIndex.value, 1);
-  newSteps.splice(targetIndex, 0, removed);
-  steps.value = newSteps;
-  
-  const newResults = [...stepResults.value];
-  const [removedResult] = newResults.splice(draggedStepIndex.value, 1);
-  newResults.splice(targetIndex, 0, removedResult);
-  stepResults.value = newResults;
-  
-  draggedStepIndex.value = null;
-}
-
-async function runMultiStep() {
-  loading.value = true;
-  stepResults.value = [];
-  
-  for (let i = 0; i < steps.value.length; i++) {
-    if (!steps.value[i].taskDescription) {
-      showToast(`请填写步骤 ${i + 1} 的任务描述`, 'warning');
-      continue;
-    }
-    
-    runningStep.value = i;
-    
-    try {
-      const response = await fetch('/api/prompt/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(steps.value[i])
-      });
-      const data = await response.json();
-      stepResults.value[i] = data.data?.prompt || data.prompt || '生成失败';
-    } catch (e) {
-      stepResults.value[i] = '生成失败: ' + (e as Error).message;
-    }
-  }
-  
-  runningStep.value = -1;
-  loading.value = false;
-  
-  if (stepResults.value.length > 0) {
-    result.value = stepResults.value.join('\n\n---\n\n');
-    displayedResult.value = result.value;
-    showResult.value = true;
-  }
-  
-  showToast('多步骤生成完成！', 'success');
 }
 
 function reset() {
@@ -711,36 +539,6 @@ onUnmounted(() => {
   margin: 0;
 }
 
-.mode-switch {
-  display: inline-flex;
-  background: #f1f5f9;
-  border-radius: 10px;
-  padding: 4px;
-  margin-top: 16px;
-}
-
-.mode-btn {
-  padding: 8px 20px;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s;
-}
-
-.mode-btn.active {
-  background: white;
-  color: #3b82f6;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
-}
-
-.mode-btn:hover:not(.active) {
-  color: #334155;
-}
-
 .editor-form {
   background: white;
   border-radius: 16px;
@@ -774,161 +572,6 @@ onUnmounted(() => {
   margin-bottom: 16px;
 }
 
-.multi-step-section {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.steps-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.steps-header h3 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.steps-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.step-card {
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  gap: 12px;
-  transition: all 0.2s;
-  cursor: grab;
-}
-
-.step-card:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
-}
-
-.step-card.active {
-  border-color: #3b82f6;
-  background: #eff6ff;
-}
-
-.step-card.completed {
-  border-color: #10b981;
-  background: #f0fdf4;
-}
-
-.step-drag-handle {
-  color: #94a3b8;
-  font-size: 1.2rem;
-  cursor: grab;
-  padding: 4px;
-}
-
-.step-number {
-  width: 28px;
-  height: 28px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 0.875rem;
-  flex-shrink: 0;
-}
-
-.step-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.step-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.step-label {
-  font-weight: 600;
-  color: #1e293b;
-  font-size: 0.875rem;
-}
-
-.btn-remove-step {
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: #fee2e2;
-  color: #ef4444;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-remove-step:hover {
-  background: #fecaca;
-}
-
-.step-textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  resize: vertical;
-  margin-bottom: 8px;
-}
-
-.step-textarea:focus {
-  outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.step-options {
-  display: flex;
-  gap: 8px;
-}
-
-.step-select {
-  flex: 1;
-  padding: 6px 10px;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  background: white;
-}
-
-.step-result {
-  margin-top: 12px;
-  padding: 12px;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-}
-
-.step-result pre {
-  margin: 0;
-  font-size: 0.8rem;
-  white-space: pre-wrap;
-  max-height: 100px;
-  overflow-y: auto;
-}
-
 .btn-example {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
@@ -942,7 +585,7 @@ onUnmounted(() => {
 
 .form-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 
