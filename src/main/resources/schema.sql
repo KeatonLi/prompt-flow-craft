@@ -37,6 +37,10 @@ ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS ai_tags JSON COMMENT 'AI识别
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS usage_scenario VARCHAR(200) COMMENT '使用场景' AFTER ai_tags;
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS effectiveness_score INT COMMENT '效果评分(1-5)' AFTER usage_scenario;
 
+-- 添加 Token 统计字段
+ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS input_tokens BIGINT DEFAULT 0 COMMENT '输入Token数' AFTER effectiveness_score;
+ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS output_tokens BIGINT DEFAULT 0 COMMENT '输出Token数' AFTER input_tokens;
+
 -- 新增索引
 CREATE INDEX IF NOT EXISTS idx_category_id ON prompt_cache(category_id);
 CREATE INDEX IF NOT EXISTS idx_like_count ON prompt_cache(like_count);
