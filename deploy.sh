@@ -28,8 +28,10 @@ check_config() {
         exit 1
     fi
     
-    if [ ! -f "${SSH_KEY_PATH/#\~/$HOME}" ]; then
-        echo -e "${RED}错误: SSH私钥文件不存在: $SSH_KEY_PATH${NC}"
+    # 处理 ~ 路径
+    SSH_KEY_ABS=$(eval echo $SSH_KEY_PATH)
+    if [ ! -f "$SSH_KEY_ABS" ]; then
+        echo -e "${RED}错误: SSH私钥文件不存在: $SSH_KEY_ABS${NC}"
         echo -e "${YELLOW}请检查SSH私钥路径是否正确${NC}"
         exit 1
     fi
@@ -69,7 +71,7 @@ build_project() {
 prepare_server() {
     echo -e "${BLUE}准备服务器环境...${NC}"
     
-    ssh -i "${SSH_KEY_PATH/#\~/$HOME}" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" << 'EOF'
+    ssh -i "$SSH_KEY_ABS" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" << 'EOF'
 set -e
 
 echo "=== 准备服务器环境 ==="
@@ -153,17 +155,17 @@ upload_files() {
 
     # 清理服务器上的旧文件
     echo -e "${YELLOW}清理服务器上的旧文件...${NC}"
-    ssh -i "${SSH_KEY_PATH/#\~/$HOME}" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" "cd $REMOTE_DIR && rm -f backend.jar && rm -rf frontend-dist && echo '旧文件清理完成'"
+    ssh -i "$SSH_KEY_ABS" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" "cd $REMOTE_DIR && rm -f backend.jar && rm -rf frontend-dist && echo '旧文件清理完成'"
 
     # 上传后端JAR文件
     echo -e "${YELLOW}上传后端文件...${NC}"
-    scp -i "${SSH_KEY_PATH/#\~/$HOME}" -P "$SERVER_PORT" \
+    scp -i "$SSH_KEY_ABS" -P "$SERVER_PORT" \
         "target/prompt-flow-craft-1.0.0.jar" \
         "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/backend.jar"
 
     # 上传前端文件
     echo -e "${YELLOW}上传前端文件...${NC}"
-    scp -i "${SSH_KEY_PATH/#\~/$HOME}" -P "$SERVER_PORT" -r \
+    scp -i "$SSH_KEY_ABS" -P "$SERVER_PORT" -r \
         "frontend/dist" \
         "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/frontend-dist"
 
@@ -174,7 +176,7 @@ upload_files() {
 start_services() {
     echo -e "${BLUE}启动服务...${NC}"
 
-    ssh -i "${SSH_KEY_PATH/#\~/$HOME}" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" << 'EOF'
+    ssh -i "$SSH_KEY_ABS" -p "$SERVER_PORT" "$SERVER_USER@$SERVER_HOST" << 'EOF'
 set -e
 cd /opt/prompt-flow-craft
 
@@ -271,8 +273,8 @@ show_info() {
     echo -e "  健康检查: ${BLUE}http://$SERVER_HOST:8080/api/health${NC}"
     echo ""
     echo -e "${YELLOW}服务管理:${NC}"
-    echo -e "  查看后端日志: ${BLUE}ssh -i $SSH_KEY_PATH -p $SERVER_PORT $SERVER_USER@$SERVER_HOST 'tail -n 500 $REMOTE_DIR/backend.log'${NC}"
-    echo -e "  查看前端日志: ${BLUE}ssh -i $SSH_KEY_PATH -p $SERVER_PORT $SERVER_USER@$SERVER_HOST 'tail -n 500 $REMOTE_DIR/frontend.log'${NC}"
+    echo -e "  查看后端日志: ${BLUE}ssh -i $SSH_KEY_ABS -p $SERVER_PORT $SERVER_USER@$SERVER_HOST 'tail -n 500 $REMOTE_DIR/backend.log'${NC}"
+    echo -e "  查看前端日志: ${BLUE}ssh -i $SSH_KEY_ABS -p $SERVER_PORT $SERVER_USER@$SERVER_HOST 'tail -n 500 $REMOTE_DIR/frontend.log'${NC}"
     echo -e "  重新部署: ${BLUE}./deploy.sh${NC}"
     echo -e "${GREEN}========================================${NC}"
 }
