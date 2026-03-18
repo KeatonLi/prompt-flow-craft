@@ -73,7 +73,8 @@ public class PromptGenerationService {
                     Map.of("role", "user", "content", systemPrompt)
                 ),
                 "temperature", temperature,
-                "max_tokens", maxTokens
+                "max_tokens", maxTokens,
+                "reasoning_split", true
             );
             
             // 调用Qwen API
@@ -137,7 +138,8 @@ public class PromptGenerationService {
                 ),
                 "temperature", temperature,
                 "max_tokens", maxTokens,
-                "stream", true  // 启用流式输出
+                "stream", true,  // 启用流式输出
+                "reasoning_split", true
             );
             
             StringBuilder fullContent = new StringBuilder();

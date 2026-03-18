@@ -136,10 +136,17 @@ export const promptApi = {
       
       try {
         const parsed = JSON.parse(data);
-        
+        console.log('流式数据:', JSON.stringify(parsed));
+
+        // 检查是否有 thinking/reasoning 字段
+        if (parsed.reasoning !== undefined) {
+          console.log('收到 reasoning 字段:', parsed.reasoning);
+        }
+
         if (parsed.content !== undefined) {
           // 流式内容片段
           const content = parsed.content;
+          console.log('收到 content 字段:', content);
           if (content) {
             fullContent += content;
             onMessage(content);

@@ -21,11 +21,9 @@
           v-model="form.taskDescription"
           class="form-textarea"
           rows="4"
-          maxlength="500"
           placeholder="请详细描述您希望AI完成的任务，例如：写一篇关于人工智能发展趋势的文章..."
           @keydown.ctrl.enter="generate"
         />
-        <span class="char-count">{{ form.taskDescription.length }}/500</span>
       </div>
 
       <div class="form-row">
@@ -198,6 +196,63 @@ const form = ref<PromptRequest>({
   length: 'short'
 });
 
+// 过滤 thinking 内容
+function stripThinkingContent(text: string): string {
+  if (!text) return text;
+  // 彻底移除所有 thinking 相关内容
+  return text
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')      // 完整标签
+    .replace(/<think>[\s\S]*$/gi, '')                // 开标签到结尾
+    .replace(/^[\s\S]*?<\/think>/gi, '');             // 开头到闭标签
+}
+
+// 流式处理时的 thinking 状态（必须持久化）
+let isInThinking = false;
+
+function processContent(text: string): { filtered: string, newIsInThinking: boolean } {
+  if (!text) return { filtered: '', newIsInThinking: isInThinking };
+
+  let result = '';
+  let inThinking = isInThinking;
+
+  // 按字符处理，避免行分割问题
+  let i = 0;
+  while (i < text.length) {
+    const remaining = text.substring(i);
+
+    if (inThinking) {
+      // 查找闭标签
+      const endIdx = remaining.indexOf('</think>');
+      if (endIdx !== -1) {
+        i += endIdx + 9; // 跳过</think>
+        inThinking = false;
+      } else {
+        // 没有闭标签，丢弃所有内容
+        i = text.length;
+      }
+    } else {
+      // 不在 thinking 中
+      const startIdx = remaining.indexOf('<think>');
+      if (startIdx === 0) {
+        // 从头开始就是 thinking
+        inThinking = true;
+        i += 9; // 跳过<think>
+      } else if (startIdx > 0) {
+        // 后面有 thinking
+        result += remaining.substring(0, startIdx);
+        i += startIdx + 9;
+        inThinking = true;
+      } else {
+        // 没有 thinking 了
+        result += remaining;
+        i = text.length;
+      }
+    }
+  }
+
+  return { filtered: result, newIsInThinking: inThinking };
+}
+
 const defaultExample = {
   taskDescription: '写一篇关于人工智能发展趋势的文章',
   targetAudience: 'general',
@@ -245,12 +300,14 @@ async function generate() {
       // onMessage - 收到每个片段时
       (content: string) => {
         pendingContent += content;
-        
+
         // 节流更新，每 50ms 更新一次 UI，避免过于频繁
         const now = Date.now();
         if (now - lastUpdateTime > 50) {
-          result.value += pendingContent;
-          displayedResult.value += pendingContent;
+          const { filtered, newIsInThinking } = processContent(pendingContent);
+          isInThinking = newIsInThinking;
+          result.value += filtered;
+          displayedResult.value += filtered;
           pendingContent = '';
           lastUpdateTime = now;
           
@@ -267,32 +324,43 @@ async function generate() {
       (fullContent: string) => {
         // 处理剩余未更新的内容
         if (pendingContent) {
-          result.value += pendingContent;
-          displayedResult.value += pendingContent;
+          const { filtered, newIsInThinking } = processContent(pendingContent);
+          isInThinking = newIsInThinking;
+          result.value += filtered;
+          displayedResult.value += filtered;
           pendingContent = '';
         }
-        
-        
+
+
         isStreaming.value = false;
         loading.value = false;
         cancelStream.value = null;
-        
-        // 确保最终内容一致
-        if (fullContent && fullContent.length > result.value.length) {
-          result.value = fullContent;
-          displayedResult.value = fullContent;
+
+        // 确保最终内容一致（也过滤 thinking）
+        const finalContent = stripThinkingContent(fullContent);
+        if (finalContent && finalContent.length > result.value.length) {
+          result.value = finalContent;
+          displayedResult.value = finalContent;
         }
-        
+
+        // 重置 thinking 状态
+        isInThinking = false;
+
         showToast('✨ 提示词生成成功！', 'success');
       },
       // onError - 出错时
       (error: string) => {
         // 处理剩余未更新的内容
         if (pendingContent) {
-          result.value += pendingContent;
-          displayedResult.value += pendingContent;
+          const { filtered, newIsInThinking } = processContent(pendingContent);
+          isInThinking = newIsInThinking;
+          result.value += filtered;
+          displayedResult.value += filtered;
           pendingContent = '';
         }
+
+        // 重置 thinking 状态
+        isInThinking = false;
         
         
         isStreaming.value = false;
@@ -352,11 +420,30 @@ function clearResult() {
 
 async function copyResult() {
   try {
-    await navigator.clipboard.writeText(result.value);
+    const textToCopy = (displayedResult.value || result.value).trim();
+    if (!textToCopy) {
+      showToast('没有内容可复制', 'error');
+      return;
+    }
+    await navigator.clipboard.writeText(textToCopy);
     showToast('已复制到剪贴板', 'success');
   } catch (error) {
-    
-    showToast('复制失败', 'error');
+    // Clipboard API 失败时使用降级方案
+    try {
+      const textToCopy = (displayedResult.value || result.value).trim();
+      const textarea = document.createElement('textarea');
+      textarea.value = textToCopy;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showToast('已复制到剪贴板', 'success');
+    } catch (fallbackError) {
+      console.error('复制失败:', fallbackError);
+      showToast('复制失败，请手动选择内容复制', 'error');
+    }
   }
 }
 
