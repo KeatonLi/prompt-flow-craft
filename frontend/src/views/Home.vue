@@ -701,4 +701,159 @@ import AppLayout from '../components/layout/AppLayout.vue'
     padding: 48px 24px;
   }
 }
+
+.about-page {
+  background:
+    radial-gradient(circle at top, rgba(37, 99, 235, 0.10), transparent 28%),
+    linear-gradient(180deg, #f8fbff 0%, #f3f7fb 52%, #eef4f9 100%);
+}
+
+.hero-section {
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.20), transparent 25%),
+    linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #0ea5e9 100%);
+  padding: 110px 40px 128px;
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+}
+
+.hero-title {
+  letter-spacing: -0.04em;
+}
+
+.hero-subtitle {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.btn-primary,
+.btn-secondary {
+  border-radius: 999px;
+}
+
+.btn-primary {
+  box-shadow: 0 18px 38px rgba(249, 115, 22, 0.42), 0 0 0 0 rgba(249, 115, 22, 0.4);
+}
+
+.stat-item,
+.preview-card,
+.feature-item,
+.category-card,
+.tech-category {
+  border-radius: 24px;
+}
+
+.preview-card,
+.feature-item,
+.category-card,
+.tech-category {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.94) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.05);
+}
+
+.preview-card:hover,
+.feature-item:hover,
+.category-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 28px 48px rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.16);
+}
+
+.footer-section {
+  background: rgba(255, 255, 255, 0.58);
+  backdrop-filter: blur(12px);
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 72px 24px 88px;
+    border-bottom-left-radius: 28px;
+    border-bottom-right-radius: 28px;
+  }
+}
+
+/* Banner performance tuning */
+.hero-section,
+.hero-section::before,
+.hero-section::after,
+.hero-icon,
+.btn-primary,
+.btn-primary::after,
+.stat-item {
+  will-change: transform;
+}
+
+.hero-section {
+  isolation: isolate;
+}
+
+.hero-section::before,
+.hero-section::after {
+  filter: blur(28px);
+  opacity: 0.8;
+  animation-duration: 16s;
+}
+
+@keyframes floatSoft {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(12px, -12px, 0); }
+}
+
+.hero-section::before,
+.hero-section::after {
+  animation-name: floatSoft;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.hero-icon {
+  animation: iconFloatLite 6s ease-in-out infinite;
+}
+
+@keyframes iconFloatLite {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -5px, 0); }
+}
+
+.btn-primary {
+  background-size: 100% 100%;
+  animation: none;
+}
+
+.btn-primary::after {
+  animation: none;
+  opacity: 0.45;
+}
+
+.btn-icon {
+  animation: none;
+}
+
+.stat-item {
+  backdrop-filter: blur(6px);
+}
+
+@media (max-width: 768px) {
+  .hero-section::before,
+  .hero-section::after {
+    filter: blur(20px);
+    animation: none;
+  }
+
+  .hero-icon {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-section::before,
+  .hero-section::after,
+  .hero-icon,
+  .btn-primary::before,
+  .btn-primary::after,
+  .btn-icon {
+    animation: none !important;
+    transition: none !important;
+  }
+}
 </style>

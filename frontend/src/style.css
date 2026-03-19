@@ -10,14 +10,32 @@
 }
 
 html {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Noto Sans SC', 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background:
+    radial-gradient(circle at top, rgba(59, 130, 246, 0.10), transparent 35%),
+    linear-gradient(180deg, #f8fbff 0%, #f4f7fb 45%, #eef3f8 100%);
+}
+
+:root {
+  --bg-primary: #f4f7fb;
+  --bg-panel: rgba(255, 255, 255, 0.84);
+  --text-primary: #172033;
+  --text-secondary: #5c6b82;
+  --text-muted: #8a97ab;
+  --line-soft: rgba(148, 163, 184, 0.20);
+  --accent: #2563eb;
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --shadow-sm: 0 10px 30px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 18px 40px rgba(15, 23, 42, 0.08);
 }
 
 body {
-  background-color: #f1f5f9;
-  color: #1e293b;
+  background: transparent;
+  color: var(--text-primary);
   line-height: 1.5;
 }
 
@@ -111,12 +129,14 @@ body {
 
 /* Card styles */
 .card {
-  @apply bg-white rounded-xl shadow-sm border border-gray-200;
+  @apply bg-white shadow-sm border border-gray-200;
+  border-radius: var(--radius-lg);
 }
 
 /* Input styles */
 .input {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all;
+  @apply w-full px-3 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all;
+  border-radius: var(--radius-md);
 }
 
 /* Tag styles */

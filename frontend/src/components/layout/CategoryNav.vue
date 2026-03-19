@@ -303,4 +303,65 @@ onMounted(() => {
   color: #94a3b8;
   font-style: italic;
 }
+
+.nav-header {
+  padding: 2px 4px 0;
+}
+
+.title-text {
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.08em;
+}
+
+.count-badge {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.18);
+}
+
+.nav-list {
+  gap: 6px;
+}
+
+.nav-item {
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.34);
+  border-radius: 18px;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--accent);
+  border-color: rgba(37, 99, 235, 0.08);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.05);
+}
+
+.nav-item.active {
+  border-color: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 16px 28px rgba(15, 23, 42, 0.06);
+}
+
+.nav-count {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(226, 232, 240, 0.88);
+}
+
+.nav-divider {
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.28), transparent);
+}
+
+.section-title {
+  color: var(--text-muted);
+}
+
+.tag-item {
+  padding: 7px 12px;
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+}
 </style>

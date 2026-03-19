@@ -588,4 +588,162 @@ onMounted(() => {
     width: 100%;
   }
 }
+
+.app-layout {
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.12), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.10), transparent 28%),
+    var(--bg-primary, #f4f7fb);
+}
+
+.top-navbar {
+  height: 64px;
+  padding: 0 24px;
+  background: rgba(255, 255, 255, 0.74);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  border-bottom: 1px solid var(--line-soft);
+  box-shadow: 0 6px 24px rgba(15, 23, 42, 0.04);
+}
+
+.brand-text {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #1d4ed8 0%, #0f172a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-link {
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
+}
+
+.nav-link.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.24);
+}
+
+.mobile-menu-btn,
+.action-link,
+.theme-btn {
+  border-radius: 12px;
+}
+
+.mobile-menu-btn,
+.action-link:hover,
+.theme-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.mobile-nav {
+  top: 64px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line-soft);
+  box-shadow: var(--shadow-md);
+}
+
+.layout-body {
+  gap: 18px;
+  padding: 18px;
+}
+
+.sidebar-left,
+.sidebar-right {
+  background: var(--bg-panel);
+  border: 1px solid var(--line-soft);
+  backdrop-filter: blur(18px);
+  border-radius: 28px;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.sidebar-header {
+  min-height: 68px;
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.sidebar-title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.toggle-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.92);
+}
+
+.toggle-btn:hover {
+  background: white;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.08);
+}
+
+.sidebar-content {
+  padding: 18px;
+}
+
+.main-content {
+  padding: 28px;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(59, 130, 246, 0.09) 0%, transparent 52%),
+    radial-gradient(ellipse at 80% 100%, rgba(14, 165, 233, 0.08) 0%, transparent 48%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.24) 100%);
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.main-content.full-width {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+@media (max-width: 992px) {
+  .layout-body {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    top: 64px;
+    border-radius: 0 24px 24px 0;
+  }
+
+  .sidebar-right {
+    border-radius: 24px 0 0 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .top-navbar {
+    padding: 0 12px;
+  }
+
+  .layout-body {
+    padding: 10px;
+  }
+
+  .main-content {
+    padding: 16px;
+    border-radius: 24px;
+  }
+
+  .main-content.full-width {
+    border-radius: 0;
+  }
+}
 </style>

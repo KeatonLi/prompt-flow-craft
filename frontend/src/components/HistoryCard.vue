@@ -587,4 +587,69 @@ export default {
   width: 100%;
   height: 100%;
 }
+
+.history-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.92) 100%);
+  border-radius: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.05);
+}
+
+.history-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 38px rgba(15, 23, 42, 0.09);
+  border-color: rgba(37, 99, 235, 0.16);
+}
+
+.card-header {
+  padding: 18px 18px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.card-time,
+.param-tag,
+.prompt-tag,
+.more-tags {
+  border-radius: 999px;
+}
+
+.card-time {
+  color: var(--text-muted);
+  background: rgba(248, 250, 252, 0.9);
+  padding: 5px 10px;
+}
+
+.card-content {
+  padding: 14px 18px 16px;
+}
+
+.param-tag {
+  padding: 4px 10px;
+}
+
+.card-preview {
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: linear-gradient(135deg, #f8fbff 0%, #f1f6fb 100%);
+}
+
+.card-actions {
+  padding: 12px 18px 18px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.action-btn {
+  border-radius: 14px;
+}
+
+.btn-like {
+  background: rgba(248, 250, 252, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.btn-detail {
+  background: rgba(255, 255, 255, 0.9);
+}
 </style>

@@ -370,4 +370,67 @@ onMounted(() => {
   opacity: 0;
   transform: translateX(-20px);
 }
+
+.panel-header {
+  padding: 18px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.go-templates-btn {
+  padding: 12px 14px;
+  background: rgba(248, 250, 252, 0.85);
+  color: var(--text-primary);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 16px;
+}
+
+.go-templates-btn:hover {
+  background: white;
+  border-color: rgba(37, 99, 235, 0.16);
+  box-shadow: 0 12px 20px rgba(15, 23, 42, 0.06);
+}
+
+.search-input {
+  padding: 12px 14px 12px 40px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 16px;
+}
+
+.search-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.tab-btn {
+  padding: 10px 12px;
+  border-radius: 14px;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 12px 22px rgba(37, 99, 235, 0.22);
+}
+
+.panel-content {
+  padding: 14px;
+}
+
+.load-btn {
+  padding: 10px 24px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.88);
+  border-radius: 999px;
+}
+
+.load-btn:hover:not(:disabled) {
+  background: white;
+  border-color: #2563eb;
+  box-shadow: 0 12px 20px rgba(15, 23, 42, 0.06);
+}
+
+.panel-footer {
+  border-top: 1px solid var(--line-soft);
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.45);
+}
 </style>
