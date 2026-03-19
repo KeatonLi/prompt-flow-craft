@@ -217,6 +217,7 @@ import AppLayout from '../components/layout/AppLayout.vue'
   text-align: center;
   position: relative;
   overflow: hidden;
+  contain: layout style;
 }
 
 .hero-section::before {
@@ -226,8 +227,7 @@ import AppLayout from '../components/layout/AppLayout.vue'
   left: -10%;
   width: 60%;
   height: 60%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-  filter: blur(60px);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
   animation: float 8s ease-in-out infinite;
 }
 
@@ -238,8 +238,7 @@ import AppLayout from '../components/layout/AppLayout.vue'
   right: -10%;
   width: 50%;
   height: 50%;
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, transparent 70%);
-  filter: blur(60px);
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.2) 0%, transparent 70%);
   animation: float 10s ease-in-out infinite reverse;
 }
 
@@ -397,8 +396,8 @@ import AppLayout from '../components/layout/AppLayout.vue'
   font-weight: 500;
   border-radius: 16px;
   text-decoration: none;
-  border: 1px solid rgba(255,255,255,0.2);
-  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.1);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -421,10 +420,9 @@ import AppLayout from '../components/layout/AppLayout.vue'
   flex-direction: column;
   align-items: center;
   padding: 20px 32px;
-  background: rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.12);
   border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.1);
-  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.15);
   min-width: 120px;
 }
 
@@ -482,6 +480,7 @@ import AppLayout from '../components/layout/AppLayout.vue'
   padding: 64px 40px;
   max-width: 1200px;
   margin: 0 auto;
+  contain: layout style;
 }
 
 .section-desc {
@@ -760,8 +759,7 @@ import AppLayout from '../components/layout/AppLayout.vue'
 }
 
 .footer-section {
-  background: rgba(255, 255, 255, 0.58);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.85);
 }
 
 @media (max-width: 768px) {
@@ -789,8 +787,7 @@ import AppLayout from '../components/layout/AppLayout.vue'
 
 .hero-section::before,
 .hero-section::after {
-  filter: blur(28px);
-  opacity: 0.8;
+  opacity: 0.7;
   animation-duration: 16s;
 }
 
@@ -829,14 +826,9 @@ import AppLayout from '../components/layout/AppLayout.vue'
   animation: none;
 }
 
-.stat-item {
-  backdrop-filter: blur(6px);
-}
-
 @media (max-width: 768px) {
   .hero-section::before,
   .hero-section::after {
-    filter: blur(20px);
     animation: none;
   }
 

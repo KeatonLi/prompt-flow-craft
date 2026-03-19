@@ -131,15 +131,16 @@ const isMobileMenuOpen = ref(false);
 
 // 导航项配置
 const navItems = [
-  { path: '/', label: '首页', icon: '🏠' },
-  { path: '/generate', label: '提示词生成', icon: '✨' },
-  { path: '/templates', label: '提示词大全', icon: '💡' },
+  { path: '/', label: '首页落地页', icon: '🏠' },
+  { path: '/generate', label: '提示词生成', icon: '📝' },
+  { path: '/lab', label: '提示词实验室', icon: '🧪' },
+  { path: '/templates', label: '提示词库', icon: '💡' },
   { path: '/statistics', label: '数据统计', icon: '📊' },
 ];
 
 // 根据路由控制侧边栏显示
 const showSidebars = computed(() => {
-  return route.path === '/generate';
+  return route.path === '/generate' || route.path === '/lab';
 });
 
 const toggleLeft = () => {
@@ -177,9 +178,7 @@ onMounted(() => {
 /* 顶部导航条 */
 .top-navbar {
   height: 56px;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.92);
   border-bottom: 1px solid rgba(226, 232, 240, 0.6);
   display: flex;
   align-items: center;
@@ -361,13 +360,12 @@ onMounted(() => {
 /* 左侧边栏 */
 .sidebar-left {
   width: 260px;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.88);
   border-right: 1px solid rgba(226, 232, 240, 0.6);
   display: flex;
   flex-direction: column;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
-  backdrop-filter: blur(8px);
 }
 
 .sidebar-left.collapsed {
@@ -377,13 +375,12 @@ onMounted(() => {
 /* 右侧边栏 */
 .sidebar-right {
   width: 360px;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.88);
   border-left: 1px solid rgba(226, 232, 240, 0.6);
   display: flex;
   flex-direction: column;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
-  backdrop-filter: blur(8px);
 }
 
 .sidebar-right.collapsed {
@@ -599,9 +596,7 @@ onMounted(() => {
 .top-navbar {
   height: 64px;
   padding: 0 24px;
-  background: rgba(255, 255, 255, 0.74);
-  backdrop-filter: blur(20px) saturate(150%);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  background: rgba(255, 255, 255, 0.92);
   border-bottom: 1px solid var(--line-soft);
   box-shadow: 0 6px 24px rgba(15, 23, 42, 0.04);
 }
@@ -645,8 +640,7 @@ onMounted(() => {
 
 .mobile-nav {
   top: 64px;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.98);
   border-bottom: 1px solid var(--line-soft);
   box-shadow: var(--shadow-md);
 }
@@ -660,7 +654,6 @@ onMounted(() => {
 .sidebar-right {
   background: var(--bg-panel);
   border: 1px solid var(--line-soft);
-  backdrop-filter: blur(18px);
   border-radius: 28px;
   box-shadow: var(--shadow-sm);
   overflow: hidden;
