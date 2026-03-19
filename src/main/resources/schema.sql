@@ -32,10 +32,15 @@ CREATE INDEX idx_task_description ON prompt_cache(task_description(100));
 -- 扩展 prompt_cache 表，添加分类和标签相关字段
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS category_id BIGINT COMMENT '分类ID' AFTER hit_count;
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS like_count INT DEFAULT 0 COMMENT '点赞数' AFTER category_id;
+ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS last_like_time DATETIME COMMENT '最后点赞时间' AFTER like_count;
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS is_auto_tagged BOOLEAN DEFAULT FALSE COMMENT '是否自动打标签' AFTER like_count;
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS ai_tags JSON COMMENT 'AI识别的标签' AFTER is_auto_tagged;
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS usage_scenario VARCHAR(200) COMMENT '使用场景' AFTER ai_tags;
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS effectiveness_score INT COMMENT '效果评分(1-5)' AFTER usage_scenario;
+ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS user_rating INT COMMENT '用户评分(1-5星)' AFTER effectiveness_score;
+ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS rating_comment TEXT COMMENT '评分评论' AFTER user_rating;
+ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS rating_count INT DEFAULT 0 COMMENT '评分次数' AFTER rating_comment;
+ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS average_rating DOUBLE COMMENT '平均评分' AFTER rating_count;
 
 -- 添加 Token 统计字段
 ALTER TABLE prompt_cache ADD COLUMN IF NOT EXISTS input_tokens BIGINT DEFAULT 0 COMMENT '输入Token数' AFTER effectiveness_score;

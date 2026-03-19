@@ -16,6 +16,7 @@ import java.util.List;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Set;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
@@ -172,6 +173,15 @@ public class PromptHistoryService {
      */
     public PagedResult<PromptCache> getHistoryByTags(Set<Long> tagIds, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
+        if (tagIds == null || tagIds.isEmpty()) {
+            return new PagedResult<>(
+                    Collections.emptyList(),
+                    0,
+                    0,
+                    page,
+                    size
+            );
+        }
         Page<PromptCache> result = promptCacheRepository.findByTagIds(tagIds, pageable);
 
         return new PagedResult<>(
