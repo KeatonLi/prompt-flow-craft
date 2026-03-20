@@ -2,157 +2,173 @@
   <AppLayout>
     <template #main>
       <div class="page-wrapper">
-        <div class="banner">
-          <h1 class="banner-title">💡 提示词大全</h1>
-          <p class="banner-desc">探索和管理您生成的所有提示词</p>
-        </div>
+        <div class="library-shell">
+          <aside class="library-rail">
+            <button class="rail-brand">+</button>
+            <div class="rail-group">
+              <button class="rail-item active" type="button" title="模板库">📚</button>
+              <button class="rail-item" type="button" title="收藏">☆</button>
+              <button class="rail-item" type="button" title="历史">🕘</button>
+              <button class="rail-item" type="button" title="探索">✦</button>
+            </div>
+            <button class="rail-create" type="button" @click="router.push('/generate')">+ New</button>
+          </aside>
 
-        <div class="content-container">
-          <div class="filter-bar">
-            <div class="filter-top">
-              <div class="search-box">
-                <span class="search-icon">🔍</span>
-                <input
-                  v-model="search"
-                  type="text"
-                  placeholder="搜索提示词..."
-                  class="search-input"
-                  @input="onSearch"
-                />
+          <section class="library-main">
+            <div class="library-hero">
+              <div class="hero-copy">
+                <div class="hero-kicker">Prompt Library</div>
+                <h1 class="hero-title">Template Library</h1>
+                <p class="hero-desc">发现并复用高质量提示词模板，让生成、管理和部署都更顺手。</p>
               </div>
-              <div class="sort-box">
-                <button
-                  :class="['sort-btn', { active: sortBy === 'createdAt' }]"
-                  @click="changeSort('createdAt')"
-                >
-                  时间优先
-                </button>
-                <button
-                  :class="['sort-btn', { active: sortBy === 'likeCount' }]"
-                  @click="changeSort('likeCount')"
-                >
-                  点赞优先
-                </button>
+              <div class="hero-meta">
+                <div class="hero-stat">
+                  <span class="hero-stat-value">{{ displayedList.length }}</span>
+                  <span class="hero-stat-label">Templates</span>
+                </div>
+                <div class="hero-stat">
+                  <span class="hero-stat-value">{{ categories.length }}</span>
+                  <span class="hero-stat-label">Categories</span>
+                </div>
               </div>
             </div>
-            <div class="category-tabs">
-              <button
-                :class="['cat-btn', { active: categoryId === null }]"
-                @click="selectCategory(null)"
-              >
-                全部
-              </button>
-              <button
-                v-for="cat in categories"
-                :key="cat.id"
-                :class="['cat-btn', { active: categoryId === cat.id }]"
-                @click="selectCategory(cat.id)"
-              >
-                <span class="cat-icon">{{ cat.icon }}</span>
-                {{ cat.name }}
-              </button>
-            </div>
-          </div>
 
-          <div class="grid-container" ref="gridRef">
-            <div v-if="pending && list.length === 0" class="loading-state">
-              <div class="loading-spinner"></div>
-              <span>加载中...</span>
-            </div>
-            
-            <div v-else-if="list.length === 0" class="empty-state">
-              <div class="empty-icon">📭</div>
-              <h3>暂无记录</h3>
-              <p>开始生成您的第一个提示词吧</p>
-            </div>
-            
-            <div v-else class="cards-grid">
-              <div 
-                v-for="item in list" 
-                :key="item.id" 
-                class="prompt-card" 
-                @click="open(item)"
-              >
-                <div class="card-header">
-                  <span class="card-category" :class="{ default: !item.category }">
-                    <span v-if="item.category" class="category-icon">{{ item.category.icon }}</span>
-                    <span v-else class="category-icon">📄</span>
-                    {{ item.category?.name || '未分类' }}
-                  </span>
-                  <div class="card-stats">
-                    <span
-                      class="card-likes"
-                      @click.stop="handleLike(item)"
+            <div class="content-container">
+              <div class="filter-bar">
+                <div class="filter-top">
+                  <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input
+                      v-model="search"
+                      type="text"
+                      placeholder="Search templates..."
+                      class="search-input"
+                      @input="onSearch"
+                    />
+                  </div>
+                  <div class="sort-box">
+                    <button
+                      :class="['sort-btn', { active: sortBy === 'createdAt' }]"
+                      @click="changeSort('createdAt')"
                     >
-                      <span class="stat-icon">❤️</span>
-                      {{ item.likeCount || 0 }}
-                    </span>
+                      最新
+                    </button>
+                    <button
+                      :class="['sort-btn', { active: sortBy === 'likeCount' }]"
+                      @click="changeSort('likeCount')"
+                    >
+                      热门
+                    </button>
                   </div>
                 </div>
+                <div class="category-tabs">
+                  <button
+                    :class="['cat-btn', { active: categoryId === null }]"
+                    @click="selectCategory(null)"
+                  >
+                    All
+                  </button>
+                  <button
+                    v-for="cat in categories"
+                    :key="cat.id"
+                    :class="['cat-btn', { active: categoryId === cat.id }]"
+                    @click="selectCategory(cat.id)"
+                  >
+                    {{ cat.name }}
+                  </button>
+                </div>
+              </div>
 
-                <div class="card-body">
-                  <div class="card-task-label">任务描述</div>
-                  <div class="card-task">{{ item.taskDescription || '暂无描述' }}</div>
-
-                  <div class="card-result-label">生成结果</div>
-                  <div class="card-result">
-                    <template v-if="item.promptSummary">{{ item.promptSummary }}</template>
-                    <template v-else-if="item.generatedPrompt">{{ item.generatedPrompt.substring(0, 150) }}{{ item.generatedPrompt.length > 150 ? '...' : '' }}</template>
-                    <template v-else class="result-empty">暂无生成结果</template>
-                  </div>
+              <div class="grid-container" ref="gridRef">
+                <div v-if="pending && list.length === 0" class="loading-state">
+                  <div class="loading-spinner"></div>
+                  <span>加载中...</span>
                 </div>
 
-                <div class="card-tags-section">
-                  <div class="tags-label">标签</div>
-                  <div class="card-tags">
-                    <template v-if="item.tags?.length">
-                      <span
-                        v-for="t in item.tags.slice(0, 4)"
-                        :key="t.id"
-                        class="tag"
-                        :style="{ background: t.color + '15', color: t.color, borderColor: t.color + '30' }"
-                      >
-                        {{ t.name }}
+                <div v-else-if="displayedList.length === 0" class="empty-state">
+                  <div class="empty-icon">📭</div>
+                  <h3>没有匹配的模板</h3>
+                  <p>试试更换关键词或切换分类</p>
+                </div>
+
+                <div v-else class="cards-grid">
+                  <div
+                    v-for="item in displayedList"
+                    :key="item.id"
+                    class="prompt-card"
+                    @click="open(item)"
+                  >
+                    <div class="card-header">
+                      <span class="card-category" :class="{ default: !item.category }">
+                        {{ item.category?.name || 'General' }}
                       </span>
-                      <span v-if="item.tags.length > 4" class="tag-more">+{{ item.tags.length - 4 }}</span>
-                    </template>
-                    <template v-else-if="item.aiTags?.length">
-                      <span
-                        v-for="(tag, idx) in item.aiTags.slice(0, 4)"
-                        :key="idx"
-                        class="tag ai-tag"
-                        :style="getTagStyle(idx)"
-                      >
-                        {{ tag }}
-                      </span>
-                    </template>
-                    <span v-else class="tag-empty">暂无标签</span>
+                      <button class="card-bookmark" type="button" @click.stop="handleLike(item)">✦</button>
+                    </div>
+
+                    <div class="card-body">
+                      <div class="card-task">{{ item.taskDescription || '暂无描述' }}</div>
+                      <div class="card-result">
+                        <template v-if="item.promptSummary">{{ item.promptSummary }}</template>
+                        <template v-else-if="item.generatedPrompt">{{ item.generatedPrompt.substring(0, 140) }}{{ item.generatedPrompt.length > 140 ? '...' : '' }}</template>
+                        <template v-else class="result-empty">暂无生成结果</template>
+                      </div>
+                    </div>
+
+                    <div class="card-tags">
+                      <template v-if="item.tags?.length">
+                        <span
+                          v-for="t in item.tags.slice(0, 3)"
+                          :key="t.id"
+                          class="tag"
+                          :style="{ background: t.color + '12', color: t.color, borderColor: t.color + '24' }"
+                        >
+                          {{ t.name }}
+                        </span>
+                      </template>
+                      <template v-else-if="item.aiTags?.length">
+                        <span
+                          v-for="(tag, idx) in item.aiTags.slice(0, 3)"
+                          :key="idx"
+                          class="tag ai-tag"
+                          :style="getTagStyle(idx)"
+                        >
+                          {{ tag }}
+                        </span>
+                      </template>
+                      <span v-else class="tag-empty">No tags</span>
+                    </div>
+
+                    <div class="card-footer">
+                      <div class="card-metrics">
+                        <span class="metric-chip">❤ {{ item.likeCount || 0 }}</span>
+                        <span class="metric-chip">{{ fmt(item.createdAt) }}</span>
+                      </div>
+                      <button class="use-btn" type="button" @click.stop="usePrompt(item)">
+                        Use Template →
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                <div class="card-footer">
-                  <span class="card-time">{{ fmt(item.createdAt) }}</span>
+                <div v-if="pending && list.length > 0" class="loading-more">
+                  <div class="loading-spinner small"></div>
+                </div>
+                <div v-else-if="hasMore" class="load-more-trigger" @click="loadMore">
+                  Load more templates
                 </div>
               </div>
             </div>
-            
-            <div v-if="pending && list.length > 0" class="loading-more">
-              <div class="loading-spinner small"></div>
-            </div>
-            <div v-else-if="hasMore" class="load-more-trigger" @click="loadMore">
-              点击加载更多
-            </div>
-          </div>
-        </div>
+          </section>
 
-        <PromptDetailModal :item="cur" :loading="detailLoading" @close="cur = null" @use="usePrompt" />
+          <PromptDetailModal :item="cur" :loading="detailLoading" @close="cur = null" @use="usePrompt" />
+        </div>
       </div>
     </template>
   </AppLayout>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AppLayout from '../components/layout/AppLayout.vue'
 import PromptDetailModal from '../components/PromptDetailModal.vue'
@@ -170,6 +186,7 @@ const page = ref(1)
 const size = ref(20)
 const hasMore = ref(true)
 const gridRef = ref(null)
+const searchKeyword = computed(() => search.value.trim().toLowerCase())
 
 const API = 'http://111.231.107.210:8080/api'
 
@@ -267,8 +284,6 @@ const loadMore = () => {
 
 const onSearch = () => {
   page.value = 1
-  hasMore.value = true
-  loadData(true)
 }
 
 const changeSort = (sort) => {
@@ -317,6 +332,25 @@ const getTagStyle = (idx) => {
   return { background: c.bg, color: c.color, borderColor: c.border }
 }
 
+const displayedList = computed(() => {
+  if (!searchKeyword.value) return list.value
+  return list.value.filter((item) => {
+    const haystack = [
+      item.taskDescription,
+      item.promptSummary,
+      item.generatedPrompt,
+      item.category?.name,
+      ...(item.tags || []).map((tag) => tag.name),
+      ...(item.aiTags || [])
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
+    return haystack.includes(searchKeyword.value)
+  })
+})
+
 const usePrompt = (item) => {
   if (!item) return
   router.push({
@@ -340,70 +374,152 @@ const usePrompt = (item) => {
   min-height: 100%;
 }
 
-.banner {
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  padding: 48px 32px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
+.library-shell {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 22px;
+  min-height: 100%;
 }
 
-.banner::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 60%);
-  animation: pulse 4s ease-in-out infinite;
+.library-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 12px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 28px;
+  box-shadow: 0 18px 34px rgba(15, 23, 42, 0.05);
 }
 
-.banner::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: linear-gradient(to top, rgba(0,0,0,0.1), transparent);
+.rail-brand,
+.rail-item {
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(239, 244, 255, 0.95);
+  color: #3157c8;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.1); opacity: 0.3; }
-}
-
-.banner-title {
-  font-size: 2rem;
-  font-weight: 800;
+.rail-brand {
+  background: linear-gradient(135deg, #2258d8 0%, #1947b6 100%);
   color: white;
-  margin: 0 0 12px;
-  position: relative;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  font-weight: 700;
 }
 
-.banner-desc {
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 1.1rem;
+.rail-item.active,
+.rail-item:hover,
+.rail-brand:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px rgba(34, 88, 216, 0.18);
+}
+
+.rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.rail-create {
+  margin-top: auto;
+  border: none;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #2258d8 0%, #1947b6 100%);
+  color: white;
+  padding: 9px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.library-main {
+  min-width: 0;
+}
+
+.library-hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 8px 4px 22px;
+  align-items: end;
+}
+
+.hero-kicker {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5270c7;
+  margin-bottom: 10px;
+}
+
+.hero-title {
   margin: 0;
-  position: relative;
-  font-weight: 500;
+  font-size: clamp(2.2rem, 3vw, 3rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: #1b2333;
+}
+
+.hero-desc {
+  margin: 14px 0 0;
+  max-width: 700px;
+  color: #68758c;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 12px;
+}
+
+.hero-stat {
+  min-width: 112px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.04);
+}
+
+.hero-stat-value {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1741af;
+}
+
+.hero-stat-label {
+  display: block;
+  margin-top: 4px;
+  color: #7b8799;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .content-container {
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 28px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(248, 250, 252, 0.88) 100%);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 32px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.05);
 }
 
 .filter-bar {
-  background: white;
-  border-radius: 20px;
-  padding: 24px 28px;
+  background: transparent;
+  border-radius: 0;
+  padding: 0 0 22px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: none;
+  border: none;
 }
 
 .search-box {
@@ -415,7 +531,7 @@ const usePrompt = (item) => {
   display: flex;
   gap: 16px;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .sort-box {
@@ -425,12 +541,12 @@ const usePrompt = (item) => {
 }
 
 .sort-btn {
-  padding: 8px 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  padding: 10px 16px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 999px;
   font-size: 0.85rem;
   color: #64748b;
-  background: white;
+  background: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -457,13 +573,13 @@ const usePrompt = (item) => {
 
 .search-input {
   width: 100%;
-  padding: 12px 16px 12px 42px;
+  padding: 14px 18px 14px 44px;
   font-size: 0.95rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 16px;
   outline: none;
   transition: all 0.2s;
-  background: #f8fafc;
+  background: rgba(255, 255, 255, 0.88);
 }
 
 .search-input:focus {
@@ -479,12 +595,12 @@ const usePrompt = (item) => {
 }
 
 .cat-btn {
-  padding: 8px 16px;
+  padding: 9px 16px;
   font-size: 0.85rem;
-  font-weight: 500;
-  border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  background: white;
+  font-weight: 600;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
   color: #64748b;
   cursor: pointer;
   transition: all 0.2s;
@@ -504,10 +620,6 @@ const usePrompt = (item) => {
   color: white;
   border-color: transparent;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
-}
-
-.cat-icon {
-  font-size: 0.9rem;
 }
 
 .grid-container {
@@ -562,177 +674,88 @@ const usePrompt = (item) => {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 18px;
 }
 
 .prompt-card {
-  background: white;
-  border-radius: 20px;
-  padding: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.96) 100%);
+  border-radius: 18px;
+  padding: 18px;
   cursor: pointer;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(198, 208, 225, 0.72);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 380px;
+  min-height: 266px;
   position: relative;
   overflow: hidden;
-}
-
-.prompt-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
-  opacity: 0;
-  transition: opacity 0.3s;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.04);
 }
 
 .prompt-card:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
-  transform: translateY(-6px);
-}
-
-.prompt-card:hover::before {
-  opacity: 1;
+  border-color: #2657d6;
+  box-shadow: 0 22px 34px rgba(38, 87, 214, 0.12);
+  transform: translateY(-4px);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
+  align-items: flex-start;
+  margin-bottom: 18px;
 }
 
 .card-category {
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef4ff;
+  color: #2b57c7;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .card-category.default {
-  background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
-  box-shadow: 0 2px 8px rgba(148, 163, 184, 0.25);
+  background: #f0f3f8;
+  color: #6e7d93;
 }
 
-.category-icon {
-  font-size: 0.9rem;
-}
-
-.card-stats {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.card-likes,
-.card-hits {
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 20px;
+.card-bookmark {
+  border: none;
+  background: transparent;
+  color: #a2acbc;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.card-likes {
-  color: #ef4444;
-  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-  border: 1px solid #fecaca;
-}
-
-.card-likes:hover {
-  transform: scale(1.08);
-  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-}
-
-.card-likes:active {
-  transform: scale(0.95);
-}
-
-.card-hits {
-  color: #f97316;
-  background: #fff7ed;
-}
-
-.stat-icon {
-  font-size: 0.8rem;
 }
 
 .card-body {
   flex: 1;
-  margin-bottom: 20px;
-}
-
-.card-task-label,
-.card-result-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.card-task-label::before {
-  content: '📌';
-  font-size: 0.7rem;
-}
-
-.card-result-label::before {
-  content: '✨';
-  font-size: 0.7rem;
+  margin-bottom: 16px;
 }
 
 .card-task {
   font-weight: 700;
-  color: #1e293b;
-  font-size: 1.05rem;
-  line-height: 1.6;
-  margin-bottom: 20px;
+  color: #151d2d;
+  font-size: 1.2rem;
+  line-height: 1.35;
+  margin-bottom: 12px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  padding: 14px;
-  background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 12px;
-  border-left: 4px solid #3b82f6;
 }
 
 .card-result {
-  font-size: 0.9rem;
-  color: #475569;
-  line-height: 1.7;
-  background: linear-gradient(145deg, #fefefe 0%, #f8fafc 100%);
-  padding: 16px;
-  border-radius: 14px;
-  border-left: 4px solid #8b5cf6;
+  font-size: 0.87rem;
+  color: #6d788a;
+  line-height: 1.75;
   display: -webkit-box;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .result-empty {
@@ -740,61 +763,30 @@ const usePrompt = (item) => {
   font-style: italic;
 }
 
-.card-tags-section {
-  margin-bottom: 20px;
-  padding-top: 20px;
-  border-top: 1px dashed #e2e8f0;
-}
-
-.tags-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 10px;
-}
-
 .card-tags {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  min-height: 32px;
+  min-height: 30px;
+  margin-bottom: 18px;
 }
 
 .tag {
-  font-size: 0.75rem;
-  padding: 6px 12px;
-  border-radius: 16px;
+  font-size: 0.72rem;
+  padding: 5px 10px;
+  border-radius: 999px;
   border: 1px solid;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-
-.tag:hover {
-  transform: scale(1.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-weight: 700;
 }
 
 .tag.ai-tag {
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  color: #64748b;
-  border-color: #cbd5e1;
-}
-
-.tag-more {
-  font-size: 0.75rem;
-  padding: 6px 10px;
-  background: #f1f5f9;
-  color: #64748b;
-  border-radius: 16px;
   font-weight: 600;
 }
 
 .tag-empty {
-  font-size: 0.75rem;
-  padding: 6px 12px;
-  border-radius: 16px;
+  font-size: 0.72rem;
+  padding: 5px 10px;
+  border-radius: 999px;
   background: #f1f5f9;
   color: #94a3b8;
 }
@@ -803,17 +795,33 @@ const usePrompt = (item) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 16px;
-  border-top: 1px solid #f1f5f9;
+  padding-top: 14px;
+  border-top: 1px solid #eef2f7;
+  gap: 12px;
 }
 
-.card-time {
+.card-metrics {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.metric-chip {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #59708d;
+  background: #f3f6fb;
+  border-radius: 999px;
+  padding: 6px 10px;
+}
+
+.use-btn {
+  border: none;
+  background: transparent;
+  color: #2258d8;
   font-size: 0.8rem;
-  color: #94a3b8;
-  font-weight: 600;
-  background: #f8fafc;
-  padding: 6px 12px;
-  border-radius: 16px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
 .loading-more {
@@ -836,20 +844,47 @@ const usePrompt = (item) => {
 
 /* 响应式 */
 @media (max-width: 768px) {
-  .content-container {
-    padding: 16px;
+  .library-shell {
+    grid-template-columns: 1fr;
   }
-  
+
+  .library-rail {
+    display: none;
+  }
+
+  .library-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 2px 2px 18px;
+  }
+
+  .hero-meta {
+    width: 100%;
+  }
+
+  .hero-stat {
+    flex: 1;
+  }
+
+  .content-container {
+    padding: 20px 16px;
+  }
+
+  .filter-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .cards-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .category-tabs {
     overflow-x: auto;
     flex-wrap: nowrap;
     padding-bottom: 4px;
   }
-  
+
   .cat-btn {
     white-space: nowrap;
   }

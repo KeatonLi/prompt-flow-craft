@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Generate from '../views/Generate.vue'
-import GenerateLab from '../views/GenerateLab.vue'
 import Templates from '../views/Templates.vue'
 import Statistics from '../views/Statistics.vue'
 
@@ -15,11 +14,6 @@ const routes = [
     path: '/generate',
     name: 'Generate',
     component: Generate
-  },
-  {
-    path: '/lab',
-    name: 'GenerateLab',
-    component: GenerateLab
   },
   {
     path: '/templates',

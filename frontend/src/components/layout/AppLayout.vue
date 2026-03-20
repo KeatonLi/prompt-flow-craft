@@ -132,15 +132,14 @@ const isMobileMenuOpen = ref(false);
 // 导航项配置
 const navItems = [
   { path: '/', label: '首页落地页', icon: '🏠' },
-  { path: '/generate', label: '提示词生成', icon: '📝' },
-  { path: '/lab', label: '提示词实验室', icon: '🧪' },
+  { path: '/generate', label: '提示词实验室', icon: '🧪' },
   { path: '/templates', label: '提示词库', icon: '💡' },
   { path: '/statistics', label: '数据统计', icon: '📊' },
 ];
 
 // 根据路由控制侧边栏显示
 const showSidebars = computed(() => {
-  return route.path === '/generate' || route.path === '/lab';
+  return route.path === '/generate';
 });
 
 const toggleLeft = () => {
