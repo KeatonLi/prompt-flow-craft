@@ -1,49 +1,38 @@
+/* Import Design System - must be first */
+@import './styles/design-system.css';
+@import './styles/dark-mode.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Reset and base styles */
-* {
+/* ============================================
+   Reset and Base Styles
+   ============================================ */
+
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 html {
-  font-family: 'Plus Jakarta Sans', 'Noto Sans SC', 'Segoe UI', sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background:
-    radial-gradient(circle at top, rgba(59, 130, 246, 0.10), transparent 35%),
-    linear-gradient(180deg, #f8fbff 0%, #f4f7fb 45%, #eef3f8 100%);
-}
-
-:root {
-  --bg-primary: #f4f7fb;
-  --bg-panel: rgba(255, 255, 255, 0.84);
-  --text-primary: #172033;
-  --text-secondary: #5c6b82;
-  --text-muted: #8a97ab;
-  --line-soft: rgba(148, 163, 184, 0.20);
-  --accent: #2563eb;
-  --radius-xl: 24px;
-  --radius-lg: 18px;
-  --radius-md: 14px;
-  --shadow-sm: 0 10px 30px rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 18px 40px rgba(15, 23, 42, 0.08);
+  background: var(--bg-primary);
 }
 
 body {
   background: transparent;
   color: var(--text-primary);
-  line-height: 1.5;
+  line-height: var(--leading-normal);
 }
 
-#app {
-  min-height: 100vh;
-}
+/* ============================================
+   Scrollbar Styles
+   ============================================ */
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -54,97 +43,32 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--color-gray-300);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--color-gray-400);
 }
 
-/* Focus styles */
+/* ============================================
+   Focus & Selection Styles
+   ============================================ */
+
 *:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
 }
 
-/* Selection styles */
 ::selection {
-  background: #bfdbfe;
-  color: #1e40af;
+  background: var(--color-primary-200);
+  color: var(--color-primary-900);
 }
 
-/* Animation utilities */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+/* ============================================
+   Legacy Compatibility Styles
+   ============================================ */
 
-@keyframes slideIn {
-  from {
-    transform: translateX(-10px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-slide-in {
-  animation: slideIn 0.3s ease-out;
-}
-
-/* Loading skeleton */
-.skeleton {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-}
-
-@keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-/* Loading spinner */
-.loading-spinner {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  border: 3px solid #e2e8f0;
-  border-top: 3px solid #3b82f6;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Card styles */
-.card {
-  @apply bg-white shadow-sm border border-gray-200;
-  border-radius: var(--radius-lg);
-}
-
-/* Input styles */
-.input {
-  @apply w-full px-3 py-2 border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all;
-  border-radius: var(--radius-md);
-}
-
-/* Tag styles */
-.tag {
-  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-}
-
-/* Legacy styles for compatibility */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;

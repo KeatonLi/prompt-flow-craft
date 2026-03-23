@@ -172,18 +172,12 @@ import { Search, Clock, ArrowLeft, ArrowRight, Collection } from '@element-plus/
 export default {
   name: 'HistorySidebar',
   components: {
+    HistoryCard,
     Search,
     Clock,
     ArrowLeft,
     ArrowRight,
     Collection
-  },
-  components: {
-    HistoryCard,
-    Search,
-    Clock,
-    ArrowLeft,
-    ArrowRight
   },
   setup() {
     const router = useRouter()

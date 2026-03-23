@@ -110,7 +110,7 @@
                       <div class="card-result">
                         <template v-if="item.promptSummary">{{ item.promptSummary }}</template>
                         <template v-else-if="item.generatedPrompt">{{ item.generatedPrompt.substring(0, 140) }}{{ item.generatedPrompt.length > 140 ? '...' : '' }}</template>
-                        <template v-else class="result-empty">暂无生成结果</template>
+                        <span v-else class="result-empty">暂无生成结果</span>
                       </div>
                     </div>
 

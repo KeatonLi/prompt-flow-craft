@@ -1,0 +1,284 @@
+/**
+ * Dark Mode Styles - Prompt Flow Craft
+ * 暗黑模式下的额外样式覆盖
+ */
+
+/* ============================================
+   1. 基础元素暗黑适配
+   ============================================ */
+
+.dark html {
+  background: var(--bg-primary);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--color-gray-600);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-gray-500);
+}
+
+.dark ::selection {
+  background: var(--color-primary-800);
+  color: var(--color-primary-100);
+}
+
+/* ============================================
+   2. 代码编辑器暗黑模式
+   ============================================ */
+
+.dark .result-content {
+  background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.dark .result-content pre {
+  color: #e2e8f0;
+}
+
+/* ============================================
+   3. 表单元素暗黑适配
+   ============================================ */
+
+.dark .form-textarea,
+.dark .form-select,
+.dark .search-input {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: rgba(148, 163, 184, 0.2);
+  color: var(--text-primary);
+}
+
+.dark .form-textarea::placeholder,
+.dark .search-input::placeholder {
+  color: var(--text-placeholder);
+}
+
+.dark .form-textarea:hover,
+.dark .form-select:hover,
+.dark .search-input:hover {
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+/* ============================================
+   4. 导航和侧边栏暗黑适配
+   ============================================ */
+
+.dark .top-navbar {
+  background: rgba(15, 23, 42, 0.92);
+  border-bottom-color: rgba(148, 163, 184, 0.15);
+}
+
+.dark .sidebar-left,
+.dark .sidebar-right {
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.dark .sidebar-header {
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.dark .nav-link {
+  color: var(--text-secondary);
+}
+
+.dark .nav-link:hover {
+  background: rgba(51, 65, 85, 0.5);
+  color: var(--text-primary);
+}
+
+.dark .toggle-btn {
+  background: rgba(51, 65, 85, 0.5);
+  color: var(--text-secondary);
+}
+
+.dark .toggle-btn:hover {
+  background: rgba(71, 85, 105, 0.6);
+  color: var(--text-primary);
+}
+
+/* ============================================
+   5. Hero 区域暗黑适配
+   ============================================ */
+
+.dark .hero-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #1e40af 100%);
+}
+
+.dark .hero-subtitle {
+  color: rgba(241, 245, 249, 0.7);
+}
+
+/* ============================================
+   6. 卡片和面板暗黑适配
+   ============================================ */
+
+.dark .preview-card,
+.dark .feature-item,
+.dark .category-card,
+.dark .tech-category {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.96) 0%, rgba(15, 23, 42, 0.94) 100%);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.dark .preview-card:hover,
+.dark .feature-item:hover,
+.dark .category-card:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.dark .section-title {
+  color: var(--text-primary);
+}
+
+.dark .section-title::after {
+  background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-400));
+}
+
+/* ============================================
+   7. 技术标签暗黑适配
+   ============================================ */
+
+.dark .tech-tag {
+  opacity: 0.9;
+}
+
+.dark .tech-tag.vue { background: rgba(66, 184, 131, 0.15); color: #4ade80; }
+.dark .tech-tag.ts { background: rgba(49, 120, 198, 0.15); color: #60a5fa; }
+.dark .tech-tag.vite { background: rgba(100, 108, 255, 0.15); color: #a5b4fc; }
+.dark .tech-tag.java { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+.dark .tech-tag.spring { background: rgba(109, 179, 63, 0.15); color: #86efac; }
+
+/* ============================================
+   8. 编辑器表单暗黑适配
+   ============================================ */
+
+.dark .editor-form {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.96) 0%, rgba(15, 23, 42, 0.92) 100%);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.dark .form-label {
+  color: var(--text-secondary);
+}
+
+.dark .btn-example {
+  background: linear-gradient(135deg, var(--color-primary-700) 0%, var(--color-primary-800) 100%);
+}
+
+/* ============================================
+   9. 结果区域暗黑适配
+   ============================================ */
+
+.dark .result-section {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.92) 100%);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.dark .result-header {
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.dark .result-header h3 {
+  color: var(--text-primary);
+}
+
+/* ============================================
+   10. 历史面板暗黑适配
+   ============================================ */
+
+.dark .history-panel {
+  color: var(--text-primary);
+}
+
+.dark .go-templates-btn {
+  background: rgba(51, 65, 85, 0.5);
+  border-color: rgba(148, 163, 184, 0.2);
+  color: var(--text-secondary);
+}
+
+.dark .go-templates-btn:hover {
+  background: rgba(71, 85, 105, 0.6);
+  border-color: rgba(148, 163, 184, 0.3);
+  color: var(--text-primary);
+}
+
+.dark .tab-btn {
+  background: rgba(51, 65, 85, 0.4);
+  color: var(--text-muted);
+}
+
+.dark .tab-btn:hover {
+  background: rgba(71, 85, 105, 0.5);
+  color: var(--text-secondary);
+}
+
+.dark .panel-footer {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+/* ============================================
+   11. Tab 按钮暗黑适配
+   ============================================ */
+
+.dark .tab-btn.active {
+  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-700) 100%);
+  color: white;
+}
+
+/* ============================================
+   12. 空状态暗黑适配
+   ============================================ */
+
+.dark .empty-state {
+  color: var(--text-muted);
+}
+
+.dark .load-btn {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: rgba(148, 163, 184, 0.2);
+  color: var(--text-secondary);
+}
+
+.dark .load-btn:hover:not(:disabled) {
+  background: rgba(51, 65, 85, 0.6);
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-400);
+}
+
+/* ============================================
+   13. 导出菜单暗黑适配
+   ============================================ */
+
+.dark .export-menu {
+  background: rgba(30, 41, 59, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.dark .export-menu button {
+  color: var(--text-secondary);
+}
+
+.dark .export-menu button:hover {
+  background: rgba(51, 65, 85, 0.5);
+  color: var(--color-primary-400);
+}
+
+/* ============================================
+   14. 页脚暗黑适配
+   ============================================ */
+
+.dark .footer-section {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(148, 163, 184, 0.15);
+}
+
+.dark .footer-text {
+  color: var(--text-secondary);
+}
+
+.dark .footer-version {
+  color: var(--text-muted);
+}
