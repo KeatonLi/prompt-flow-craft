@@ -45,24 +45,26 @@ build_project() {
     
     # 构建后端
     echo -e "${YELLOW}构建后端...${NC}"
+    cd backend
     mvn clean package -DskipTests
-    
+
     if [ ! -f "target/prompt-flow-craft-1.0.0.jar" ]; then
         echo -e "${RED}错误: 后端构建失败，JAR文件不存在${NC}"
         exit 1
     fi
-    
+    cd ..
+
     # 构建前端
     echo -e "${YELLOW}构建前端...${NC}"
     cd frontend
     npm install
     npm run build
-    
+
     if [ ! -d "dist" ]; then
         echo -e "${RED}错误: 前端构建失败，dist目录不存在${NC}"
         exit 1
     fi
-    
+
     cd ..
     echo -e "${GREEN}项目构建完成${NC}"
 }
