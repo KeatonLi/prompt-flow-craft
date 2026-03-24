@@ -1,388 +1,450 @@
 <template>
   <AppLayout>
     <template #main>
-      <div class="about-page">
-        <div class="hero-section">
-          <div class="hero-icon">🧠</div>
-          <h1 class="hero-title">Prompt Flow Craft</h1>
-          <p class="hero-subtitle">企业级 AI 提示词工程平台 | 多模态提示词生成与管理解决方案</p>
-
-          <!-- 核心跳转按钮 -->
-          <div class="hero-actions">
-            <router-link to="/generate" class="btn-primary">
-              <span class="btn-icon">🚀</span>
-              立即开始创作
-            </router-link>
-            <router-link to="/templates" class="btn-secondary">
-              <span class="btn-icon">📚</span>
-              查看提示词库
-            </router-link>
+      <div class="home-page">
+        <!-- Hero Section -->
+        <section class="hero-section">
+          <!-- Animated Background Elements -->
+          <div class="hero-bg">
+            <div class="hero-grid"></div>
+            <div class="hero-glow hero-glow-1"></div>
+            <div class="hero-glow hero-glow-2"></div>
+            <div class="hero-glow hero-glow-3"></div>
           </div>
 
-          <!-- 核心数据展示 -->
-          <div class="hero-stats">
-            <div class="stat-item">
-              <span class="stat-value">8+</span>
-              <span class="stat-label">预设分类</span>
+          <div class="hero-content">
+            <!-- Badge -->
+            <div class="hero-badge animate-fade-in">
+              <span class="badge-dot"></span>
+              <span>企业级 AI 提示词工程平台</span>
             </div>
-            <div class="stat-item">
-              <span class="stat-value">4层</span>
-              <span class="stat-label">架构模型</span>
+
+            <!-- Title -->
+            <h1 class="hero-title animate-fade-in-up">
+              <span class="title-line">Prompt</span>
+              <span class="title-line gradient-text">Flow Craft</span>
+            </h1>
+
+            <!-- Subtitle -->
+            <p class="hero-subtitle animate-fade-in-up stagger-1">
+              多模态提示词生成与管理解决方案<br/>
+              基于四层架构模型的智能生成引擎
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="hero-cta animate-fade-in-up stagger-2">
+              <router-link to="/generate" class="btn-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span>立即开始创作</span>
+              </router-link>
+              <router-link to="/templates" class="btn-secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                </svg>
+                <span>探索模板库</span>
+              </router-link>
             </div>
-            <div class="stat-item">
-              <span class="stat-value">AI</span>
-              <span class="stat-label">智能分类</span>
+
+            <!-- Stats -->
+            <div class="hero-stats animate-fade-in-up stagger-3">
+              <div class="stat-item">
+                <span class="stat-value">8+</span>
+                <span class="stat-label">预设分类</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <span class="stat-value">4层</span>
+                <span class="stat-label">架构模型</span>
+              </div>
+              <div class="stat-divider"></div>
+              <div class="stat-item">
+                <span class="stat-value">AI</span>
+                <span class="stat-label">智能分类</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div id="overview" class="preview-section">
-          <h2 class="section-title">💡 核心能力</h2>
-          <div class="preview-grid">
-            <div class="preview-card">
-              <div class="preview-icon">🎯</div>
-              <h3>智能生成</h3>
-              <p>基于四层架构模型，自动生成高质量提示词</p>
+          <!-- Floating Cards -->
+          <div class="hero-visual">
+            <div class="floating-card card-1 animate-float">
+              <div class="card-icon">🎯</div>
+              <span>智能生成</span>
             </div>
-            <div class="preview-card">
-              <div class="preview-icon">🏗️</div>
-              <h3>四层架构</h3>
-              <p>核心定义层 → 交互接口层 → 内部处理层 → 全局约束层</p>
+            <div class="floating-card card-2 animate-float" style="animation-delay: -2s;">
+              <div class="card-icon">⚡</div>
+              <span>高效缓存</span>
             </div>
-            <div class="preview-card">
-              <div class="preview-icon">💾</div>
-              <h3>历史记录</h3>
-              <p>永久保存所有提示词，支持搜索、筛选、复用</p>
-            </div>
-            <div class="preview-card">
-              <div class="preview-icon">🏷️</div>
-              <h3>智能分类</h3>
-              <p>规则匹配 + AI 智能分类，8 大预设分类自动打标签</p>
+            <div class="floating-card card-3 animate-float" style="animation-delay: -4s;">
+              <div class="card-icon">🔒</div>
+              <span>安全可靠</span>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div id="features" class="features-section">
-          <h2 class="section-title">🔧 功能特性</h2>
+        <!-- Features Section -->
+        <section class="features-section">
+          <div class="section-header">
+            <h2 class="section-title">核心能力</h2>
+            <p class="section-desc">强大的功能助您高效创作优质提示词</p>
+          </div>
+
           <div class="features-grid">
-            <div class="feature-item">
-              <div class="feature-icon">🎨</div>
-              <div class="feature-content">
-                <h4>多维度参数配置</h4>
-                <p>支持目标受众、输出格式、语调风格、内容长度等多维度定制</p>
+            <div class="feature-card" v-for="(feature, index) in features" :key="index">
+              <div class="feature-icon" :style="{ background: feature.iconBg }">
+                <span v-html="feature.icon"></span>
               </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">⚡</div>
-              <div class="feature-content">
-                <h4>高效缓存系统</h4>
-                <p>相同请求参数自动缓存，哈希算法精确匹配，节省 API 成本</p>
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">👥</div>
-              <div class="feature-content">
-                <h4>团队协作</h4>
-                <p>提示词收藏分组、一键分享复用、使用统计与效果追踪</p>
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">📱</div>
-              <div class="feature-content">
-                <h4>响应式设计</h4>
-                <p>完美适配各种设备，随时随地创作提示词</p>
-              </div>
-            </div>
-            <div class="feature-item">
-              <div class="feature-icon">🔒</div>
-              <div class="feature-content">
-                <h4>企业级安全</h4>
-                <p>数据加密存储，保障用户隐私安全</p>
-              </div>
+              <h3 class="feature-title">{{ feature.title }}</h3>
+              <p class="feature-desc">{{ feature.desc }}</p>
+              <div class="feature-tag">{{ feature.tag }}</div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <!-- 分类展示区域 -->
-        <div id="categories" class="categories-section">
-          <h2 class="section-title">📂 预设分类</h2>
-          <p class="section-desc">覆盖8大常用场景，快速定位所需提示词</p>
+        <!-- Categories Section -->
+        <section class="categories-section">
+          <div class="section-header">
+            <h2 class="section-title">应用场景</h2>
+            <p class="section-desc">覆盖 8 大常用场景，快速定位所需提示词</p>
+          </div>
+
           <div class="categories-grid">
-            <router-link to="/templates" class="category-card">
-              <span class="cat-icon">💼</span>
-              <span class="cat-name">办公效率</span>
-              <span class="cat-desc">会议纪要、邮件撰写...</span>
-            </router-link>
-            <router-link to="/templates" class="category-card">
-              <span class="cat-icon">📝</span>
-              <span class="cat-name">内容创作</span>
-              <span class="cat-desc">文章写作、文案策划...</span>
-            </router-link>
-            <router-link to="/templates" class="category-card">
-              <span class="cat-icon">💻</span>
-              <span class="cat-name">代码开发</span>
-              <span class="cat-desc">代码生成、代码审查...</span>
-            </router-link>
-            <router-link to="/templates" class="category-card">
-              <span class="cat-icon">📚</span>
-              <span class="cat-name">教育培训</span>
-              <span class="cat-desc">学习大纲、试题生成...</span>
-            </router-link>
-            <router-link to="/templates" class="category-card">
-              <span class="cat-icon">🎬</span>
-              <span class="cat-name">视频媒体</span>
-              <span class="cat-desc">脚本创作、创意策划...</span>
-            </router-link>
-            <router-link to="/templates" class="category-card">
-              <span class="cat-icon">📊</span>
-              <span class="cat-name">数据分析</span>
-              <span class="cat-desc">报告生成、图表解读...</span>
-            </router-link>
-            <router-link to="/templates" class="category-card">
-              <span class="cat-icon">🎨</span>
-              <span class="cat-name">设计创意</span>
-              <span class="cat-desc">UI设计、Logo创意...</span>
-            </router-link>
-            <router-link to="/templates" class="category-card">
-              <span class="cat-icon">💬</span>
-              <span class="cat-name">智能对话</span>
-              <span class="cat-desc">客服话术、聊天机器人...</span>
+            <router-link
+              v-for="(cat, index) in categories"
+              :key="cat.name"
+              to="/templates"
+              class="category-card"
+              :style="{ animationDelay: `${index * 0.05}s` }"
+            >
+              <div class="category-icon">{{ cat.icon }}</div>
+              <div class="category-info">
+                <span class="category-name">{{ cat.name }}</span>
+                <span class="category-desc">{{ cat.desc }}</span>
+              </div>
+              <svg class="category-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
             </router-link>
           </div>
-        </div>
+        </section>
 
-        <div id="tech" class="tech-section">
-          <h2 class="section-title">🛠️ 技术架构</h2>
+        <!-- Architecture Section -->
+        <section class="architecture-section">
+          <div class="section-header">
+            <h2 class="section-title">四层架构模型</h2>
+            <p class="section-desc">结构化的提示词生成方法论</p>
+          </div>
+
+          <div class="architecture-flow">
+            <div class="flow-step" v-for="(step, index) in architecture" :key="step.name">
+              <div class="step-number">{{ index + 1 }}</div>
+              <div class="step-content">
+                <h4>{{ step.name }}</h4>
+                <p>{{ step.desc }}</p>
+              </div>
+              <svg v-if="index < architecture.length - 1" class="flow-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tech Stack Section -->
+        <section class="tech-section">
+          <div class="section-header">
+            <h2 class="section-title">技术栈</h2>
+            <p class="section-desc">现代化技术架构，保障系统稳定高效</p>
+          </div>
+
           <div class="tech-grid">
-            <div class="tech-category">
-              <div class="tech-header">
-                <span class="tech-icon">🎨</span>
-                <h4>前端技术</h4>
-              </div>
-              <div class="tech-tags">
-                <span class="tech-tag vue">Vue 3.4+</span>
-                <span class="tech-tag ts">TypeScript 5.0+</span>
-                <span class="tech-tag vite">Vite 5.0+</span>
-                <span class="tech-tag pinia">Pinia 2.1+</span>
-              </div>
-            </div>
-            <div class="tech-category">
-              <div class="tech-header">
-                <span class="tech-icon">⚙️</span>
-                <h4>后端技术</h4>
-              </div>
-              <div class="tech-tags">
-                <span class="tech-tag java">Java 17+</span>
-                <span class="tech-tag spring">Spring Boot 3.2</span>
-                <span class="tech-tag jpa">Hibernate 6.4</span>
-                <span class="tech-tag mysql">MySQL 8.0+</span>
-              </div>
-            </div>
-            <div class="tech-category">
-              <div class="tech-header">
-                <span class="tech-icon">🤖</span>
-                <h4>AI 能力</h4>
-              </div>
-              <div class="tech-tags">
-                <span class="tech-tag ai">MiniMax</span>
-                <span class="tech-tag nlp">LLM</span>
-                <span class="tech-tag ml">Prompt Engineering</span>
+            <div class="tech-card" v-for="tech in techStack" :key="tech.name">
+              <div class="tech-icon" :style="{ background: tech.bg }">{{ tech.icon }}</div>
+              <div class="tech-info">
+                <span class="tech-name">{{ tech.name }}</span>
+                <span class="tech-items">{{ tech.items }}</span>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div class="footer-section">
-          <p class="footer-text">🌟 感谢使用 Prompt Flow Craft！让 AI 创作更简单、更高效</p>
-          <p class="footer-version">版本 2.0.0 | 持续更新优化中</p>
-        </div>
+        <!-- CTA Section -->
+        <section class="cta-section">
+          <div class="cta-content">
+            <h2>准备好提升你的 AI 创作效率了吗？</h2>
+            <p>加入 thousands of 用户，开始使用 Prompt Flow Craft</p>
+            <router-link to="/generate" class="btn-cta">
+              <span>开始使用</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </router-link>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+          <p>Prompt Flow Craft v2.0</p>
+          <p>让 AI 创作更简单、更高效</p>
+        </footer>
       </div>
     </template>
   </AppLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import AppLayout from '../components/layout/AppLayout.vue'
+
+const features = [
+  {
+    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>',
+    iconBg: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05))',
+    title: '智能生成',
+    desc: '基于四层架构模型，自动生成高质量、结构化的提示词',
+    tag: 'AI Powered'
+  },
+  {
+    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+    iconBg: 'linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05))',
+    title: '多维配置',
+    desc: '支持目标受众、输出格式、语调风格、内容长度等多维度定制',
+    tag: 'Flexible'
+  },
+  {
+    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>',
+    iconBg: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05))',
+    title: '高效缓存',
+    desc: '哈希算法精确匹配，相同参数自动缓存，节省 API 成本',
+    tag: 'Cost Efficient'
+  },
+  {
+    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
+    iconBg: 'linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05))',
+    title: '历史管理',
+    desc: '永久保存所有提示词，支持搜索、筛选、复用',
+    tag: 'Persistent'
+  },
+  {
+    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    iconBg: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05))',
+    title: '智能分类',
+    desc: '规则匹配 + AI 智能分类，8 大预设分类自动打标签',
+    tag: 'Auto-tag'
+  },
+  {
+    icon: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    iconBg: 'linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(14, 165, 233, 0.05))',
+    title: '团队协作',
+    desc: '提示词收藏分组、一键分享复用、使用统计与效果追踪',
+    tag: 'Collab'
+  }
+]
+
+const categories = [
+  { icon: '💼', name: '办公效率', desc: '会议纪要、邮件撰写' },
+  { icon: '📝', name: '内容创作', desc: '文章写作、文案策划' },
+  { icon: '💻', name: '代码开发', desc: '代码生成、代码审查' },
+  { icon: '📚', name: '教育培训', desc: '学习大纲、试题生成' },
+  { icon: '🎬', name: '视频媒体', desc: '脚本创作、创意策划' },
+  { icon: '📊', name: '数据分析', desc: '报告生成、图表解读' },
+  { icon: '🎨', name: '设计创意', desc: 'UI设计、Logo创意' },
+  { icon: '💬', name: '智能对话', desc: '客服话术、聊天机器人' }
+]
+
+const architecture = [
+  { name: '核心定义层', desc: '明确任务目标与核心概念' },
+  { name: '交互接口层', desc: '设计用户交互方式与格式' },
+  { name: '内部处理层', desc: '规定处理逻辑与步骤' },
+  { name: '全局约束层', desc: '设定边界条件与限制' }
+]
+
+const techStack = [
+  { icon: '🎨', name: '前端技术', items: 'Vue 3 + TypeScript + Vite', bg: 'linear-gradient(135deg, #42b883 0%, #347474 100%)' },
+  { icon: '⚙️', name: '后端技术', items: 'Java 17 + Spring Boot 3.2', bg: 'linear-gradient(135deg, #6db33f 0%, #4a7c23 100%)' },
+  { icon: '🤖', name: 'AI 能力', items: 'LLM + Prompt Engineering', bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' },
+  { icon: '💾', name: '数据存储', items: 'MySQL 8.0 + Hibernate 6.4', bg: 'linear-gradient(135deg, #00758f 0%, #004d5a 100%)' }
+]
 </script>
 
 <style scoped>
-.about-page {
+/* ============================================
+   Home Page Container
+   ============================================ */
+.home-page {
   min-height: 100vh;
-  background: #f8fafc;
+  background: var(--bg-primary);
 }
 
+/* ============================================
+   Hero Section
+   ============================================ */
 .hero-section {
-  background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 50%, #2563eb 100%);
-  padding: 100px 40px 120px;
-  text-align: center;
   position: relative;
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 80px 60px;
   overflow: hidden;
-  contain: layout style;
 }
 
-.hero-section::before {
-  content: '';
+/* Hero Background */
+.hero-bg {
   position: absolute;
-  top: -20%;
-  left: -10%;
-  width: 60%;
-  height: 60%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
-  animation: float 8s ease-in-out infinite;
+  inset: 0;
+  z-index: 0;
 }
 
-.hero-section::after {
-  content: '';
+.hero-grid {
   position: absolute;
-  bottom: -10%;
-  right: -10%;
-  width: 50%;
-  height: 50%;
-  background: radial-gradient(circle, rgba(96, 165, 250, 0.2) 0%, transparent 70%);
-  animation: float 10s ease-in-out infinite reverse;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
 }
 
-/* 装饰性圆形 */
-.hero-decoration {
+.hero-glow {
   position: absolute;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  filter: blur(100px);
+  opacity: 0.6;
+  animation: pulseGlow 8s ease-in-out infinite;
 }
 
-.hero-decoration-1 {
+.hero-glow-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+  top: -200px;
+  right: -100px;
+}
+
+.hero-glow-2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+  bottom: -100px;
+  left: 10%;
+  animation-delay: -3s;
+}
+
+.hero-glow-3 {
   width: 300px;
   height: 300px;
-  top: -100px;
-  right: 10%;
-  animation: rotate 20s linear infinite;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.15) 0%, transparent 70%);
+  top: 40%;
+  left: 40%;
+  animation-delay: -6s;
 }
 
-.hero-decoration-2 {
-  width: 200px;
-  height: 200px;
-  bottom: -50px;
-  left: 5%;
-  animation: rotate 15s linear infinite reverse;
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
 }
 
-@keyframes float {
-  0%, 100% { transform: translate(0, 0); }
-  50% { transform: translate(20px, -20px); }
-}
-
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.1); opacity: 0.3; }
-}
-
-.hero-icon {
-  font-size: 5rem;
-  margin-bottom: 24px;
+/* Hero Content */
+.hero-content {
   position: relative;
-  animation: iconFloat 3s ease-in-out infinite;
-  filter: drop-shadow(0 8px 24px rgba(59, 130, 246, 0.4));
+  z-index: 1;
+  max-width: 600px;
 }
 
-@keyframes iconFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  animation: fadeIn 0.6s ease-out;
+}
+
+.badge-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--color-success);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
 }
 
 .hero-title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  color: white;
-  margin: 0 0 16px;
-  position: relative;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 24px;
+  letter-spacing: -0.03em;
+}
+
+.title-line {
+  display: block;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-400) 50%, var(--color-primary-600) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .hero-subtitle {
-  color: rgba(255,255,255,0.75);
-  font-size: 1.35rem;
-  margin: 0 auto 48px;
-  max-width: 680px;
-  position: relative;
+  font-size: 1.25rem;
   line-height: 1.7;
-  font-weight: 400;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+  animation: fadeInUp 0.6s ease-out 0.1s backwards;
 }
 
-.hero-actions {
-  position: relative;
+.hero-cta {
   display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 48px;
+  animation: fadeInUp 0.6s ease-out 0.2s backwards;
 }
 
 .btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 20px 48px;
-  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #fb923c 100%);
-  background-size: 200% 200%;
+  gap: 10px;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
   color: white;
-  font-size: 1.2rem;
-  font-weight: 700;
-  border-radius: 50px;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 600;
+  border-radius: var(--radius-xl);
   text-decoration: none;
-  box-shadow: 0 8px 32px rgba(249, 115, 22, 0.5), 0 0 0 0 rgba(249, 115, 22, 0.4);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: none;
-  cursor: pointer;
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.35);
+  transition: all var(--transition-base);
   position: relative;
   overflow: hidden;
-  animation: gradientMove 3s ease infinite;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-@keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
 .btn-primary::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.6s;
-}
-
-.btn-primary::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.1); opacity: 0.3; }
-}
-
-.btn-primary:hover::before {
-  left: 100%;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  opacity: 0;
+  transition: opacity var(--transition-base);
 }
 
 .btn-primary:hover {
-  transform: translateY(-4px) scale(1.03);
-  box-shadow: 0 16px 48px rgba(249, 115, 22, 0.6), 0 0 20px rgba(249, 115, 22, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.45);
+}
+
+.btn-primary:hover::before {
+  opacity: 1;
 }
 
 .btn-secondary {
@@ -390,462 +452,605 @@ import AppLayout from '../components/layout/AppLayout.vue'
   align-items: center;
   gap: 10px;
   padding: 16px 32px;
-  background: rgba(255,255,255,0.08);
-  color: white;
-  font-size: 1rem;
-  font-weight: 500;
-  border-radius: 16px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(10px);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: 600;
+  border-radius: var(--radius-xl);
   text-decoration: none;
-  border: 1px solid rgba(255,255,255,0.25);
-  background: rgba(255,255,255,0.1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-base);
 }
 
 .btn-secondary:hover {
-  background: rgba(255,255,255,0.15);
-  border-color: rgba(255,255,255,0.4);
-  transform: translateY(-2px);
+  background: var(--bg-card);
+  border-color: var(--border-hover);
+  transform: translateY(-3px);
 }
 
+/* Hero Stats */
 .hero-stats {
   display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-top: 56px;
-  position: relative;
+  align-items: center;
+  gap: 24px;
+  animation: fadeInUp 0.6s ease-out 0.3s backwards;
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 20px 32px;
-  background: rgba(255,255,255,0.12);
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.15);
-  min-width: 120px;
+  gap: 4px;
 }
 
 .stat-value {
-  font-size: 2rem;
-  font-weight: 700;
-  color: white;
-  line-height: 1.2;
-  background: linear-gradient(135deg, #fff 0%, #bfdbfe 100%);
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-400));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .stat-label {
-  font-size: 0.9rem;
-  color: rgba(255,255,255,0.6);
-  margin-top: 8px;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
   font-weight: 500;
 }
 
-.btn-icon {
-  font-size: 1.5rem;
-  animation: iconBounce 2s ease-in-out infinite;
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border-color);
 }
 
-@keyframes iconBounce {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.2); }
+/* Floating Cards */
+.hero-visual {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  z-index: 1;
+}
+
+.floating-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  animation: floatCard 6s ease-in-out infinite;
+}
+
+.card-icon {
+  font-size: 1.5rem;
+}
+
+.card-1 {
+  top: 20%;
+  left: 0;
+  animation-delay: 0s;
+}
+
+.card-2 {
+  top: 50%;
+  right: 0;
+  animation-delay: -2s;
+}
+
+.card-3 {
+  bottom: 20%;
+  left: 10%;
+  animation-delay: -4s;
+}
+
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+}
+
+/* ============================================
+   Section Styles
+   ============================================ */
+.features-section,
+.categories-section,
+.architecture-section,
+.tech-section,
+.cta-section {
+  padding: 100px 60px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
 }
 
 .section-title {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 16px;
-  padding: 0;
-  display: inline-block;
-  position: relative;
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 16px;
   letter-spacing: -0.02em;
 }
 
-.section-title::after {
-  content: '';
-  position: absolute;
-  bottom: -8px;
-  left: 0;
-  width: 48px;
-  height: 4px;
-  background: linear-gradient(90deg, #3b82f6, #60a5fa);
-  border-radius: 2px;
-}
-
-.preview-section, .features-section, .tech-section, .categories-section {
-  padding: 64px 40px;
-  max-width: 1200px;
-  margin: 0 auto;
-  contain: layout style;
-}
-
 .section-desc {
-  text-align: center;
-  color: #64748b;
-  margin: -20px 0 32px;
-  font-size: 0.95rem;
+  font-size: 1.125rem;
+  color: var(--text-secondary);
 }
 
-.preview-grid, .features-grid {
+/* ============================================
+   Features Grid
+   ============================================ */
+.features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
-.preview-card, .feature-item {
-  background: white;
-  border-radius: 16px;
+.feature-card {
   padding: 32px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-2xl);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
 }
 
-.preview-card:hover, .feature-item:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.12);
-  border-color: #3b82f6;
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary-500), var(--color-primary-400));
+  opacity: 0;
+  transition: opacity var(--transition-base);
 }
 
-.preview-icon, .feature-icon {
-  font-size: 2.8rem;
+.feature-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--glow-primary);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-lg);
   margin-bottom: 20px;
-  display: inline-block;
-  padding: 16px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(96, 165, 250, 0.1) 100%);
-  border-radius: 16px;
 }
 
-.preview-card h3, .feature-content h4 {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 12px;
+.feature-icon svg {
+  color: var(--color-primary-500);
 }
 
-.preview-card p, .feature-content p {
-  font-size: 0.95rem;
-  color: #64748b;
-  margin: 0;
+.feature-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.feature-desc {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
   line-height: 1.7;
+  margin-bottom: 16px;
 }
 
-/* 分类展示区域 */
+.feature-tag {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--glow-primary-soft);
+  color: var(--color-primary-600);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  border-radius: var(--radius-full);
+}
+
+/* ============================================
+   Categories Grid
+   ============================================ */
 .categories-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
 }
 
 .category-card {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 28px 20px;
-  background: white;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
+  gap: 16px;
+  padding: 20px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-base);
+  animation: fadeInUp 0.5s ease-out backwards;
 }
 
 .category-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.15);
-  border-color: #3b82f6;
+  transform: translateX(8px);
+  border-color: var(--glow-primary);
+  background: var(--bg-panel);
 }
 
-.category-card .cat-icon {
-  font-size: 3rem;
-  margin-bottom: 16px;
+.category-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
 }
 
-.category-card .cat-name {
-  font-size: 1.15rem;
+.category-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.category-name {
+  display: block;
   font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 8px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
 }
 
-.category-card .cat-desc {
-  font-size: 0.85rem;
-  color: #64748b;
-  text-align: center;
+.category-desc {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+.category-arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: all var(--transition-base);
+}
+
+.category-card:hover .category-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ============================================
+   Architecture Flow
+   ============================================ */
+.architecture-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.flow-step {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-2xl);
+  transition: all var(--transition-base);
+}
+
+.flow-step:hover {
+  transform: translateY(-4px);
+  border-color: var(--glow-primary);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
+  color: white;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  border-radius: var(--radius-lg);
+}
+
+.step-content h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.step-content p {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.flow-arrow {
+  color: var(--color-primary-400);
+  flex-shrink: 0;
+}
+
+/* ============================================
+   Tech Grid
+   ============================================ */
 .tech-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 24px;
 }
 
-.tech-category {
-  background: white;
-  border-radius: 16px;
-  padding: 28px;
-  border: 1px solid #e2e8f0;
-}
-
-.tech-header {
+.tech-card {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 16px;
+  padding: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  transition: all var(--transition-base);
+}
+
+.tech-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-card);
 }
 
 .tech-icon {
-  font-size: 1.5rem;
-}
-
-.tech-category h4 {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 20px;
-}
-
-.tech-tags {
+  width: 48px;
+  height: 48px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  border-radius: var(--radius-lg);
+  flex-shrink: 0;
 }
 
-.tech-tag {
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 500;
+.tech-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.tech-tag.vue { background: #42b88320; color: #42b883; }
-.tech-tag.ts { background: #3178c620; color: #3178c6; }
-.tech-tag.vite { background: #646cff20; color: #646cff; }
-.tech-tag.pinia { background: #ffd85920; color: #d4a400; }
-.tech-tag.java { background: #f9731620; color: #f97316; }
-.tech-tag.spring { background: #6db33f20; color: #6db33f; }
-.tech-tag.jpa { background: #59652c20; color: #59652c; }
-.tech-tag.mysql { background: #00758f20; color: #00758f; }
-.tech-tag.ai { background: #8b5cf620; color: #8b5cf6; }
-.tech-tag.nlp { background: #60a5fa20; color: #60a5fa; }
-.tech-tag.ml { background: #14b8a620; color: #14b8a6; }
+.tech-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
 
-.footer-section {
-  padding: 48px 40px;
+.tech-items {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* ============================================
+   CTA Section
+   ============================================ */
+.cta-section {
   text-align: center;
-  background: white;
-  border-top: 1px solid #e2e8f0;
+  padding: 120px 60px;
+  background: linear-gradient(180deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  position: relative;
+  overflow: hidden;
 }
 
-.footer-text {
-  font-size: 1.1rem;
-  color: #475569;
-  margin: 0 0 8px;
-  font-weight: 500;
+.cta-section::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 400px;
+  background: radial-gradient(ellipse, var(--glow-primary-soft) 0%, transparent 70%);
+  pointer-events: none;
 }
 
-.footer-version {
-  font-size: 0.9rem;
-  color: #94a3b8;
-  margin: 0;
+.cta-content {
+  position: relative;
+  z-index: 1;
 }
 
-/* 响应式 */
-@media (max-width: 768px) {
-  .hero-section {
-    padding: 60px 24px 80px;
+.cta-content h2 {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.cta-content p {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  margin-bottom: 40px;
+}
+
+.btn-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 40px;
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
+  color: white;
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.4);
+  transition: all var(--transition-base);
+}
+
+.btn-cta:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(59, 130, 246, 0.5);
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+.footer {
+  text-align: center;
+  padding: 40px;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer p {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.footer p:first-child {
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out backwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 1200px) {
+  .hero-visual {
+    display: none;
   }
 
-  .hero-icon {
-    font-size: 4rem;
+  .features-grid,
+  .tech-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 60px 24px;
+    min-height: auto;
   }
 
   .hero-title {
-    font-size: 2rem;
+    font-size: 2.5rem;
   }
 
   .hero-subtitle {
-    font-size: 1.05rem;
-  }
-
-  .hero-stats {
-    gap: 24px;
-    margin-top: 36px;
-  }
-
-  .stat-value {
-    font-size: 1.4rem;
-  }
-
-  .stat-label {
-    font-size: 0.8rem;
-  }
-
-  .btn-primary {
-    padding: 14px 28px;
     font-size: 1rem;
-    width: 100%;
-    justify-content: center;
   }
 
+  .hero-cta {
+    flex-direction: column;
+  }
+
+  .btn-primary,
   .btn-secondary {
     width: 100%;
     justify-content: center;
   }
 
-  .preview-section, .features-section, .tech-section {
-    padding: 48px 24px;
-  }
-}
-
-.about-page {
-  background:
-    radial-gradient(circle at top, rgba(37, 99, 235, 0.10), transparent 28%),
-    linear-gradient(180deg, #f8fbff 0%, #f3f7fb 52%, #eef4f9 100%);
-}
-
-.hero-section {
-  background:
-    radial-gradient(circle at top left, rgba(255, 255, 255, 0.20), transparent 25%),
-    linear-gradient(135deg, #0f172a 0%, #1d4ed8 55%, #0ea5e9 100%);
-  padding: 110px 40px 128px;
-  border-bottom-left-radius: 40px;
-  border-bottom-right-radius: 40px;
-}
-
-.hero-title {
-  letter-spacing: -0.04em;
-}
-
-.hero-subtitle {
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.btn-primary,
-.btn-secondary {
-  border-radius: 999px;
-}
-
-.btn-primary {
-  box-shadow: 0 18px 38px rgba(249, 115, 22, 0.42), 0 0 0 0 rgba(249, 115, 22, 0.4);
-}
-
-.stat-item,
-.preview-card,
-.feature-item,
-.category-card,
-.tech-category {
-  border-radius: 24px;
-}
-
-.preview-card,
-.feature-item,
-.category-card,
-.tech-category {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.94) 100%);
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.05);
-}
-
-.preview-card:hover,
-.feature-item:hover,
-.category-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 28px 48px rgba(37, 99, 235, 0.12);
-  border-color: rgba(37, 99, 235, 0.16);
-}
-
-.footer-section {
-  background: rgba(255, 255, 255, 0.85);
-}
-
-@media (max-width: 768px) {
-  .hero-section {
-    padding: 72px 24px 88px;
-    border-bottom-left-radius: 28px;
-    border-bottom-right-radius: 28px;
-  }
-}
-
-/* Banner performance tuning */
-.hero-section,
-.hero-section::before,
-.hero-section::after,
-.hero-icon,
-.btn-primary,
-.btn-primary::after,
-.stat-item {
-  will-change: transform;
-}
-
-.hero-section {
-  isolation: isolate;
-}
-
-.hero-section::before,
-.hero-section::after {
-  opacity: 0.7;
-  animation-duration: 16s;
-}
-
-@keyframes floatSoft {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(12px, -12px, 0); }
-}
-
-.hero-section::before,
-.hero-section::after {
-  animation-name: floatSoft;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
-.hero-icon {
-  animation: iconFloatLite 6s ease-in-out infinite;
-}
-
-@keyframes iconFloatLite {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(0, -5px, 0); }
-}
-
-.btn-primary {
-  background-size: 100% 100%;
-  animation: none;
-}
-
-.btn-primary::after {
-  animation: none;
-  opacity: 0.45;
-}
-
-.btn-icon {
-  animation: none;
-}
-
-@media (max-width: 768px) {
-  .hero-section::before,
-  .hero-section::after {
-    animation: none;
+  .hero-stats {
+    flex-wrap: wrap;
+    gap: 16px;
   }
 
-  .hero-icon {
-    animation: none;
+  .stat-divider {
+    display: none;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .hero-section::before,
-  .hero-section::after,
-  .hero-icon,
-  .btn-primary::before,
-  .btn-primary::after,
-  .btn-icon {
-    animation: none !important;
-    transition: none !important;
+  .features-section,
+  .categories-section,
+  .architecture-section,
+  .tech-section,
+  .cta-section {
+    padding: 60px 24px;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+
+  .features-grid,
+  .categories-grid,
+  .tech-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .architecture-flow {
+    flex-direction: column;
+  }
+
+  .flow-arrow {
+    transform: rotate(90deg);
   }
 }
 </style>
