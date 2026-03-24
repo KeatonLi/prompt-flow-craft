@@ -67,7 +67,7 @@ npm run lint
 
 ### Backend Structure (Spring Boot)
 ```
-src/main/java/com/promptflow/
+backend/src/main/java/com/promptflow/
 ├── controller/     # REST endpoints
 ├── service/        # Business logic
 ├── repository/     # Data access (JPA)
