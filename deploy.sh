@@ -136,13 +136,22 @@ fi
 
 # 备份旧日志
 echo "=== 备份旧日志 ==="
+# 最多保留的日志备份数量
+MAX_LOG_BACKUPS=5
+
 if [ -f "backend.log" ]; then
     mv backend.log "backend.log.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || true
     echo "已备份 backend.log"
+    # 清理旧的 backend.log 备份，只保留最近 MAX_LOG_BACKUPS 个
+    ls -t backend.log.* 2>/dev/null | tail -n +$((MAX_LOG_BACKUPS + 1)) | xargs rm -f 2>/dev/null || true
+    echo "已清理旧备份，保留最近 $MAX_LOG_BACKUPS 个"
 fi
 if [ -f "frontend.log" ]; then
     mv frontend.log "frontend.log.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || true
     echo "已备份 frontend.log"
+    # 清理旧的 frontend.log 备份，只保留最近 MAX_LOG_BACKUPS 个
+    ls -t frontend.log.* 2>/dev/null | tail -n +$((MAX_LOG_BACKUPS + 1)) | xargs rm -f 2>/dev/null || true
+    echo "已清理旧备份，保留最近 $MAX_LOG_BACKUPS 个"
 fi
 
 echo "=== 服务器环境准备完成 ==="
@@ -162,7 +171,7 @@ upload_files() {
     # 上传后端JAR文件
     echo -e "${YELLOW}上传后端文件...${NC}"
     scp -i "$SSH_KEY_ABS" -P "$SERVER_PORT" \
-        "target/prompt-flow-craft-1.0.0.jar" \
+        "backend/target/prompt-flow-craft-1.0.0.jar" \
         "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/backend.jar"
 
     # 上传前端文件
@@ -199,11 +208,20 @@ fi
 # 安装 serve (如果没有安装)
 which serve || npm install -g serve
 
+# 日志大小限制 (10MB)，超过则截断
+MAX_LOG_SIZE=10485760
+
 # 加载环境变量并启动后端服务
 echo "加载环境变量并启动后端服务..."
 source ./.env
 
-nohup java -jar backend.jar > backend.log 2>&1 &
+# 检查并限制日志大小
+if [ -f "backend.log" ] && [ $(stat -c%s "backend.log" 2>/dev/null || echo 0) -gt $MAX_LOG_SIZE ]; then
+    echo "backend.log 超过 ${MAX_LOG_SIZE} 字节，已截断"
+    : > backend.log
+fi
+
+nohup java -jar backend.jar >> backend.log 2>&1 &
 BACKEND_PID=$!
 echo $BACKEND_PID > backend.pid
 echo "后端服务已启动，PID: $BACKEND_PID"
@@ -211,7 +229,14 @@ echo "后端服务已启动，PID: $BACKEND_PID"
 # 启动前端服务
 echo "启动前端服务..."
 cd frontend-dist
-nohup serve -s . -p 3000 > ../frontend.log 2>&1 &
+
+# 检查并限制日志大小
+if [ -f "../frontend.log" ] && [ $(stat -c%s "../frontend.log" 2>/dev/null || echo 0) -gt $MAX_LOG_SIZE ]; then
+    echo "frontend.log 超过 ${MAX_LOG_SIZE} 字节，已截断"
+    : > ../frontend.log
+fi
+
+nohup serve -s . -p 3000 >> ../frontend.log 2>&1 &
 FRONTEND_PID=$!
 echo $FRONTEND_PID > ../frontend.pid
 echo "前端服务已启动，PID: $FRONTEND_PID"
