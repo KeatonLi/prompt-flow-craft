@@ -220,7 +220,7 @@
 
               <div class="result-body">
                 <div class="result-content" ref="resultContentRef">
-                  <pre v-html="displayedResultWithCursor"></pre>
+                  <div class="markdown-body" v-html="displayedResultWithCursor"></div>
                 </div>
               </div>
             </div>
@@ -236,12 +236,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import MarkdownIt from 'markdown-it'
+import hljs from 'highlight.js'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import CategoryNav from '@/components/layout/CategoryNav.vue'
 import HistoryPanel from '@/components/history/HistoryPanel.vue'
 import { promptApi } from '@/api/prompt'
+import type { PromptRecord } from '@/types'
+
+// Markdown-it 配置
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+  highlight: function (str: string, lang: string) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return '<pre class="hljs-code"><div class="hljs-header"><span class="hljs-lang">' + lang + '</span></div><code>' +
+          hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+          '</code></pre>';
+      } catch (__) {}
+    }
+    return '<pre class="hljs-code"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
+  }
+})
 
 const route = useRoute()
 const resultContentRef = ref<HTMLElement | null>(null)
@@ -271,10 +291,32 @@ const canGenerate = computed(() => {
 })
 
 const displayedResultWithCursor = computed(() => {
-  return isStreaming.value
-    ? displayedResult.value + '<span class="typing-cursor"></span>'
-    : displayedResult.value
+  const raw = displayedResult.value || result.value
+  const content = md.render(raw)
+  if (isStreaming.value) {
+    return content + '<span class="typing-cursor"></span>'
+  }
+  return content
 })
+
+// 复用历史记录
+function handleReuseHistory(event: Event) {
+  const customEvent = event as CustomEvent<PromptRecord>
+  const record = customEvent.detail
+
+  form.value = {
+    taskDescription: record.taskDescription || '',
+    targetAudience: record.targetAudience || 'general',
+    outputFormat: record.outputFormat || 'text',
+    constraints: record.constraints || '',
+    examples: record.examples || '',
+    tone: record.tone || 'professional',
+    length: record.length || 'medium'
+  }
+
+  // 滚动到表单顶部
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 const updateCharCount = () => {
   // Char count is handled in template
@@ -440,10 +482,12 @@ onMounted(() => {
   }
 
   window.addEventListener('click', handleClickOutside)
+  window.addEventListener('reuse-history', handleReuseHistory)
 })
 
 onUnmounted(() => {
   window.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('reuse-history', handleReuseHistory)
   if (cancelStream.value) {
     cancelStream.value()
   }
@@ -887,34 +931,210 @@ onUnmounted(() => {
 }
 
 .result-content {
-  max-height: 500px;
+  max-height: 600px;
   overflow-y: auto;
-  background: linear-gradient(145deg, var(--color-gray-900), var(--color-gray-800));
+  background: var(--bg-panel);
   padding: 24px;
-  padding-top: 48px;
   position: relative;
 }
 
-.result-content::before {
-  content: '';
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  width: 12px;
-  height: 12px;
-  background: var(--color-error);
-  border-radius: 50%;
-  box-shadow: 20px 0 0 var(--color-warning), 40px 0 0 var(--color-success);
+/* ============================================
+   Markdown Body Styles
+   ============================================ */
+.markdown-body {
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  line-height: 1.9;
 }
 
-.result-content pre {
+.markdown-body > * + * {
+  margin-top: 0.75em;
+}
+
+.markdown-body > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.markdown-body h1 { font-size: 1.4em; font-weight: 800; }
+.markdown-body h2 { font-size: 1.2em; font-weight: 700; color: var(--color-primary-600); }
+.markdown-body h3 { font-size: 1.05em; font-weight: 700; }
+.markdown-body h4 { font-size: 1em; font-weight: 600; }
+
+.markdown-body p {
   margin: 0;
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
   line-height: 1.8;
-  color: var(--color-gray-100);
-  white-space: pre-wrap;
-  word-wrap: break-word;
+  color: var(--text-secondary);
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.markdown-body li {
+  margin: 0.3em 0;
+  color: var(--text-secondary);
+}
+
+.markdown-body ul li {
+  list-style-type: disc;
+}
+
+.markdown-body ol li {
+  list-style-type: decimal;
+}
+
+.markdown-body li > ul,
+.markdown-body li > ol {
+  margin: 0.25em 0;
+}
+
+/* 行内代码 */
+.markdown-body code {
+  padding: 0.15em 0.4em;
+  background: var(--bg-hover);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  color: var(--color-primary-600);
+  border: 1px solid var(--border-color);
+}
+
+/* 代码块 */
+.markdown-body pre {
+  margin: 1em 0;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  background: #1e1e2e;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.markdown-body pre code {
+  display: block;
+  padding: 1em 1.25em;
+  background: transparent;
+  color: #cdd6f4;
+  font-size: var(--text-xs);
+  line-height: 1.7;
+  overflow-x: auto;
+  border: none;
+}
+
+/* 代码块高亮样式 */
+.markdown-body .hljs-code {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.markdown-body .hljs-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.markdown-body .hljs-lang {
+  font-size: 0.7em;
+  font-weight: 600;
+  color: #89b4fa;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.markdown-body blockquote {
+  margin: 0.75em 0;
+  padding: 0.75em 1em;
+  border-left: 3px solid var(--color-primary-400);
+  background: var(--glow-primary-soft);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  color: var(--text-secondary);
+}
+
+.markdown-body blockquote p {
+  margin: 0;
+  font-size: 0.95em;
+}
+
+.markdown-body table {
+  width: 100%;
+  margin: 1em 0;
+  border-collapse: collapse;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.markdown-body th,
+.markdown-body td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+  font-size: var(--text-xs);
+}
+
+.markdown-body th {
+  background: var(--bg-hover);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.markdown-body tr:last-child td {
+  border-bottom: none;
+}
+
+.markdown-body tr:hover td {
+  background: var(--bg-hover);
+}
+
+.markdown-body hr {
+  margin: 1.5em 0;
+  border: none;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.markdown-body a {
+  color: var(--color-primary-600);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.markdown-body a:hover {
+  border-bottom-color: var(--color-primary-500);
+}
+
+.markdown-body img {
+  max-width: 100%;
+  border-radius: var(--radius-lg);
+  margin: 0.5em 0;
+}
+
+.markdown-body strong {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.markdown-body em {
+  font-style: italic;
 }
 
 .typing-cursor {

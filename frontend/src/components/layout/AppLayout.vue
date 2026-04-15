@@ -658,14 +658,15 @@ onMounted(() => {
    ============================================ */
 .layout-body {
   display: flex;
-  flex: 1;
   gap: 20px;
   padding: 20px 24px;
   max-width: 1600px;
   width: 100%;
+  height: calc(100vh - var(--header-height) - 40px);
   margin: 0 auto;
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 /* ============================================
@@ -681,6 +682,8 @@ onMounted(() => {
   box-shadow: var(--shadow-lg);
   transition: all var(--transition-base);
   overflow: hidden;
+  height: 100%;
+  max-height: 100%;
 }
 
 .sidebar-left {
