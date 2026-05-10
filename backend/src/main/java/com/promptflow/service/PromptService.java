@@ -5,6 +5,8 @@ import com.promptflow.client.llm.LLMClient;
 import com.promptflow.dto.*;
 import com.promptflow.dto.llm.LLMRequest;
 import com.promptflow.dto.llm.LLMResponse;
+import com.promptflow.entity.AgentPrompt;
+import com.promptflow.entity.SkillPrompt;
 import com.promptflow.service.quality.PromptQualityService;
 import com.promptflow.strategy.prompt.PromptStrategy;
 import com.promptflow.strategy.prompt.PromptStrategyFactory;
@@ -26,92 +28,89 @@ import java.util.function.Consumer;
  */
 @Service
 public class PromptService {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(PromptService.class);
     private static final long SSE_TIMEOUT = 300000L; // 5分钟超时
-    
+
     private final LLMClient llmClient;
     private final PromptStrategyFactory strategyFactory;
     private final PromptQualityService qualityService;
-    private final PromptCacheService cacheService;
+    private final PromptRecordService promptRecordService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    
+
     @Autowired
     public PromptService(LLMClient llmClient,
                         PromptStrategyFactory strategyFactory,
                         PromptQualityService qualityService,
-                        PromptCacheService cacheService) {
+                        PromptRecordService promptRecordService) {
         this.llmClient = llmClient;
         this.strategyFactory = strategyFactory;
         this.qualityService = qualityService;
-        this.cacheService = cacheService;
+        this.promptRecordService = promptRecordService;
     }
-    
+
     /**
      * 生成提示词（同步）
      */
     public String generatePrompt(PromptRequest request) {
         validateGenerateRequest(request);
-        
-        // 检查缓存
-        String cached = cacheService.getCachedPrompt(request);
-        if (cached != null) {
-            logger.info("缓存命中，直接返回");
-            return cached;
-        }
-        
+
         // 使用策略构建请求
         PromptStrategy strategy = strategyFactory.getStrategy("generate");
         StrategyContext context = StrategyContext.builder()
             .generateRequest(request)
             .streamMode(false)
             .build();
-        
+
         LLMRequest llmRequest = strategy.buildRequest(context);
-        
+
         // 调用 LLM
         LLMResponse response = llmClient.call(llmRequest);
         if (!response.isSuccess()) {
             throw new RuntimeException("生成失败: " + (response.getError() != null ? response.getError().getMessage() : "未知错误"));
         }
-        
+
         return (String) strategy.parseResponse(response.getContent());
     }
-    
+
     /**
      * 生成提示词（流式）
      * @return SseEmitter 用于流式输出
      */
-    public SseEmitter generatePromptStream(PromptRequest request, 
+    public SseEmitter generatePromptStream(PromptRequest request,
                                           Consumer<String> onComplete,
                                           Consumer<Throwable> onError) {
+        return generatePromptStream(request, onComplete, onError, true);
+    }
+
+    /**
+     * 生成提示词（流式）
+     * @param saveAfterComplete 是否在完成后保存到历史记录
+     * @return SseEmitter 用于流式输出
+     */
+    public SseEmitter generatePromptStream(PromptRequest request,
+                                          Consumer<String> onComplete,
+                                          Consumer<Throwable> onError,
+                                          boolean saveAfterComplete) {
         validateGenerateRequest(request);
-        
+
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        
+
         executor.execute(() -> {
             try {
-                // 检查缓存
-                String cached = cacheService.getCachedPrompt(request);
-                if (cached != null) {
-                    streamFromCache(emitter, cached);
-                    if (onComplete != null) onComplete.accept(cached);
-                    return;
-                }
-                
                 // 使用策略构建请求
                 PromptStrategy strategy = strategyFactory.getStrategy("generate");
                 StrategyContext context = StrategyContext.builder()
                     .generateRequest(request)
                     .streamMode(true)
                     .build();
-                
+
                 LLMRequest llmRequest = strategy.buildRequest(context);
-                
+
                 // 流式调用
                 StringBuilder fullContent = new StringBuilder();
-                
+
                 llmClient.callStream(llmRequest,
                     chunk -> {
                         // 发送内容片段
@@ -122,6 +121,16 @@ public class PromptService {
                         // 完成
                         sendEvent(emitter, "done", "{\"done\": true}");
                         emitter.complete();
+
+                        // 保存到历史记录
+                        if (saveAfterComplete && fullContent.length() > 0) {
+                            try {
+                                saveGeneralPrompt(request.getTaskDescription(), fullContent.toString());
+                            } catch (Exception e) {
+                                logger.error("保存提示词失败", e);
+                            }
+                        }
+
                         if (onComplete != null) onComplete.accept(fullContent.toString());
                     },
                     error -> {
@@ -129,16 +138,16 @@ public class PromptService {
                         handleStreamError(emitter, error, onError);
                     }
                 );
-                
+
             } catch (Exception e) {
                 handleStreamError(emitter, e, onError);
             }
         });
-        
+
         emitter.onCompletion(executor::shutdown);
         emitter.onTimeout(executor::shutdown);
         emitter.onError(e -> executor.shutdown());
-        
+
         return emitter;
     }
     
@@ -218,18 +227,7 @@ public class PromptService {
             throw new IllegalArgumentException("提示词内容不能为空");
         }
     }
-    
-    private void streamFromCache(SseEmitter emitter, String cached) throws Exception {
-        // 模拟流式效果，逐段发送
-        for (int i = 0; i < cached.length(); i += 5) {
-            String chunk = cached.substring(i, Math.min(i + 5, cached.length()));
-            sendEvent(emitter, "message", chunk);
-            Thread.sleep(10);
-        }
-        sendEvent(emitter, "done", "{\"done\": true}");
-        emitter.complete();
-    }
-    
+
     private void sendEvent(SseEmitter emitter, String event, String data) {
         try {
             emitter.send(SseEmitter.event()
@@ -249,5 +247,175 @@ public class PromptService {
             emitter.completeWithError(e);
         }
         if (onError != null) onError.accept(error);
+    }
+
+    // ==================== Save Methods ====================
+
+    /**
+     * 保存通用提示词到 Agent 表
+     */
+    public AgentPrompt saveGeneralPrompt(String taskDescription, String generatedPrompt) {
+        AgentPrompt agent = new AgentPrompt();
+        agent.setName("通用提示词");
+        agent.setRoleDescription(taskDescription);
+        agent.setGeneratedPrompt(generatedPrompt);
+        return promptRecordService.saveAgent(agent);
+    }
+
+    /**
+     * 保存 Agent 提示词
+     */
+    public AgentPrompt saveAgentPrompt(String name, String roleDescription, String capabilities,
+                                       String behaviors, String communicationStyle, String generatedPrompt) {
+        AgentPrompt agent = new AgentPrompt();
+        agent.setName(name);
+        agent.setRoleDescription(roleDescription);
+        agent.setCapabilities(capabilities);
+        agent.setBehaviors(behaviors);
+        agent.setCommunicationStyle(communicationStyle);
+        agent.setGeneratedPrompt(generatedPrompt);
+        return promptRecordService.saveAgent(agent);
+    }
+
+    /**
+     * 保存 Skill 提示词
+     */
+    public SkillPrompt saveSkillPrompt(String name, String description, SkillPrompt.SkillType skillType,
+                                       String method, String endpoint, String parameters,
+                                       String outputDescription, String generatedPrompt) {
+        SkillPrompt skill = new SkillPrompt();
+        skill.setName(name);
+        skill.setDescription(description);
+        skill.setSkillType(skillType);
+        skill.setMethod(method);
+        skill.setEndpoint(endpoint);
+        skill.setParameters(parameters);
+        skill.setOutputDescription(outputDescription);
+        skill.setGeneratedPrompt(generatedPrompt);
+        return promptRecordService.saveSkill(skill);
+    }
+
+    // ==================== Agent 生成方法 ====================
+
+    /**
+     * 生成 Agent 提示词文本（同步）
+     */
+    public String generateAgentPromptText(String name, String roleDescription, String capabilities,
+                                        String behaviors, String communicationStyle) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Agent名称不能为空");
+        }
+        if (roleDescription == null || roleDescription.trim().isEmpty()) {
+            throw new IllegalArgumentException("Agent角色定位不能为空");
+        }
+
+        String prompt = buildAgentPromptRequest(name, roleDescription, capabilities, behaviors, communicationStyle);
+        PromptRequest request = new PromptRequest();
+        request.setTaskDescription(prompt);
+        return generatePrompt(request);
+    }
+
+    /**
+     * 生成 Agent 提示词（流式）
+     */
+    public SseEmitter generateAgentPromptStream(String name, String roleDescription, String capabilities,
+                                               String behaviors, String communicationStyle,
+                                               Consumer<String> onComplete,
+                                               Consumer<String> onChunk,
+                                               Consumer<Throwable> onError) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Agent名称不能为空");
+        }
+        if (roleDescription == null || roleDescription.trim().isEmpty()) {
+            throw new IllegalArgumentException("Agent角色定位不能为空");
+        }
+
+        String prompt = buildAgentPromptRequest(name, roleDescription, capabilities, behaviors, communicationStyle);
+        PromptRequest request = new PromptRequest();
+        request.setTaskDescription(prompt);
+
+        return generatePromptStream(request, onComplete, onError, false);
+    }
+
+    private String buildAgentPromptRequest(String name, String roleDescription, String capabilities,
+                                         String behaviors, String communicationStyle) {
+        return String.format("请为以下 AI Agent 生成专业的提示词：\n\n## Agent 名称\n%s\n\n## 角色定位\n%s\n\n## 核心能力\n%s\n\n## 行为规范\n%s\n\n## 对话风格\n%s\n\n请生成一个结构完整、专业的 Agent 提示词。",
+            name, roleDescription,
+            capabilities != null ? capabilities : "无",
+            behaviors != null ? behaviors : "无",
+            communicationStyle != null ? communicationStyle : "专业");
+    }
+
+    // ==================== Skill 生成方法 ====================
+
+    /**
+     * 生成 Skill 提示词文本（同步）
+     */
+    public String generateSkillPromptText(String name, String description, SkillPrompt.SkillType skillType,
+                                        String method, String endpoint, String parameters,
+                                        String outputDescription) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Skill名称不能为空");
+        }
+        if (description == null || description.trim().isEmpty()) {
+            throw new IllegalArgumentException("Skill功能描述不能为空");
+        }
+
+        String prompt = buildSkillPromptRequest(name, description, skillType, method, endpoint, parameters, outputDescription);
+        PromptRequest request = new PromptRequest();
+        request.setTaskDescription(prompt);
+        return generatePrompt(request);
+    }
+
+    /**
+     * 生成 Skill 提示词（流式）
+     */
+    public SseEmitter generateSkillPromptStream(String name, String description, SkillPrompt.SkillType skillType,
+                                               String method, String endpoint, String parameters,
+                                               String outputDescription,
+                                               Consumer<String> onComplete,
+                                               Consumer<String> onChunk,
+                                               Consumer<Throwable> onError) {
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Skill名称不能为空");
+        }
+        if (description == null || description.trim().isEmpty()) {
+            throw new IllegalArgumentException("Skill功能描述不能为空");
+        }
+
+        String prompt = buildSkillPromptRequest(name, description, skillType, method, endpoint, parameters, outputDescription);
+        PromptRequest request = new PromptRequest();
+        request.setTaskDescription(prompt);
+
+        return generatePromptStream(request, onComplete, onError, false);
+    }
+
+    private String buildSkillPromptRequest(String name, String description, SkillPrompt.SkillType skillType,
+                                         String method, String endpoint, String parameters,
+                                         String outputDescription) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("请为以下 Skill 生成专业的提示词定义：\n\n");
+        sb.append("## Skill 名称\n").append(name).append("\n\n");
+        sb.append("## 功能描述\n").append(description).append("\n\n");
+        sb.append("## Skill 类型\n").append(skillType != null ? skillType.name() : "api").append("\n\n");
+
+        if (skillType == SkillPrompt.SkillType.api || skillType == null) {
+            if (method != null || endpoint != null) {
+                sb.append("## API 配置\n");
+                sb.append("- 方法: ").append(method != null ? method : "未指定").append("\n");
+                sb.append("- 端点: ").append(endpoint != null ? endpoint : "未指定").append("\n\n");
+            }
+        }
+
+        if (parameters != null && !parameters.isEmpty()) {
+            sb.append("## 输入参数\n").append(parameters).append("\n\n");
+        }
+
+        if (outputDescription != null && !outputDescription.isEmpty()) {
+            sb.append("## 输出描述\n").append(outputDescription).append("\n\n");
+        }
+
+        sb.append("请生成一个符合标准 Tool/Function Calling 格式的 Skill 定义。");
+        return sb.toString();
     }
 }
