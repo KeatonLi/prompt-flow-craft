@@ -219,7 +219,10 @@ public class OpenAICompatibleClient implements LLMClient {
             LLMResponse llmResponse = new LLMResponse();
             llmResponse.setId((String) responseMap.get("id"));
             llmResponse.setModel((String) responseMap.get("model"));
-            llmResponse.setCreated((Long) responseMap.get("created"));
+            Object created = responseMap.get("created");
+            if (created instanceof Number) {
+                llmResponse.setCreated(((Number) created).longValue());
+            }
             
             // 解析 choices
             List<Map<String, Object>> choices = (List<Map<String, Object>>) responseMap.get("choices");
