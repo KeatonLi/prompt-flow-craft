@@ -92,3 +92,39 @@ export interface ApiResponse<T> {
   data: T;
   code: number;
 }
+
+// 分享提示词
+export interface SharedPrompt {
+  id: number;
+  description: string;
+  promptContent: string;
+  authorNickname: string;
+  authorContact: string;
+  likeCount: number;
+  viewCount: number;
+  sourcePromptId?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// 发布分享请求
+export interface ShareRequest {
+  description: string;
+  promptContent: string;
+  authorNickname: string;
+  authorContact: string;
+  sourcePromptId?: number;
+}
+
+// 发布响应
+export interface PublishResponse {
+  id: number;
+  deleteToken: string;
+}
+
+// 分享查询参数
+export interface ShareQueryRequest {
+  page?: number;
+  size?: number;
+  sort?: 'latest' | 'popular';
+}

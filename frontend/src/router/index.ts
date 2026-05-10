@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Generate from '../views/Generate.vue'
-import SkillGenerator from '../views/SkillGenerator.vue'
 import Templates from '../views/Templates.vue'
 import Statistics from '../views/Statistics.vue'
+import Share from '../views/Share.vue'
 
 const routes = [
   {
@@ -17,9 +17,9 @@ const routes = [
     component: Generate
   },
   {
-    path: '/skill-generator',
-    name: 'SkillGenerator',
-    component: SkillGenerator
+    path: '/share',
+    name: 'Share',
+    component: Share
   },
   {
     path: '/templates',
