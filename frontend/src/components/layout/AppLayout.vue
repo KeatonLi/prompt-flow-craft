@@ -135,32 +135,12 @@
 
     <!-- Main Layout Body -->
     <div class="layout-body">
-      <!-- Left Sidebar (Categories) -->
-      <aside v-if="showSidebars" class="sidebar sidebar-left" :class="{ collapsed: isLeftCollapsed }">
-        <div class="sidebar-header">
-          <div class="sidebar-brand" v-if="!isLeftCollapsed">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 7h18M3 12h18M3 17h18"/>
-            </svg>
-            <span>分类导航</span>
-          </div>
-          <button class="sidebar-toggle" @click="toggleLeft">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path v-if="isLeftCollapsed" d="M9 18l6-6-6-6"/>
-              <path v-else d="M15 18l-6-6 6-6"/>
-            </svg>
-          </button>
-        </div>
-        <div v-if="!isLeftCollapsed" class="sidebar-content">
-          <slot name="sidebar-left" />
-        </div>
-        <div v-else class="sidebar-collapsed">
-          <span class="collapsed-icon">📁</span>
-        </div>
+      <!-- Left Sidebar (Hidden for now - not used) -->
+      <aside class="sidebar sidebar-left" style="display: none;">
       </aside>
 
       <!-- Main Content -->
-      <main class="main-content" :class="{ 'full-width': !showSidebars }">
+      <main class="main-content" :class="{ 'full-width': true }">
         <div class="content-wrapper">
           <slot name="main" />
         </div>

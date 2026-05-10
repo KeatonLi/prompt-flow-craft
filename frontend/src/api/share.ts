@@ -11,7 +11,16 @@ export const shareApi = {
   // 获取分享列表
   getList(params: ShareQueryRequest): Promise<{ list: SharedPrompt[]; total: number; totalPages: number; page: number; size: number }> {
     return request.get<ApiResponse<any>>('/share', { params })
-      .then(res => res.data);
+      .then(res => {
+        const rd = res.data;
+        return {
+          list: rd.data || [],
+          total: rd.total || 0,
+          totalPages: rd.totalPages || 0,
+          page: rd.page || 1,
+          size: rd.size || 20
+        };
+      });
   },
 
   // 获取分享详情
@@ -24,13 +33,20 @@ export const shareApi = {
   getRecent(limit: number = 20): Promise<SharedPrompt[]> {
     return request.get<ApiResponse<SharedPrompt[]>>('/share/recent', {
       params: { limit }
-    }).then(res => res.data.data);
+    }).then(res => res.data.data || []);
   },
 
   // 获取热门点赞
   getTopLiked(page: number = 1, size: number = 20): Promise<{ list: SharedPrompt[]; total: number; totalPages: number }> {
     return request.get<ApiResponse<any>>('/share/top-liked', { params: { page, size } })
-      .then(res => res.data);
+      .then(res => {
+        const rd = res.data;
+        return {
+          list: rd.data || [],
+          total: rd.total || 0,
+          totalPages: rd.totalPages || 0
+        };
+      });
   },
 
   // 删除分享
