@@ -36,7 +36,7 @@
     </div>
 
     <!-- 历史记录列表 -->
-    <div class="panel-content" v-loading="historyStore.loading">
+    <div class="panel-content" v-loading="recordStore.loading">
       <div v-if="displayedRecords.length === 0" class="empty-state">
         <div class="empty-icon">📭</div>
         <p>暂无历史记录</p>
@@ -56,8 +56,8 @@
 
         <!-- 加载更多 -->
         <div v-if="hasMore" class="load-more">
-          <button class="load-btn" @click="loadMore" :disabled="loading">
-            <span v-if="loading" class="loading-spinner"></span>
+          <button class="load-btn" @click="loadMore" :disabled="recordStore.loading">
+            <span v-if="recordStore.loading" class="loading-spinner"></span>
             <span v-else>加载更多</span>
           </button>
         </div>
@@ -66,15 +66,15 @@
 
     <!-- 统计信息 -->
     <div class="panel-footer">
-      <span>共 {{ historyStore.pagination.total }} 条记录</span>
+      <span>共 {{ recordStore.pagination.total }} 条记录</span>
     </div>
 
     <!-- 详情弹窗 -->
     <Teleport to="body">
-      <PromptDetailModal 
-        :item="selectedRecord" 
+      <PromptDetailModal
+        :item="selectedRecord"
         :loading="detailLoading"
-        @close="closeDetail" 
+        @close="closeDetail"
         @use="handleReuseFromDetail"
       />
     </Teleport>
@@ -84,14 +84,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useHistoryStore } from '@/stores';
-import { historyApi } from '@/api/history';
-import type { PromptRecord } from '@/types';
+import { usePromptRecordStore } from '@/stores/promptRecord';
+import { promptRecordApi, type AgentRecord } from '@/api/promptRecord';
 import { debounce } from 'lodash-es';
 import HistoryCard from '@/components/HistoryCard.vue';
 import PromptDetailModal from '@/components/PromptDetailModal.vue';
 
-const historyStore = useHistoryStore();
+const recordStore = usePromptRecordStore();
 const router = useRouter();
 
 const goToTemplates = () => {
@@ -100,58 +99,43 @@ const goToTemplates = () => {
 
 const searchKeyword = ref('');
 const activeTab = ref<'recent' | 'popular'>('recent');
-const loading = ref(false);
 
 // 详情弹窗相关
 const detailLoading = ref(false);
-const selectedRecord = ref<PromptRecord | null>(null);
+const selectedRecord = ref<AgentRecord | null>(null);
 
-const displayedRecords = computed(() => historyStore.filteredRecords);
+const displayedRecords = computed(() => recordStore.currentRecords);
 const hasMore = computed(() => {
-  return historyStore.pagination.page < historyStore.pagination.totalPages;
+  return recordStore.pagination.page < recordStore.pagination.totalPages;
 });
 
 const handleSearch = debounce(() => {
-  historyStore.setQueryParams({ keyword: searchKeyword.value, page: 1 });
-  historyStore.fetchRecords();
+  // TODO: implement search
 }, 300);
 
 function setTab(tab: 'recent' | 'popular') {
   activeTab.value = tab;
   const sortBy = tab === 'popular' ? 'likeCount' : 'createdAt';
-  historyStore.setQueryParams({
-    sortBy: sortBy,
-    sortOrder: 'DESC',
-    page: 1
-  });
-  historyStore.fetchRecords();
+  recordStore.setSort(sortBy);
 }
 
 async function loadMore() {
-  if (loading.value) return;
-  loading.value = true;
-  try {
-    await historyStore.fetchRecords({
-      page: historyStore.pagination.page + 1
-    });
-  } finally {
-    loading.value = false;
-  }
+  await recordStore.loadMore();
 }
 
 // 处理复用事件
-function handleReuse(record: PromptRecord) {
+function handleReuse(record: AgentRecord) {
   window.dispatchEvent(new CustomEvent('reuse-history', { detail: record }));
 }
 
 // 处理查看详情
-async function handleViewDetail(record: PromptRecord) {
+async function handleViewDetail(record: AgentRecord) {
   selectedRecord.value = record;
   detailLoading.value = true;
   document.body.style.overflow = 'hidden';
-  
+
   try {
-    const res = await historyApi.getById(record.id);
+    const res = await promptRecordApi.getAgentById(record.id);
     if (res) {
       selectedRecord.value = res;
     }
@@ -176,7 +160,7 @@ function handleReuseFromDetail() {
 }
 
 onMounted(() => {
-  historyStore.fetchRecords();
+  recordStore.fetchRecords();
 });
 </script>
 

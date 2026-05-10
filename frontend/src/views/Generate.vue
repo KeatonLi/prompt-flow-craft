@@ -20,119 +20,6 @@
         <div class="content-area">
           <!-- Left: Form -->
           <div class="form-section">
-            <!-- General Form -->
-            <div v-show="currentType === 'general'" class="form-card">
-              <div class="card-header">
-                <div class="header-tabs">
-                  <button class="tab-btn active">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                    <span>通用提示词</span>
-                  </button>
-                </div>
-                <button class="btn-example" @click="loadGeneralExample">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                  </svg>
-                  <span>示例</span>
-                </button>
-              </div>
-
-              <div class="card-body">
-                <div class="form-group">
-                  <label class="form-label">任务描述 <span class="required">*</span></label>
-                  <textarea
-                    v-model="generalForm.taskDescription"
-                    class="form-textarea"
-                    placeholder="描述你想要 AI 完成的任务..."
-                    rows="4"
-                  ></textarea>
-                </div>
-
-                <div class="form-grid">
-                  <div class="form-group">
-                    <label class="form-label">目标受众</label>
-                    <select v-model="generalForm.targetAudience" class="form-select">
-                      <option value="general">通用</option>
-                      <option value="beginner">初学者</option>
-                      <option value="intermediate">中级用户</option>
-                      <option value="expert">专家</option>
-                      <option value="professional">专业人士</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group">
-                    <label class="form-label">输出格式</label>
-                    <select v-model="generalForm.outputFormat" class="form-select">
-                      <option value="text">文本</option>
-                      <option value="list">列表</option>
-                      <option value="table">表格</option>
-                      <option value="code">代码</option>
-                      <option value="json">JSON</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group">
-                    <label class="form-label">语调风格</label>
-                    <select v-model="generalForm.tone" class="form-select">
-                      <option value="professional">专业</option>
-                      <option value="casual">轻松</option>
-                      <option value="formal">正式</option>
-                      <option value="friendly">友好</option>
-                      <option value="academic">学术</option>
-                    </select>
-                  </div>
-
-                  <div class="form-group">
-                    <label class="form-label">内容长度</label>
-                    <select v-model="generalForm.length" class="form-select">
-                      <option value="short">简短</option>
-                      <option value="medium">中等</option>
-                      <option value="long">详细</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">约束条件 <span class="optional">(可选)</span></label>
-                  <textarea
-                    v-model="generalForm.constraints"
-                    class="form-textarea"
-                    placeholder="添加任何特定的约束或要求..."
-                    rows="3"
-                  ></textarea>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">示例输入 <span class="optional">(可选)</span></label>
-                  <textarea
-                    v-model="generalForm.examples"
-                    class="form-textarea"
-                    placeholder="提供示例可以帮助 AI 更好地理解你的需求..."
-                    rows="3"
-                  ></textarea>
-                </div>
-              </div>
-
-              <div class="card-footer">
-                <button class="btn-reset" @click="resetGeneral">重置</button>
-                <button class="btn-generate" :disabled="!canGenerateGeneral || loading" @click="generateGeneral">
-                  <template v-if="loading && currentType === 'general'">
-                    <span class="spinner"></span>
-                    生成中...
-                  </template>
-                  <template v-else>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                    </svg>
-                    生成提示词
-                  </template>
-                </button>
-              </div>
-            </div>
-
             <!-- Agent Form -->
             <div v-show="currentType === 'agent'" class="form-card">
               <div class="card-header">
@@ -363,8 +250,9 @@
                 <div class="card-header">
                   <div class="result-title">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                      <polyline points="14 2 14 8 20 8"/>
+                      <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/>
+                      <path d="M5 19l1 3 3-1-1-3-3 1z"/>
+                      <path d="M19 5l1 3 3-1-1-3-3 1z"/>
                     </svg>
                     <span>生成结果</span>
                     <span v-if="isStreaming" class="streaming-badge">
@@ -438,32 +326,35 @@ import HistoryPanel from '@/components/history/HistoryPanel.vue'
 import { promptApi } from '@/api/prompt'
 import type { PromptRecord } from '@/types'
 
+const highlightCode = (str: string, lang: string) => {
+  if (lang && hljs.getLanguage(lang)) {
+    try {
+      return '<pre class="hljs-code"><div class="hljs-header"><span class="hljs-lang">' + lang + '</span></div><code>' +
+        hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
+        '</code></pre>';
+    } catch (__) {}
+  }
+  return '<pre class="hljs-code"><code>' + str.replace(/[&<>"']/g, (c) => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[c]!) + '</code></pre>';
+};
+
 const md = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
-  highlight: function (str: string, lang: string) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return '<pre class="hljs-code"><div class="hljs-header"><span class="hljs-lang">' + lang + '</span></div><code>' +
-          hljs.highlight(str, { language: lang, ignoreIllegals: true }).value +
-          '</code></pre>';
-      } catch (__) {}
-    }
-    return '<pre class="hljs-code"><code>' + md.utils.escapeHtml(str) + '</code></pre>';
-  }
+  highlight: highlightCode
 })
 
 const route = useRoute()
 const resultContentRef = ref<HTMLElement | null>(null)
 const showExportMenu = ref(false)
 
-const currentType = ref<'general' | 'agent' | 'skill'>('general')
+const currentType = ref<'agent' | 'skill'>('agent')
 
 const promptTypes = [
-  { value: 'general', name: '通用提示词', icon: '📝' },
-  { value: 'agent', name: 'Agent 提示词', icon: '🤖' },
-  { value: 'skill', name: 'Skill 提示词', icon: '⚡' }
+  { value: 'agent', name: 'Agent', icon: '🤖' },
+  { value: 'skill', name: 'Skill', icon: '⚡' }
 ]
 
 const skillTypes = [
@@ -472,16 +363,6 @@ const skillTypes = [
   { value: 'webhook', name: 'Webhook', icon: '🪝' },
   { value: 'data', name: '数据源', icon: '📊' }
 ]
-
-const generalForm = ref({
-  taskDescription: '',
-  targetAudience: 'general',
-  outputFormat: 'text',
-  constraints: '',
-  examples: '',
-  tone: 'professional',
-  length: 'medium'
-})
 
 const agentForm = ref({
   name: '',
@@ -494,7 +375,7 @@ const agentForm = ref({
 const skillForm = ref({
   name: '',
   description: '',
-  type: 'api',
+  type: 'api' as 'api' | 'function' | 'webhook' | 'data',
   method: 'GET',
   endpoint: '',
   functionCode: '',
@@ -509,7 +390,6 @@ const result = ref('')
 const displayedResult = ref('')
 const cancelStream = ref<(() => void) | null>(null)
 
-const canGenerateGeneral = computed(() => generalForm.value.taskDescription.length >= 10)
 const canGenerateAgent = computed(() => agentForm.value.name.length > 0 && agentForm.value.role.length > 0)
 const canGenerateSkill = computed(() => skillForm.value.name.length > 0 && skillForm.value.description.length > 0)
 
@@ -520,21 +400,9 @@ const displayedResultWithCursor = computed(() => {
   return content
 })
 
-const switchType = (type: 'general' | 'agent' | 'skill') => {
+const switchType = (type: 'agent' | 'skill') => {
   currentType.value = type
   reset()
-}
-
-const loadGeneralExample = () => {
-  generalForm.value = {
-    taskDescription: '写一篇关于人工智能发展趋势的文章',
-    targetAudience: 'general',
-    outputFormat: 'text',
-    constraints: '需要包含最新的技术发展动态和未来展望',
-    examples: '',
-    tone: 'professional',
-    length: 'medium'
-  }
 }
 
 const loadAgentExample = () => {
@@ -560,41 +428,18 @@ const loadSkillExample = () => {
   }
 }
 
-const generateGeneral = async () => {
-  if (!canGenerateGeneral.value || loading.value) return
-  startGeneration()
-  cancelStream.value = promptApi.generateStream(
-    generalForm.value,
-    onStreamContent,
-    onStreamDone,
-    onStreamError
-  )
-}
-
 const generateAgent = async () => {
   if (!canGenerateAgent.value || loading.value) return
   startGeneration()
-  const prompt = `请为以下 AI Agent 生成专业的提示词：
 
-## Agent 名称
-${agentForm.value.name}
-
-## 角色定位
-${agentForm.value.role}
-
-## 核心能力
-${agentForm.value.capabilities}
-
-## 行为规范
-${agentForm.value.behaviors}
-
-## 对话风格
-${agentForm.value.communicationStyle}
-
-请生成一个结构完整、专业的 Agent 提示词。`
-
-  cancelStream.value = promptApi.generateStream(
-    { taskDescription: prompt },
+  cancelStream.value = promptApi.generateAgentStream(
+    {
+      name: agentForm.value.name,
+      roleDescription: agentForm.value.role,
+      capabilities: agentForm.value.capabilities,
+      behaviors: agentForm.value.behaviors,
+      communicationStyle: agentForm.value.communicationStyle
+    },
     onStreamContent,
     onStreamDone,
     onStreamError
@@ -604,30 +449,17 @@ ${agentForm.value.communicationStyle}
 const generateSkill = async () => {
   if (!canGenerateSkill.value || loading.value) return
   startGeneration()
-  const prompt = `请为以下 Skill 生成专业的提示词定义：
 
-## Skill 名称
-${skillForm.value.name}
-
-## 功能描述
-${skillForm.value.description}
-
-## Skill 类型
-${skillForm.value.type}
-
-${skillForm.value.type === 'api' ? `## API 配置\n- 方法: ${skillForm.value.method}\n- 端点: ${skillForm.value.endpoint}` : ''}
-${skillForm.value.type === 'function' ? `## 函数代码\n${skillForm.value.functionCode}` : ''}
-
-## 输入参数
-${skillForm.value.parameters}
-
-## 输出描述
-${skillForm.value.outputDescription}
-
-请生成一个符合标准 Tool/Function Calling 格式的 Skill 定义。`
-
-  cancelStream.value = promptApi.generateStream(
-    { taskDescription: prompt },
+  cancelStream.value = promptApi.generateSkillStream(
+    {
+      name: skillForm.value.name,
+      description: skillForm.value.description,
+      skillType: skillForm.value.type,
+      method: skillForm.value.method,
+      endpoint: skillForm.value.endpoint,
+      parameters: skillForm.value.parameters,
+      outputDescription: skillForm.value.outputDescription
+    },
     onStreamContent,
     onStreamDone,
     onStreamError
@@ -669,11 +501,6 @@ const reset = () => {
   }
   loading.value = false
   isStreaming.value = false
-}
-
-const resetGeneral = () => {
-  generalForm.value = { taskDescription: '', targetAudience: 'general', outputFormat: 'text', constraints: '', examples: '', tone: 'professional', length: 'medium' }
-  reset()
 }
 
 const resetAgent = () => {
@@ -736,21 +563,26 @@ const handleClickOutside = (event: MouseEvent) => {
 function handleReuseHistory(event: Event) {
   const customEvent = event as CustomEvent<PromptRecord>
   const record = customEvent.detail
-  generalForm.value = {
-    taskDescription: record.taskDescription || '',
-    targetAudience: record.targetAudience || 'general',
-    outputFormat: record.outputFormat || 'text',
-    constraints: record.constraints || '',
-    examples: record.examples || '',
-    tone: record.tone || 'professional',
-    length: record.length || 'medium'
+
+  // Support both old PromptRecord and new AgentRecord formats
+  if (record.generatedPrompt) {
+    // New AgentRecord format
+    agentForm.value = {
+      name: record.name || '',
+      role: record.roleDescription || record.taskDescription || '',
+      capabilities: record.capabilities || '',
+      behaviors: record.behaviors || '',
+      communicationStyle: record.communicationStyle || 'professional'
+    }
   }
-  currentType.value = 'general'
+  currentType.value = 'agent'
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 onMounted(() => {
-  if (route.query.task) generalForm.value.taskDescription = String(route.query.task)
+  if (route.query.task) {
+    agentForm.value.role = String(route.query.task)
+  }
   window.addEventListener('click', handleClickOutside)
   window.addEventListener('reuse-history', handleReuseHistory)
 })
@@ -766,26 +598,27 @@ onUnmounted(() => {
 .generate-page {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   padding-bottom: 40px;
 }
 
 .type-selector {
   display: flex;
   gap: 12px;
+  justify-content: center;
 }
 
 .type-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
+  gap: 10px;
+  padding: 14px 32px;
   border: 2px solid var(--border-color);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   background: var(--bg-card);
   cursor: pointer;
   transition: all 0.3s;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   font-weight: 600;
 }
 
@@ -796,12 +629,13 @@ onUnmounted(() => {
 
 .type-btn.active {
   border-color: var(--color-primary-500);
-  background: var(--glow-primary-soft);
-  color: var(--color-primary-600);
+  background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
+  color: white;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
 }
 
 .type-icon {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
 }
 
 .content-area {
@@ -820,6 +654,8 @@ onUnmounted(() => {
 .result-section {
   position: sticky;
   top: 20px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
 }
 
 .form-card {
