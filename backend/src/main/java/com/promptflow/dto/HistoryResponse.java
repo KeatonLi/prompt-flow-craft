@@ -1,35 +1,45 @@
 package com.promptflow.dto;
 
-import com.promptflow.entity.PromptTag;
-
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class HistoryResponse {
     private Long id;
-    private String taskDescription;
-    private String targetAudience;
-    private String outputFormat;
-    private String constraints;
-    private String examples;
-    private String tone;
-    private String length;
+
+    // 统一类型
+    private String promptType;
+    private String name;
+
+    // Agent 特有
+    private String roleDescription;
+    private String capabilities;
+    private String behaviors;
+    private String communicationStyle;
+
+    // Skill 特有
+    private String description;
+    private String skillType;
+    private String method;
+    private String endpoint;
+    private String parameters;
+    private String outputDescription;
+
+    // 通用
     private String generatedPrompt;
     private String promptSummary;
     private LocalDateTime createdAt;
-    private Integer hitCount;
-    
+    private Integer likeCount;
+    private Integer viewCount;
+
     // 扩展字段
     private Long categoryId;
     private CategoryResponse category;
-    private Integer likeCount;
     private Boolean isAutoTagged;
     private List<String> aiTags;
     private List<TagResponse> tags;
     private String usageScenario;
     private Integer effectivenessScore;
+
     // 用户评分相关
     private Integer userRating;
     private String ratingComment;
@@ -38,46 +48,45 @@ public class HistoryResponse {
 
     public HistoryResponse() {}
 
-    public HistoryResponse(Long id, String taskDescription, String targetAudience, String outputFormat, 
-                         String constraints, String examples, String tone, String length, 
-                         String generatedPrompt, LocalDateTime createdAt, Integer hitCount) {
-        this.id = id;
-        this.taskDescription = taskDescription;
-        this.targetAudience = targetAudience;
-        this.outputFormat = outputFormat;
-        this.constraints = constraints;
-        this.examples = examples;
-        this.tone = tone;
-        this.length = length;
-        this.generatedPrompt = generatedPrompt;
-        this.createdAt = createdAt;
-        this.hitCount = hitCount;
-    }
-
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getTaskDescription() { return taskDescription; }
-    public void setTaskDescription(String taskDescription) { this.taskDescription = taskDescription; }
+    public String getPromptType() { return promptType; }
+    public void setPromptType(String promptType) { this.promptType = promptType; }
 
-    public String getTargetAudience() { return targetAudience; }
-    public void setTargetAudience(String targetAudience) { this.targetAudience = targetAudience; }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getOutputFormat() { return outputFormat; }
-    public void setOutputFormat(String outputFormat) { this.outputFormat = outputFormat; }
+    public String getRoleDescription() { return roleDescription; }
+    public void setRoleDescription(String roleDescription) { this.roleDescription = roleDescription; }
 
-    public String getConstraints() { return constraints; }
-    public void setConstraints(String constraints) { this.constraints = constraints; }
+    public String getCapabilities() { return capabilities; }
+    public void setCapabilities(String capabilities) { this.capabilities = capabilities; }
 
-    public String getExamples() { return examples; }
-    public void setExamples(String examples) { this.examples = examples; }
+    public String getBehaviors() { return behaviors; }
+    public void setBehaviors(String behaviors) { this.behaviors = behaviors; }
 
-    public String getTone() { return tone; }
-    public void setTone(String tone) { this.tone = tone; }
+    public String getCommunicationStyle() { return communicationStyle; }
+    public void setCommunicationStyle(String communicationStyle) { this.communicationStyle = communicationStyle; }
 
-    public String getLength() { return length; }
-    public void setLength(String length) { this.length = length; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getSkillType() { return skillType; }
+    public void setSkillType(String skillType) { this.skillType = skillType; }
+
+    public String getMethod() { return method; }
+    public void setMethod(String method) { this.method = method; }
+
+    public String getEndpoint() { return endpoint; }
+    public void setEndpoint(String endpoint) { this.endpoint = endpoint; }
+
+    public String getParameters() { return parameters; }
+    public void setParameters(String parameters) { this.parameters = parameters; }
+
+    public String getOutputDescription() { return outputDescription; }
+    public void setOutputDescription(String outputDescription) { this.outputDescription = outputDescription; }
 
     public String getGeneratedPrompt() { return generatedPrompt; }
     public void setGeneratedPrompt(String generatedPrompt) { this.generatedPrompt = generatedPrompt; }
@@ -88,17 +97,17 @@ public class HistoryResponse {
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public Integer getHitCount() { return hitCount; }
-    public void setHitCount(Integer hitCount) { this.hitCount = hitCount; }
+    public Integer getLikeCount() { return likeCount; }
+    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; }
+
+    public Integer getViewCount() { return viewCount; }
+    public void setViewCount(Integer viewCount) { this.viewCount = viewCount; }
 
     public Long getCategoryId() { return categoryId; }
     public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
 
     public CategoryResponse getCategory() { return category; }
     public void setCategory(CategoryResponse category) { this.category = category; }
-
-    public Integer getLikeCount() { return likeCount; }
-    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; }
 
     public Boolean getIsAutoTagged() { return isAutoTagged; }
     public void setIsAutoTagged(Boolean isAutoTagged) { this.isAutoTagged = isAutoTagged; }
