@@ -34,7 +34,7 @@ public class PromptTag {
 
     @ManyToMany(mappedBy = "tags")
     @JsonIgnore
-    private Set<PromptCache> prompts = new HashSet<>();
+    private Set<PromptResource> prompts = new HashSet<>();
 
     // 默认构造函数
     public PromptTag() {}
@@ -94,11 +94,11 @@ public class PromptTag {
         this.createdAt = createdAt;
     }
 
-    public Set<PromptCache> getPrompts() {
+    public Set<PromptResource> getPrompts() {
         return prompts;
     }
 
-    public void setPrompts(Set<PromptCache> prompts) {
+    public void setPrompts(Set<PromptResource> prompts) {
         this.prompts = prompts;
     }
 

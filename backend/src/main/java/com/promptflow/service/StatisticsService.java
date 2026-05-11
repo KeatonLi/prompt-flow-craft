@@ -1,9 +1,9 @@
 package com.promptflow.service;
 
 import com.promptflow.dto.UsageStatistics;
-import com.promptflow.entity.PromptCache;
+import com.promptflow.entity.PromptResource;
 import com.promptflow.entity.PromptCategory;
-import com.promptflow.repository.PromptCacheRepository;
+import com.promptflow.repository.PromptResourceRepository;
 import com.promptflow.repository.PromptCategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -17,9 +17,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class StatisticsService {
-    
+
     @Autowired
-    private PromptCacheRepository promptCacheRepository;
+    private PromptResourceRepository promptResourceRepository;
     
     @Autowired
     private PromptCategoryRepository promptCategoryRepository;
@@ -31,23 +31,23 @@ public class StatisticsService {
         UsageStatistics stats = new UsageStatistics();
         
         // 基础统计
-        stats.setTotalPrompts(promptCacheRepository.count());
-        stats.setTodayCount(promptCacheRepository.countToday());
-        stats.setWeekCount(promptCacheRepository.countThisWeek());
-        stats.setMonthCount(promptCacheRepository.countThisMonth());
+        stats.setTotalPrompts(promptResourceRepository.count());
+        stats.setTodayCount(promptResourceRepository.countToday());
+        stats.setWeekCount(promptResourceRepository.countThisWeek());
+        stats.setMonthCount(promptResourceRepository.countThisMonth());
         
         // 总点赞数（处理null）
-        Long totalLikes = promptCacheRepository.sumTotalLikes();
+        Long totalLikes = promptResourceRepository.sumTotalLikes();
         stats.setTotalLikes(totalLikes != null ? totalLikes : 0L);
         stats.setTotalRatings(0L);
         
         // 平均评分
-        Double avgRating = promptCacheRepository.getAverageRating();
+        Double avgRating = promptResourceRepository.getAverageRating();
         stats.setAverageRating(avgRating != null ? Math.round(avgRating * 10) / 10.0 : 0.0);
         
         // 缓存命中率
-        Long totalHits = promptCacheRepository.sumTotalHits();
-        long totalPrompts = promptCacheRepository.count();
+        Long totalHits = promptResourceRepository.sumTotalHits();
+        long totalPrompts = promptResourceRepository.count();
         if (totalHits != null && totalHits > 0 && totalPrompts > 0) {
             double hitRate = (double) totalHits / (totalPrompts + totalHits) * 100;
             stats.setCacheHitRate(Math.round(hitRate * 10) / 10.0);
@@ -56,8 +56,8 @@ public class StatisticsService {
         }
 
         // Tokens 统计
-        Long totalInputTokens = promptCacheRepository.sumTotalInputTokens();
-        Long totalOutputTokens = promptCacheRepository.sumTotalOutputTokens();
+        Long totalInputTokens = promptResourceRepository.sumTotalInputTokens();
+        Long totalOutputTokens = promptResourceRepository.sumTotalOutputTokens();
         stats.setTotalInputTokens(totalInputTokens != null ? totalInputTokens : 0L);
         stats.setTotalOutputTokens(totalOutputTokens != null ? totalOutputTokens : 0L);
         stats.setTotalTokens(stats.getTotalInputTokens() + stats.getTotalOutputTokens());
@@ -69,12 +69,12 @@ public class StatisticsService {
         stats.setDailyTrends(getDailyTrends(30));
         
         // 最热提示词（按点赞数）
-        List<PromptCache> topPrompts = promptCacheRepository.findByLikeCountGreaterThanZeroOrderByLikeCountDesc(PageRequest.of(0, 10)).getContent();
+        List<PromptResource> topPrompts = promptResourceRepository.findByLikeCountGreaterThanZeroOrderByLikeCountDesc(PageRequest.of(0, 10)).getContent();
         stats.setTopPrompts(topPrompts);
         
         // 最近活动
-        List<Object[]> recent = promptCacheRepository.findRecentHistorySummary(PageRequest.of(0, 10));
-        stats.setRecentActivities(convertToPromptCacheList(recent));
+        List<Object[]> recent = promptResourceRepository.findRecentHistorySummary(PageRequest.of(0, 10));
+        stats.setRecentActivities(convertToPromptResourceList(recent));
         
         return stats;
     }
@@ -83,7 +83,7 @@ public class StatisticsService {
      * 获取分类统计
      */
     private List<UsageStatistics.CategoryStat> getCategoryStats() {
-        List<Object[]> results = promptCacheRepository.countByCategory();
+        List<Object[]> results = promptResourceRepository.countByCategory();
         Map<Long, Long> categoryCountMap = new HashMap<>();
         
         long total = 0;
@@ -129,11 +129,11 @@ public class StatisticsService {
 
         try {
             // 尝试使用原生SQL查询
-            results = promptCacheRepository.countByDayWithLikes(startDate);
+            results = promptResourceRepository.countByDayWithLikes(startDate);
         } catch (Exception e) {
             // 如果失败，使用JPQL查询
             try {
-                results = promptCacheRepository.countByDayWithLikesJpql(startDate);
+                results = promptResourceRepository.countByDayWithLikesJpql(startDate);
             } catch (Exception ex) {
                 // 如果都失败，返回空数据
                 results = new ArrayList<>();
@@ -181,12 +181,12 @@ public class StatisticsService {
     }
     
     /**
-     * 将查询结果转换为PromptCache列表
+     * 将查询结果转换为PromptResource列表
      */
-    private List<PromptCache> convertToPromptCacheList(List<Object[]> results) {
+    private List<PromptResource> convertToPromptResourceList(List<Object[]> results) {
         return results.stream()
                 .map(row -> {
-                    PromptCache p = new PromptCache();
+                    PromptResource p = new PromptResource();
                     p.setId((Long) row[0]);
                     p.setTaskDescription((String) row[1]);
                     p.setTargetAudience((String) row[2]);
@@ -230,9 +230,9 @@ public class StatisticsService {
     public Map<String, Object> getSimpleStats() {
         Map<String, Object> stats = new HashMap<>();
         
-        Long totalLikes = promptCacheRepository.sumTotalLikes();
+        Long totalLikes = promptResourceRepository.sumTotalLikes();
         
-        stats.put("totalPrompts", promptCacheRepository.count());
+        stats.put("totalPrompts", promptResourceRepository.count());
         stats.put("todayCount", 0L);
         stats.put("weekCount", 0L);
         stats.put("totalLikes", totalLikes != null ? totalLikes : 0L);

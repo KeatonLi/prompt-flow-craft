@@ -1,6 +1,6 @@
 package com.promptflow.dto;
 
-import com.promptflow.entity.PromptCache;
+import com.promptflow.entity.PromptResource;
 import java.util.List;
 import java.util.Map;
 
@@ -49,10 +49,10 @@ public class UsageStatistics {
     private List<DailyTrend> dailyTrends;
     
     /** 最热提示词 */
-    private List<PromptCache> topPrompts;
+    private List<PromptResource> topPrompts;
     
     /** 最近活动 */
-    private List<PromptCache> recentActivities;
+    private List<PromptResource> recentActivities;
     
     // Getters and Setters
     public long getTotalPrompts() {
@@ -159,19 +159,19 @@ public class UsageStatistics {
         this.dailyTrends = dailyTrends;
     }
     
-    public List<PromptCache> getTopPrompts() {
+    public List<PromptResource> getTopPrompts() {
         return topPrompts;
     }
     
-    public void setTopPrompts(List<PromptCache> topPrompts) {
+    public void setTopPrompts(List<PromptResource> topPrompts) {
         this.topPrompts = topPrompts;
     }
     
-    public List<PromptCache> getRecentActivities() {
+    public List<PromptResource> getRecentActivities() {
         return recentActivities;
     }
     
-    public void setRecentActivities(List<PromptCache> recentActivities) {
+    public void setRecentActivities(List<PromptResource> recentActivities) {
         this.recentActivities = recentActivities;
     }
     

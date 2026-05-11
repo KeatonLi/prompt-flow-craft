@@ -3,7 +3,7 @@ package com.promptflow.controller;
 import com.promptflow.dto.ApiResponse;
 import com.promptflow.entity.PromptCategory;
 import com.promptflow.repository.PromptCategoryRepository;
-import com.promptflow.repository.PromptCacheRepository;
+import com.promptflow.repository.PromptResourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +23,7 @@ public class CategoryController {
     private PromptCategoryRepository categoryRepository;
 
     @Autowired
-    private PromptCacheRepository promptCacheRepository;
+    private PromptResourceRepository promptResourceRepository;
 
     /**
      * 获取所有分类
@@ -71,7 +71,7 @@ public class CategoryController {
     @GetMapping("/stats")
     public ApiResponse<Map<String, Object>> getCategoryStats() {
         try {
-            List<Object[]> categoryCountsRaw = promptCacheRepository.countByCategory();
+            List<Object[]> categoryCountsRaw = promptResourceRepository.countByCategory();
             Map<Long, Long> categoryCounts = new HashMap<>();
             long totalCount = 0;
 

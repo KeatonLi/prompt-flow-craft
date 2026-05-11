@@ -2,8 +2,8 @@ package com.promptflow.service;
 
 import com.promptflow.dto.HistoryQueryRequest;
 import com.promptflow.dto.PagedResult;
-import com.promptflow.entity.PromptCache;
-import com.promptflow.repository.PromptCacheRepository;
+import com.promptflow.entity.PromptResource;
+import com.promptflow.repository.PromptResourceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,65 +22,65 @@ import java.util.stream.Collectors;
 public class PromptHistoryService {
 
     @Autowired
-    private PromptCacheRepository promptCacheRepository;
+    private PromptResourceRepository promptResourceRepository;
 
-    public List<PromptCache> getAllHistory() {
-        return promptCacheRepository.findAllByOrderByCreatedAtDesc();
+    public List<PromptResource> getAllHistory() {
+        return promptResourceRepository.findAllByOrderByCreatedAtDesc();
     }
 
-    public List<PromptCache> getRecentHistory(int limit) {
-        List<Object[]> results = promptCacheRepository.findRecentHistorySummary(PageRequest.of(0, limit));
+    public List<PromptResource> getRecentHistory(int limit) {
+        List<Object[]> results = promptResourceRepository.findRecentHistorySummary(PageRequest.of(0, limit));
         return results.stream()
-            .map(this::convertToPromptCache)
+            .map(this::convertToPromptResource)
             .collect(Collectors.toList());
     }
 
-    private PromptCache convertToPromptCache(Object[] row) {
-        PromptCache p = new PromptCache();
+    private PromptResource convertToPromptResource(Object[] row) {
+        PromptResource p = new PromptResource();
         p.setId((Long) row[0]);
-        p.setTaskDescription((String) row[1]);
-        p.setTargetAudience((String) row[2]);
-        p.setPromptSummary((String) row[3]);
-        p.setCreatedAt((LocalDateTime) row[4]);
-        p.setHitCount((Integer) row[5]);
-        p.setCategoryId((Long) row[6]);
-        p.setLikeCount((Integer) row[7]);
-        p.setIsAutoTagged((Boolean) row[8]);
-        p.setUsageScenario((String) row[9]);
-        p.setEffectivenessScore((Integer) row[10]);
-        p.setAiTags((String) row[11]);
+        p.setName((String) row[1]);
+        p.setPromptSummary((String) row[2]);
+        p.setCreatedAt((LocalDateTime) row[3]);
+        p.setHitCount((Integer) row[4]);
+        p.setCategoryId((Long) row[5]);
+        p.setLikeCount((Integer) row[6]);
+        p.setIsAutoTagged((Boolean) row[7]);
+        p.setUsageScenario((String) row[8]);
+        p.setEffectivenessScore((Integer) row[9]);
+        p.setAiTags((String) row[10]);
+        p.setPromptType((String) row[11]);
         return p;
     }
 
-    public Optional<PromptCache> getHistoryById(Long id) {
-        return promptCacheRepository.findById(id);
+    public Optional<PromptResource> getHistoryById(Long id) {
+        return promptResourceRepository.findById(id);
     }
 
-    public PromptCache saveHistory(PromptCache promptCache) {
-        return promptCacheRepository.save(promptCache);
+    public PromptResource saveHistory(PromptResource promptCache) {
+        return promptResourceRepository.save(promptCache);
     }
 
     public long getHistoryCount() {
-        return promptCacheRepository.count();
+        return promptResourceRepository.count();
     }
 
-    public List<PromptCache> searchHistory(String keyword) {
+    public List<PromptResource> searchHistory(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) {
             return getAllHistory();
         }
-        return promptCacheRepository.findByTaskDescriptionContaining(keyword.trim());
+        return promptResourceRepository.findByNameContaining(keyword.trim());
     }
 
-    public PagedResult<PromptCache> getHistoryPage(HistoryQueryRequest request) {
+    public PagedResult<PromptResource> getHistoryPage(HistoryQueryRequest request) {
         Pageable pageable = PageRequest.of(request.getPage() - 1, request.getSize());
 
         String sortBy = request.getSortBy();
-        Page<PromptCache> page;
+        Page<PromptResource> page;
 
         if ("likeCount".equals(sortBy)) {
-            page = promptCacheRepository.findAllOrderByLikeCountDesc(pageable);
+            page = promptResourceRepository.findAllOrderByLikeCountDesc(pageable);
         } else {
-            page = promptCacheRepository.findByFilters(
+            page = promptResourceRepository.findByFilters(
                 request.getCategoryId(),
                 request.getKeyword(),
                 request.getSortBy(),
@@ -97,13 +97,13 @@ public class PromptHistoryService {
         );
     }
 
-    public List<PromptCache> getHistoryByCategory(Long categoryId) {
-        return promptCacheRepository.findByCategoryIdOrderByCreatedAtDesc(categoryId);
+    public List<PromptResource> getHistoryByCategory(Long categoryId) {
+        return promptResourceRepository.findByCategoryIdOrderByCreatedAtDesc(categoryId);
     }
 
-    public PagedResult<PromptCache> getTopLikedPromptsPage(int page, int size) {
+    public PagedResult<PromptResource> getTopLikedPromptsPage(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<PromptCache> result = promptCacheRepository.findByLikeCountGreaterThanZeroOrderByLikeCountDesc(pageable);
+        Page<PromptResource> result = promptResourceRepository.findByLikeCountGreaterThanZeroOrderByLikeCountDesc(pageable);
 
         return new PagedResult<>(
                 result.getContent(),
@@ -116,11 +116,11 @@ public class PromptHistoryService {
 
     @Transactional
     public boolean likePrompt(Long id) {
-        return promptCacheRepository.findById(id)
+        return promptResourceRepository.findById(id)
                 .map(prompt -> {
                     Integer currentCount = prompt.getLikeCount();
                     prompt.setLikeCount(currentCount == null ? 1 : currentCount + 1);
-                    promptCacheRepository.save(prompt);
+                    promptResourceRepository.save(prompt);
                     return true;
                 })
                 .orElse(false);
@@ -128,12 +128,12 @@ public class PromptHistoryService {
 
     @Transactional
     public boolean unlikePrompt(Long id) {
-        return promptCacheRepository.findById(id)
+        return promptResourceRepository.findById(id)
                 .map(prompt -> {
                     Integer currentCount = prompt.getLikeCount();
                     if (currentCount != null && currentCount > 0) {
                         prompt.setLikeCount(currentCount - 1);
-                        promptCacheRepository.save(prompt);
+                        promptResourceRepository.save(prompt);
                     }
                     return true;
                 })
@@ -142,10 +142,10 @@ public class PromptHistoryService {
 
     @Transactional
     public boolean updateCategory(Long id, Long categoryId) {
-        return promptCacheRepository.findById(id)
+        return promptResourceRepository.findById(id)
                 .map(prompt -> {
                     prompt.setCategoryId(categoryId);
-                    promptCacheRepository.save(prompt);
+                    promptResourceRepository.save(prompt);
                     return true;
                 })
                 .orElse(false);
@@ -153,8 +153,8 @@ public class PromptHistoryService {
 
     @Transactional
     public boolean deleteHistory(Long id) {
-        if (promptCacheRepository.existsById(id)) {
-            promptCacheRepository.deleteById(id);
+        if (promptResourceRepository.existsById(id)) {
+            promptResourceRepository.deleteById(id);
             return true;
         }
         return false;
@@ -173,7 +173,7 @@ public class PromptHistoryService {
 
     @Transactional
     public boolean ratePrompt(Long id, Integer rating, String comment) {
-        return promptCacheRepository.findById(id)
+        return promptResourceRepository.findById(id)
                 .map(prompt -> {
                     prompt.setUserRating(rating);
                     prompt.setRatingComment(comment);
@@ -189,15 +189,15 @@ public class PromptHistoryService {
                         prompt.setAverageRating(newAvg);
                     }
 
-                    promptCacheRepository.save(prompt);
+                    promptResourceRepository.save(prompt);
                     return true;
                 })
                 .orElse(false);
     }
 
-    public PagedResult<PromptCache> getTopRatedPrompts(int page, int size) {
+    public PagedResult<PromptResource> getTopRatedPrompts(int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<PromptCache> result = promptCacheRepository.findByAverageRatingIsNotNullOrderByAverageRatingDesc(pageable);
+        Page<PromptResource> result = promptResourceRepository.findByAverageRatingIsNotNullOrderByAverageRatingDesc(pageable);
 
         return new PagedResult<>(
                 result.getContent(),

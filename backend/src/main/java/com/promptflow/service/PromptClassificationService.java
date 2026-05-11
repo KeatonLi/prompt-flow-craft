@@ -3,10 +3,10 @@ package com.promptflow.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.promptflow.dto.ClassificationResult;
-import com.promptflow.entity.PromptCache;
+import com.promptflow.entity.PromptResource;
 import com.promptflow.entity.PromptCategory;
 import com.promptflow.entity.PromptTag;
-import com.promptflow.repository.PromptCacheRepository;
+import com.promptflow.repository.PromptResourceRepository;
 import com.promptflow.repository.PromptCategoryRepository;
 import com.promptflow.repository.PromptTagRepository;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ public class PromptClassificationService {
     private PromptTagRepository tagRepository;
 
     @Autowired
-    private PromptCacheRepository promptCacheRepository;
+    private PromptResourceRepository promptResourceRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -119,7 +119,7 @@ public class PromptClassificationService {
      * 2. 如果规则匹配置信度低，则使用 LLM 进行分类
      */
     @Transactional
-    public ClassificationResult autoClassifyAndTag(PromptCache prompt) {
+    public ClassificationResult autoClassifyAndTag(PromptResource prompt) {
         logger.info("开始自动分类和打标签: {}", prompt.getTaskDescription());
 
         // 步骤1：规则匹配分类
@@ -144,7 +144,7 @@ public class PromptClassificationService {
     /**
      * 基于规则的快速分类
      */
-    public ClassificationResult classifyByRules(PromptCache prompt) {
+    public ClassificationResult classifyByRules(PromptResource prompt) {
         String text = (prompt.getTaskDescription() + " " + prompt.getGeneratedPrompt()).toLowerCase();
 
         Map<Long, Integer> scores = new HashMap<>();
@@ -189,7 +189,7 @@ public class PromptClassificationService {
     /**
      * 基于 LLM 的智能分类
      */
-    public ClassificationResult classifyByLLM(PromptCache prompt) {
+    public ClassificationResult classifyByLLM(PromptResource prompt) {
         try {
             String classificationPrompt = buildClassificationPrompt(prompt);
 
@@ -239,7 +239,7 @@ public class PromptClassificationService {
     /**
      * 构建分类提示词
      */
-    private String buildClassificationPrompt(PromptCache prompt) {
+    private String buildClassificationPrompt(PromptResource prompt) {
         // 获取所有分类
         List<PromptCategory> categories = categoryRepository.findByIsSystemTrueOrderBySortOrderAsc();
         String categoryList = categories.stream()
@@ -333,7 +333,7 @@ public class PromptClassificationService {
      * 保存分类和标签结果
      */
     @Transactional
-    public void saveClassificationResult(PromptCache prompt, ClassificationResult result) {
+    public void saveClassificationResult(PromptResource prompt, ClassificationResult result) {
         // 保存分类
         prompt.setCategoryId(result.getCategoryId());
         prompt.setIsAutoTagged(true);
@@ -354,7 +354,7 @@ public class PromptClassificationService {
             tagRepository.save(tag);
         }
 
-        promptCacheRepository.save(prompt);
+        promptResourceRepository.save(prompt);
         logger.info("分类和标签保存完成: categoryId={}, tags={}", result.getCategoryId(), result.getTags());
     }
 
@@ -391,10 +391,10 @@ public class PromptClassificationService {
     public void batchClassifyUnTaggedPrompts(int batchSize) {
         logger.info("开始批量处理未分类提示词，批次大小: {}", batchSize);
 
-        List<PromptCache> unTaggedPrompts = promptCacheRepository.findUnTaggedPrompts();
+        List<PromptResource> unTaggedPrompts = promptResourceRepository.findUnTaggedPrompts();
 
         int count = 0;
-        for (PromptCache prompt : unTaggedPrompts) {
+        for (PromptResource prompt : unTaggedPrompts) {
             if (count >= batchSize) break;
 
             try {
