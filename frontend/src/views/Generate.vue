@@ -2,109 +2,126 @@
   <AppLayout>
     <template #main>
       <div class="generate-page">
-        <!-- Type Selector -->
+
+        <!-- Type Selector Tabs -->
         <div class="type-selector">
-          <button
-            v-for="t in promptTypes"
-            :key="t.value"
-            class="type-btn"
-            :class="{ active: currentType === t.value }"
-            @click="switchType(t.value)"
-          >
-            <span class="type-icon">{{ t.icon }}</span>
-            <span class="type-name">{{ t.name }}</span>
-          </button>
+          <div class="selector-tabs">
+            <button
+              v-for="t in promptTypes"
+              :key="t.value"
+              class="selector-tab"
+              :class="{ active: currentType === t.value }"
+              @click="switchType(t.value)"
+            >
+              <span class="tab-icon">{{ t.icon }}</span>
+              <span class="tab-text">{{ t.name }}</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="content-area">
-          <!-- Left: Form -->
-          <div class="form-section">
+        <!-- Main Content - Full Width Grid -->
+        <div class="content-grid">
+          <!-- Form Panel -->
+          <div class="form-panel">
             <!-- Agent Form -->
             <div v-show="currentType === 'agent'" class="form-card">
-              <div class="card-header">
-                <div class="header-tabs">
-                  <button class="tab-btn active">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="10"/>
-                      <path d="M12 6v6l4 2"/>
-                    </svg>
-                    <span>Agent 提示词</span>
-                  </button>
+              <div class="form-card-header">
+                <div class="card-title">
+                  <span class="title-icon">🤖</span>
+                  <span>创建 Agent</span>
                 </div>
                 <button class="btn-example" @click="loadAgentExample">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                  </svg>
-                  <span>示例</span>
+                  <span>📖 示例</span>
                 </button>
               </div>
 
-              <div class="card-body">
-                <div class="form-group">
-                  <label class="form-label">Agent 名称 <span class="required">*</span></label>
-                  <input
-                    v-model="agentForm.name"
-                    type="text"
-                    class="form-input"
-                    placeholder="例如: 写作助手, 代码审查员"
-                  />
+              <div class="form-card-body">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <span>Agent 名称</span>
+                      <span class="required">*</span>
+                    </label>
+                    <input
+                      v-model="agentForm.name"
+                      type="text"
+                      class="form-input"
+                      :class="{ 'error': agentForm.name && !hasChinese(agentForm.name) }"
+                      placeholder="例如：技术文档助手"
+                    />
+                    <div v-if="agentForm.name && !hasChinese(agentForm.name)" class="form-error">请输入中文名称</div>
+                  </div>
                 </div>
 
-                <div class="form-group">
-                  <label class="form-label">Agent 角色定位 <span class="required">*</span></label>
-                  <textarea
-                    v-model="agentForm.role"
-                    class="form-textarea"
-                    placeholder="描述 Agent 的核心角色，例如：你是一个专业的技术文档写作助手..."
-                    rows="3"
-                  ></textarea>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <span>角色定位</span>
+                      <span class="required">*</span>
+                    </label>
+                    <textarea
+                      v-model="agentForm.role"
+                      class="form-textarea"
+                      :class="{ 'error': agentForm.role && !hasChinese(agentForm.role) }"
+                      placeholder="描述 Agent 的核心身份和专业领域..."
+                      rows="3"
+                    ></textarea>
+                  </div>
                 </div>
 
-                <div class="form-group">
-                  <label class="form-label">核心能力</label>
-                  <textarea
-                    v-model="agentForm.capabilities"
-                    class="form-textarea"
-                    placeholder="列出 Agent 可以做什么，例如：&#10;- 撰写技术文档&#10;- 回答用户问题&#10;- 提供代码示例"
-                    rows="4"
-                  ></textarea>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">核心能力</label>
+                    <textarea
+                      v-model="agentForm.capabilities"
+                      class="form-textarea"
+                      placeholder="用简洁的要点描述 Agent 能完成的任务..."
+                      rows="3"
+                    ></textarea>
+                  </div>
                 </div>
 
-                <div class="form-group">
-                  <label class="form-label">行为规范</label>
-                  <textarea
-                    v-model="agentForm.behaviors"
-                    class="form-textarea"
-                    placeholder="定义 Agent 的行为准则..."
-                    rows="3"
-                  ></textarea>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">行为准则</label>
+                    <textarea
+                      v-model="agentForm.behaviors"
+                      class="form-textarea"
+                      placeholder="定义 Agent 在服务过程中应遵循的原则..."
+                      rows="2"
+                    ></textarea>
+                  </div>
                 </div>
 
-                <div class="form-group">
-                  <label class="form-label">对话风格</label>
-                  <select v-model="agentForm.communicationStyle" class="form-select">
-                    <option value="professional">专业正式</option>
-                    <option value="friendly">友好轻松</option>
-                    <option value="concise">简洁干练</option>
-                    <option value="detailed">详细全面</option>
-                    <option value="casual">随性自然</option>
-                  </select>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">对话风格</label>
+                    <div class="style-chips">
+                      <button
+                        v-for="style in communicationStyles"
+                        :key="style.value"
+                        class="style-chip"
+                        :class="{ active: agentForm.communicationStyle === style.value }"
+                        @click="agentForm.communicationStyle = style.value"
+                      >
+                        <span class="chip-icon">{{ style.icon }}</span>
+                        <span class="chip-text">{{ style.name }}</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div class="card-footer">
-                <button class="btn-reset" @click="resetAgent">重置</button>
+              <div class="form-card-footer">
+                <button class="btn-reset" @click="resetAgent">清空</button>
                 <button class="btn-generate" :disabled="!canGenerateAgent || loading" @click="generateAgent">
                   <template v-if="loading && currentType === 'agent'">
                     <span class="spinner"></span>
                     生成中...
                   </template>
                   <template v-else>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                    </svg>
-                    生成 Agent
+                    <span>✨</span>
+                    生成提示词
                   </template>
                 </button>
               </div>
@@ -112,170 +129,158 @@
 
             <!-- Skill Form -->
             <div v-show="currentType === 'skill'" class="form-card">
-              <div class="card-header">
-                <div class="header-tabs">
-                  <button class="tab-btn active">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                      <path d="M2 17l10 5 10-5"/>
-                      <path d="M2 12l10 5 10-5"/>
-                    </svg>
-                    <span>Skill 提示词</span>
-                  </button>
+              <div class="form-card-header">
+                <div class="card-title">
+                  <span class="title-icon">⚡</span>
+                  <span>创建 Skill</span>
                 </div>
                 <button class="btn-example" @click="loadSkillExample">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                  </svg>
-                  <span>示例</span>
+                  <span>📖 示例</span>
                 </button>
               </div>
 
-              <div class="card-body">
-                <div class="form-group">
-                  <label class="form-label">Skill 名称 <span class="required">*</span></label>
-                  <input
-                    v-model="skillForm.name"
-                    type="text"
-                    class="form-input"
-                    placeholder="例如: get_weather, search_news"
-                  />
-                  <div class="form-hint">使用 snake_case 命名</div>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">功能描述 <span class="required">*</span></label>
-                  <textarea
-                    v-model="skillForm.description"
-                    class="form-textarea"
-                    placeholder="详细描述这个 Skill 的功能和使用场景..."
-                    rows="3"
-                  ></textarea>
-                </div>
-
-                <div class="form-group">
-                  <label class="form-label">Skill 类型</label>
-                  <div class="skill-type-selector">
-                    <button
-                      v-for="t in skillTypes"
-                      :key="t.value"
-                      class="type-btn"
-                      :class="{ active: skillForm.type === t.value }"
-                      @click="skillForm.type = t.value"
-                    >
-                      <span>{{ t.icon }}</span>
-                      <span>{{ t.name }}</span>
-                    </button>
-                  </div>
-                </div>
-
-                <div v-if="skillForm.type === 'api'" class="form-section">
-                  <div class="form-grid">
-                    <div class="form-group">
-                      <label class="form-label">请求方法</label>
-                      <select v-model="skillForm.method" class="form-select">
-                        <option value="GET">GET</option>
-                        <option value="POST">POST</option>
-                        <option value="PUT">PUT</option>
-                        <option value="DELETE">DELETE</option>
-                      </select>
-                    </div>
-                    <div class="form-group">
-                      <label class="form-label">API 端点</label>
-                      <input
-                        v-model="skillForm.endpoint"
-                        type="text"
-                        class="form-input"
-                        placeholder="https://api.example.com/v1/..."
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div v-if="skillForm.type === 'function'" class="form-section">
+              <div class="form-card-body">
+                <div class="form-row two-col">
                   <div class="form-group">
-                    <label class="form-label">函数代码</label>
+                    <label class="form-label">
+                      <span>Skill 名称</span>
+                      <span class="required">*</span>
+                    </label>
+                    <input
+                      v-model="skillForm.name"
+                      type="text"
+                      class="form-input"
+                      :class="{ 'error': skillForm.name && !hasChinese(skillForm.name) }"
+                      placeholder="例如：天气查询、新闻搜索"
+                    />
+                    <div v-if="skillForm.name && !hasChinese(skillForm.name)" class="form-error">请输入中文名称</div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">工具类型</label>
+                    <div class="type-chips">
+                      <button
+                        v-for="t in skillTypes"
+                        :key="t.value"
+                        class="type-chip"
+                        :class="{ active: skillForm.type === t.value }"
+                        @click="skillForm.type = t.value"
+                      >
+                        <span class="chip-icon">{{ t.icon }}</span>
+                        <span class="chip-text">{{ t.name }}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">
+                      <span>功能描述</span>
+                      <span class="required">*</span>
+                    </label>
                     <textarea
-                      v-model="skillForm.functionCode"
-                      class="form-textarea code-textarea"
-                      placeholder="// 输入函数代码"
-                      rows="6"
+                      v-model="skillForm.description"
+                      class="form-textarea"
+                      :class="{ 'error': skillForm.description && !hasChinese(skillForm.description) }"
+                      placeholder="清晰描述这个工具能做什么，以及何时使用它..."
+                      rows="3"
                     ></textarea>
                   </div>
                 </div>
 
-                <div class="form-group">
-                  <label class="form-label">输入参数 <span class="optional">(可选)</span></label>
-                  <textarea
-                    v-model="skillForm.parameters"
-                    class="form-textarea"
-                    placeholder="定义输入参数，JSON 格式"
-                    rows="3"
-                  ></textarea>
+                <div v-if="skillForm.type === 'api'" class="form-row two-col">
+                  <div class="form-group">
+                    <label class="form-label">请求方法</label>
+                    <select v-model="skillForm.method" class="form-select">
+                      <option value="GET">GET</option>
+                      <option value="POST">POST</option>
+                      <option value="PUT">PUT</option>
+                      <option value="DELETE">DELETE</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">API 端点</label>
+                    <input
+                      v-model="skillForm.endpoint"
+                      type="text"
+                      class="form-input"
+                      placeholder="https://..."
+                    />
+                  </div>
                 </div>
 
-                <div class="form-group">
-                  <label class="form-label">输出描述 <span class="optional">(可选)</span></label>
-                  <textarea
-                    v-model="skillForm.outputDescription"
-                    class="form-textarea"
-                    placeholder="描述函数的返回值结构..."
-                    rows="2"
-                  ></textarea>
+                <div v-if="skillForm.type === 'function'" class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">函数代码</label>
+                    <textarea
+                      v-model="skillForm.functionCode"
+                      class="form-textarea code"
+                      placeholder="// 输入函数实现..."
+                      rows="4"
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="form-row two-col">
+                  <div class="form-group">
+                    <label class="form-label">输入参数 <span class="optional">(可选)</span></label>
+                    <textarea
+                      v-model="skillForm.parameters"
+                      class="form-textarea"
+                      placeholder="定义需要的参数，如：city: 城市名"
+                      rows="2"
+                    ></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">输出格式 <span class="optional">(可选)</span></label>
+                    <textarea
+                      v-model="skillForm.outputDescription"
+                      class="form-textarea"
+                      placeholder="描述返回的数据结构..."
+                      rows="2"
+                    ></textarea>
+                  </div>
                 </div>
               </div>
 
-              <div class="card-footer">
-                <button class="btn-reset" @click="resetSkill">重置</button>
+              <div class="form-card-footer">
+                <button class="btn-reset" @click="resetSkill">清空</button>
                 <button class="btn-generate" :disabled="!canGenerateSkill || loading" @click="generateSkill">
                   <template v-if="loading && currentType === 'skill'">
                     <span class="spinner"></span>
                     生成中...
                   </template>
                   <template v-else>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                    </svg>
-                    生成 Skill
+                    <span>✨</span>
+                    生成提示词
                   </template>
                 </button>
               </div>
             </div>
           </div>
 
-          <!-- Right: Result -->
-          <div class="result-section">
+          <!-- Result Panel -->
+          <div class="result-panel">
             <Transition name="result-appear">
               <div v-if="showResult" class="result-card">
-                <div class="card-header">
+                <div class="result-card-header">
                   <div class="result-title">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/>
-                      <path d="M5 19l1 3 3-1-1-3-3 1z"/>
-                      <path d="M19 5l1 3 3-1-1-3-3 1z"/>
-                    </svg>
-                    <span>生成结果</span>
-                    <span v-if="isStreaming" class="streaming-badge">
+                    <span class="result-icon">📝</span>
+                    <span>生成的提示词</span>
+                    <span v-if="isStreaming" class="streaming-indicator">
                       <span class="stream-dot"></span>
-                      AI 思考中...
+                      生成中
                     </span>
                   </div>
-                  <div class="result-actions">
-                    <button class="action-btn-small" @click="copyResult" title="复制">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                      </svg>
+                  <div class="result-toolbar">
+                    <button class="toolbar-btn" @click="copyResult" title="复制">
+                      <span>📋</span>
                     </button>
-                    <div class="export-dropdown">
-                      <button class="action-btn-small" @click="toggleExportMenu">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                          <polyline points="7 10 12 15 17 10"/>
-                          <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
+                    <div class="export-wrapper">
+                      <button class="toolbar-btn" @click="toggleExportMenu">
+                        <span>📥</span>
                       </button>
-                      <Transition name="dropdown-fade">
+                      <Transition name="dropdown">
                         <div v-if="showExportMenu" class="export-menu">
                           <button @click="exportPrompt('markdown')">📝 Markdown</button>
                           <button @click="exportPrompt('json')">📋 JSON</button>
@@ -286,7 +291,7 @@
                   </div>
                 </div>
 
-                <div class="result-body">
+                <div class="result-card-body">
                   <div class="result-content" ref="resultContentRef">
                     <div class="markdown-body" v-html="displayedResultWithCursor"></div>
                   </div>
@@ -294,24 +299,16 @@
               </div>
             </Transition>
 
-            <div v-if="!showResult" class="empty-result">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                <polyline points="14 2 14 8 20 8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-                <line x1="10" y1="9" x2="8" y2="9"/>
-              </svg>
-              <p>填写表单后点击生成</p>
-              <span>结果将显示在这里</span>
+            <div v-if="!showResult" class="result-empty">
+              <div class="empty-visual">
+                <span class="empty-icon">💡</span>
+              </div>
+              <p class="empty-title">填写配置，一键生成</p>
+              <p class="empty-desc">AI 将为你创建专业的提示词</p>
             </div>
           </div>
         </div>
       </div>
-    </template>
-
-    <template #sidebar-right>
-      <HistoryPanel />
     </template>
   </AppLayout>
 </template>
@@ -322,7 +319,6 @@ import { useRoute } from 'vue-router'
 import MarkdownIt from 'markdown-it'
 import hljs from 'highlight.js'
 import AppLayout from '@/components/layout/AppLayout.vue'
-import HistoryPanel from '@/components/history/HistoryPanel.vue'
 import { promptApi } from '@/api/prompt'
 import type { PromptRecord } from '@/types'
 
@@ -343,6 +339,7 @@ const md = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
+  breaks: true,
   highlight: highlightCode
 })
 
@@ -362,6 +359,14 @@ const skillTypes = [
   { value: 'function', name: '函数', icon: '⚡' },
   { value: 'webhook', name: 'Webhook', icon: '🪝' },
   { value: 'data', name: '数据源', icon: '📊' }
+]
+
+const communicationStyles = [
+  { value: 'professional', name: '专业', icon: '💼' },
+  { value: 'friendly', name: '友好', icon: '😊' },
+  { value: 'concise', name: '简洁', icon: '⚡' },
+  { value: 'detailed', name: '详细', icon: '📚' },
+  { value: 'casual', name: '轻松', icon: '☕' }
 ]
 
 const agentForm = ref({
@@ -388,16 +393,32 @@ const isStreaming = ref(false)
 const showResult = ref(false)
 const result = ref('')
 const displayedResult = ref('')
+const renderedResult = ref('')
 const cancelStream = ref<(() => void) | null>(null)
+let renderTimer: ReturnType<typeof setTimeout> | null = null
 
-const canGenerateAgent = computed(() => agentForm.value.name.length > 0 && agentForm.value.role.length > 0)
-const canGenerateSkill = computed(() => skillForm.value.name.length > 0 && skillForm.value.description.length > 0)
+const hasChinese = (text: string): boolean => /[一-龥]/.test(text)
+
+const canGenerateAgent = computed(() => {
+  const name = agentForm.value.name.trim()
+  const role = agentForm.value.role.trim()
+  if (!name || !role) return false
+  return hasChinese(name) && hasChinese(role)
+})
+
+const canGenerateSkill = computed(() => {
+  const name = skillForm.value.name.trim()
+  const desc = skillForm.value.description.trim()
+  if (!name || !desc) return false
+  return hasChinese(name) && hasChinese(desc)
+})
 
 const displayedResultWithCursor = computed(() => {
-  const raw = displayedResult.value || result.value
-  const content = md.render(raw)
-  if (isStreaming.value) return content + '<span class="typing-cursor"></span>'
-  return content
+  if (isStreaming.value) {
+    const content = renderedResult.value || md.render(displayedResult.value || result.value)
+    return content + '<span class="typing-cursor"></span>'
+  }
+  return md.render(displayedResult.value || result.value)
 })
 
 const switchType = (type: 'agent' | 'skill') => {
@@ -407,24 +428,24 @@ const switchType = (type: 'agent' | 'skill') => {
 
 const loadAgentExample = () => {
   agentForm.value = {
-    name: '写作助手',
-    role: '你是一个专业的技术文档写作助手，擅长将复杂的技术概念解释得通俗易懂。',
-    capabilities: '- 撰写技术文档和教程\n- 解释技术概念\n- 提供代码示例\n- 校对和润色文本',
-    behaviors: '- 始终保持专业态度\n- 回答简洁明了\n- 主动提供相关示例',
+    name: '技术文档助手',
+    role: '你是一位资深技术文档专家，擅长将复杂的编程概念和技术架构用通俗易懂的语言解释清楚。你能够深入理解代码背后的设计思想，并将其转化为清晰的文档。',
+    capabilities: '- 撰写技术设计文档和API接口文档\n- 解释系统架构、的设计模式和微服务设计\n- 提供代码示例和最佳实践建议\n- 校对和优化技术文案，确保表达准确',
+    behaviors: '- 语言简洁专业，避免冗余和模糊表达\n- 主动提供实际应用案例和代码片段\n- 适当使用图表辅助说明复杂概念\n- 注意文档的可读性和可维护性',
     communicationStyle: 'professional'
   }
 }
 
 const loadSkillExample = () => {
   skillForm.value = {
-    name: 'get_weather',
-    description: '获取指定城市的当前天气信息，包括温度、湿度、风速和天气状况',
+    name: '天气查询助手',
+    description: '根据用户提供的城市名称或位置信息，获取该城市的实时天气信息，包括温度、湿度、空气质量指数、风力等级和未来天气预报等数据。适用于需要了解特定地区天气情况的场景。',
     type: 'api',
     method: 'GET',
     endpoint: 'https://api.weather.example.com/v1/current',
     functionCode: '',
-    parameters: '{"city": {"type": "string", "description": "城市名称"}}',
-    outputDescription: '返回城市名称，温度、湿度、风速等信息'
+    parameters: 'city: 用户所在城市名称，字符串类型，必填\nunits: 温度单位，默认 metric（公制）可选 imperial（英制）',
+    outputDescription: '返回 JSON 格式的完整天气数据，包含温度、湿度、风速、空气质量指数、AQI 等字段，以及未来3天的天气预报'
   }
 }
 
@@ -477,12 +498,24 @@ const startGeneration = () => {
 const onStreamContent = (content: string) => {
   result.value += content
   displayedResult.value += content
+
+  if (!renderTimer) {
+    renderTimer = setTimeout(() => {
+      renderedResult.value = md.render(result.value)
+      renderTimer = null
+    }, 50)
+  }
 }
 
 const onStreamDone = () => {
   isStreaming.value = false
   loading.value = false
   cancelStream.value = null
+  if (renderTimer) {
+    clearTimeout(renderTimer)
+    renderTimer = null
+  }
+  renderedResult.value = md.render(result.value)
 }
 
 const onStreamError = () => {
@@ -494,10 +527,15 @@ const onStreamError = () => {
 const reset = () => {
   result.value = ''
   displayedResult.value = ''
+  renderedResult.value = ''
   showResult.value = false
   if (cancelStream.value) {
     cancelStream.value()
     cancelStream.value = null
+  }
+  if (renderTimer) {
+    clearTimeout(renderTimer)
+    renderTimer = null
   }
   loading.value = false
   isStreaming.value = false
@@ -557,16 +595,14 @@ const exportPrompt = (format: 'markdown' | 'json' | 'txt') => {
 
 const handleClickOutside = (event: MouseEvent) => {
   const target = event.target as HTMLElement
-  if (!target.closest('.export-dropdown')) showExportMenu.value = false
+  if (!target.closest('.export-wrapper')) showExportMenu.value = false
 }
 
 function handleReuseHistory(event: Event) {
   const customEvent = event as CustomEvent<PromptRecord>
   const record = customEvent.detail
 
-  // Support both old PromptRecord and new AgentRecord formats
   if (record.generatedPrompt) {
-    // New AgentRecord format
     agentForm.value = {
       name: record.name || '',
       role: record.roleDescription || record.taskDescription || '',
@@ -595,78 +631,90 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ===== Page Layout ===== */
 .generate-page {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  padding-bottom: 40px;
+  padding: 0 0 60px 0;
+  min-height: calc(100vh - 200px);
 }
 
+/* ===== Type Selector ===== */
 .type-selector {
   display: flex;
-  gap: 12px;
   justify-content: center;
+  padding: 0 24px;
 }
 
-.type-btn {
+.selector-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 6px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+}
+
+.selector-tab {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 32px;
-  border: 2px solid var(--border-color);
-  border-radius: var(--radius-2xl);
-  background: var(--bg-card);
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: var(--text-base);
+  gap: 8px;
+  padding: 12px 28px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 15px;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
 }
 
-.type-btn:hover {
-  border-color: var(--color-primary-400);
-  transform: translateY(-2px);
+.selector-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
 }
 
-.type-btn.active {
-  border-color: var(--color-primary-500);
+.selector-tab.active {
   background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600));
   color: white;
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
 }
 
-.type-icon {
-  font-size: 1.4rem;
+.selector-tab .tab-icon {
+  font-size: 18px;
 }
 
-.content-area {
+/* ===== Content Grid ===== */
+.content-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 20px;
+  padding: 0 24px;
   align-items: start;
 }
 
-.form-section {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
-.result-section {
-  position: sticky;
-  top: 20px;
-  max-height: calc(100vh - 120px);
-  overflow-y: auto;
+/* ===== Form Panel ===== */
+.form-panel {
+  display: flex;
+  flex-direction: column;
 }
 
 .form-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-card);
+  border-radius: 16px;
   overflow: hidden;
 }
 
-.card-header {
+.form-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -675,132 +723,47 @@ onUnmounted(() => {
   background: var(--bg-panel);
 }
 
-.header-tabs {
-  display: flex;
-  gap: 8px;
-}
-
-.tab-btn {
+.card-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border: none;
-  border-radius: var(--radius-lg);
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  cursor: pointer;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
-.tab-btn.active {
-  background: var(--glow-primary-soft);
-  color: var(--color-primary-600);
+.title-icon {
+  font-size: 20px;
 }
 
 .btn-example {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  border: none;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
-  color: white;
-  font-size: var(--text-sm);
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
-.card-body {
+.btn-example:hover {
+  border-color: var(--color-primary-400);
+  color: var(--color-primary-600);
+}
+
+.form-card-body {
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-label {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.required {
-  color: var(--color-error);
-}
-
-.optional {
-  color: var(--text-muted);
-  font-weight: 400;
-}
-
-.form-hint {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.form-input,
-.form-select,
-.form-textarea {
-  width: 100%;
-  padding: 12px 16px;
-  font-size: var(--text-sm);
-  color: var(--text-primary);
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  transition: all 0.2s;
-}
-
-.form-input:focus,
-.form-select:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 4px var(--glow-primary-soft);
-}
-
-.form-textarea {
-  resize: vertical;
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.form-section {
-  padding: 16px;
-  background: var(--bg-panel);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-color);
-}
-
-.skill-type-selector {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.skill-type-selector .type-btn {
-  padding: 8px 16px;
-  font-size: var(--text-xs);
-}
-
-.code-textarea {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-}
-
-.card-footer {
+.form-card-footer {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -810,19 +773,166 @@ onUnmounted(() => {
   background: var(--bg-panel);
 }
 
-.btn-reset {
-  padding: 10px 20px;
+/* ===== Form Elements ===== */
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-row.two-col {
+  flex-direction: row;
+  gap: 16px;
+}
+
+.form-row.two-col > .form-group {
+  flex: 1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.required {
+  color: var(--color-error);
+  font-size: 11px;
+}
+
+.optional {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 11px;
+}
+
+.form-error {
+  font-size: 11px;
+  color: var(--color-error);
+  font-weight: 500;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-input);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  background: transparent;
+  border-radius: 10px;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.form-input:hover,
+.form-select:hover,
+.form-textarea:hover {
+  border-color: var(--border-hover);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px var(--glow-primary-soft);
+  background: var(--bg-card);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--text-placeholder);
+}
+
+.form-input.error,
+.form-textarea.error {
+  border-color: var(--color-error);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 72px;
+  line-height: 1.6;
+}
+
+.form-textarea.code {
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+/* ===== Style/Type Chips ===== */
+.style-chips,
+.type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.style-chip,
+.type-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-card);
   color: var(--text-secondary);
-  font-size: var(--text-sm);
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
+}
+
+.style-chip:hover,
+.type-chip:hover {
+  border-color: var(--color-primary-400);
+  color: var(--text-primary);
+}
+
+.style-chip.active,
+.type-chip.active {
+  border-color: var(--color-primary-500);
+  background: var(--glow-primary-soft);
+  color: var(--color-primary-600);
+}
+
+.chip-icon {
+  font-size: 14px;
+}
+
+/* ===== Buttons ===== */
+.btn-reset {
+  padding: 12px 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
 .btn-reset:hover {
   background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .btn-generate {
@@ -831,28 +941,30 @@ onUnmounted(() => {
   gap: 8px;
   padding: 12px 24px;
   border: none;
-  border-radius: var(--radius-xl);
+  border-radius: 10px;
   background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
   color: white;
-  font-size: var(--text-sm);
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+  transition: all 0.25s;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
 }
 
 .btn-generate:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.45);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
 }
 
 .btn-generate:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  transform: none;
 }
 
 .spinner {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: white;
   border-radius: 50%;
@@ -863,32 +975,56 @@ onUnmounted(() => {
   to { transform: rotate(360deg); }
 }
 
+/* ===== Result Panel ===== */
+.result-panel {
+  position: sticky;
+  top: 20px;
+}
+
 .result-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-card);
+  border-radius: 16px;
   overflow: hidden;
+  height: fit-content;
+  max-height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+}
+
+.result-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-panel);
+  flex-shrink: 0;
 }
 
 .result-title {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: var(--text-base);
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
-.streaming-badge {
+.result-icon {
+  font-size: 18px;
+}
+
+.streaming-indicator {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
   background: var(--glow-primary-soft);
   color: var(--color-primary-600);
-  font-size: var(--text-xs);
+  font-size: 11px;
   font-weight: 600;
-  border-radius: var(--radius-full);
+  border-radius: 20px;
 }
 
 .stream-dot {
@@ -900,34 +1036,35 @@ onUnmounted(() => {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.2); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
-.result-actions {
+.result-toolbar {
   display: flex;
   gap: 8px;
 }
 
-.action-btn-small {
-  width: 36px;
-  height: 36px;
+.toolbar-btn {
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  background: transparent;
-  color: var(--text-secondary);
+  border-radius: 8px;
+  background: var(--bg-card);
   cursor: pointer;
+  transition: all 0.2s;
+  font-size: 15px;
 }
 
-.action-btn-small:hover {
+.toolbar-btn:hover {
   background: var(--bg-hover);
-  color: var(--text-primary);
+  border-color: var(--color-primary-400);
 }
 
-.export-dropdown {
+.export-wrapper {
   position: relative;
 }
 
@@ -936,12 +1073,12 @@ onUnmounted(() => {
   top: 100%;
   right: 0;
   margin-top: 8px;
-  padding: 8px;
+  padding: 6px;
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-dropdown);
-  min-width: 140px;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  min-width: 130px;
   z-index: 10;
 }
 
@@ -950,12 +1087,12 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 10px 14px;
+  padding: 10px 12px;
   border: none;
-  border-radius: var(--radius-lg);
+  border-radius: 6px;
   background: transparent;
   color: var(--text-primary);
-  font-size: var(--text-sm);
+  font-size: 13px;
   cursor: pointer;
 }
 
@@ -964,98 +1101,83 @@ onUnmounted(() => {
   color: var(--color-primary-600);
 }
 
-.result-body {
-  padding: 0;
+.result-card-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 300px;
 }
 
 .result-content {
-  max-height: 500px;
-  overflow-y: auto;
+  padding: 16px;
   background: var(--bg-panel);
-  padding: 20px;
 }
 
-.empty-result {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 40px;
-  text-align: center;
-  background: var(--bg-card);
-  border: 1px dashed var(--border-color);
-  border-radius: var(--radius-2xl);
-  color: var(--text-secondary);
-}
-
-.empty-result svg {
-  margin-bottom: 16px;
-  opacity: 0.4;
-}
-
-.empty-result p {
-  font-weight: 600;
-  margin: 0 0 4px 0;
-}
-
-.empty-result span {
-  font-size: var(--text-sm);
-}
-
-.markdown-body {
-  font-size: var(--text-sm);
+.result-content :deep(.markdown-body) {
+  font-size: 14px;
   line-height: 1.8;
   color: var(--text-secondary);
 }
 
-.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+.result-content :deep(.markdown-body h1),
+.result-content :deep(.markdown-body h2),
+.result-content :deep(.markdown-body h3) {
   color: var(--text-primary);
-  margin-top: 1.5em;
+  margin-top: 1.2em;
   margin-bottom: 0.5em;
+  font-weight: 700;
 }
 
-.markdown-body h2 { color: var(--color-primary-600); }
-
-.markdown-body p { margin: 0 0 1em 0; }
-
-.markdown-body ul, .markdown-body ol {
-  margin: 0.5em 0;
-  padding-left: 1.5em;
-}
-
-.markdown-body code {
-  padding: 0.15em 0.4em;
-  background: var(--bg-hover);
-  border-radius: var(--radius-md);
-  font-family: var(--font-mono);
-  font-size: 0.88em;
+.result-content :deep(.markdown-body h2) {
   color: var(--color-primary-600);
-  border: 1px solid var(--border-color);
+  font-size: 1.1em;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 6px;
 }
 
-.markdown-body pre {
+.result-content :deep(.markdown-body p) {
+  margin: 0 0 0.8em 0;
+}
+
+.result-content :deep(.markdown-body ul),
+.result-content :deep(.markdown-body ol) {
+  margin: 0.5em 0;
+  padding-left: 1.3em;
+}
+
+.result-content :deep(.markdown-body li) {
+  margin: 4px 0;
+}
+
+.result-content :deep(.markdown-body code) {
+  padding: 0.2em 0.4em;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--color-primary-600);
+}
+
+.result-content :deep(.markdown-body pre) {
   margin: 1em 0;
-  border-radius: var(--radius-xl);
+  border-radius: 10px;
   overflow: hidden;
   background: #1e1e2e;
-  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.markdown-body pre code {
+.result-content :deep(.markdown-body pre code) {
   display: block;
-  padding: 1em 1.25em;
+  padding: 1em;
   background: transparent;
   color: #cdd6f4;
-  font-size: var(--text-xs);
-  line-height: 1.7;
+  font-size: 13px;
+  line-height: 1.6;
   overflow-x: auto;
-  border: none;
 }
 
 .typing-cursor {
   display: inline-block;
   width: 2px;
-  height: 18px;
+  height: 16px;
   background: var(--color-primary-400);
   margin-left: 2px;
   animation: blink 1s step-end infinite;
@@ -1067,46 +1189,96 @@ onUnmounted(() => {
   50% { opacity: 0; }
 }
 
+/* ===== Empty State ===== */
+.result-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  text-align: center;
+  background: var(--bg-card);
+  border: 2px dashed var(--border-color);
+  border-radius: 16px;
+  min-height: 400px;
+}
+
+.empty-visual {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glow-primary-soft);
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.empty-icon {
+  font-size: 36px;
+}
+
+.empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.empty-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ===== Transitions ===== */
 .result-appear-enter-active {
-  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(30px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.dropdown-fade-enter-active,
-.dropdown-fade-leave-active {
+.dropdown-enter-active,
+.dropdown-leave-active {
   transition: all 0.2s ease;
 }
 
-.dropdown-fade-enter-from,
-.dropdown-fade-leave-to {
+.dropdown-enter-from,
+.dropdown-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
+  transform: translateY(-6px);
 }
 
-@media (max-width: 1200px) {
-  .content-area {
-    grid-template-columns: 1fr;
-  }
-
-  .result-section {
-    position: static;
-  }
-}
-
+/* ===== Responsive ===== */
 @media (max-width: 768px) {
-  .type-selector {
+  .generate-page {
+    padding: 0 0 40px 0;
+  }
+
+  .content-grid {
+    padding: 0 16px;
+    gap: 16px;
+  }
+
+  .form-row.two-col {
     flex-direction: column;
   }
 
-  .form-grid {
-    grid-template-columns: 1fr;
+  .selector-tabs {
+    width: 100%;
+    justify-content: center;
   }
 
-  .card-footer {
+  .selector-tab {
+    flex: 1;
+    justify-content: center;
+    padding: 12px 16px;
+  }
+
+  .form-card-footer {
     flex-direction: column;
   }
 

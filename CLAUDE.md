@@ -113,6 +113,24 @@ All API responses use `ApiResponse<T>` wrapper with `success`, `message`, and `d
 | Path | View | Description |
 |------|------|-------------|
 | `/` | Home | Product introduction |
-| `/generate` | Generate | Create new prompts |
-| `/templates` | Templates | Browse history/templates |
+| `/generate` | Generate | Create Agent/Skill prompts (Agent/Skill tab selector) |
+| `/templates` | Templates | Prompt generation history with Agent/Skill filter tabs |
 | `/statistics` | Statistics | Data dashboard |
+
+## Key Implementation Details
+
+### Generate Page (Agent/Skill)
+- **Agent Mode**: name, roleDescription, capabilities, behaviors, communicationStyle
+- **Skill Mode**: name, description, skillType (api/function/webhook/data), method, endpoint, parameters, outputDescription
+- **流式输出**: SSE streaming with markdown rendering
+- **布局**: 双栏网格布局 (表单左 | 结果右)，响应式移动端堆叠
+
+### Templates Page (History)
+- **Filter Tabs**: All / Agent / Skill type filter
+- **数据来源**: 用户生成的提示词历史记录
+- **社区**: 独立的分享提示词区域
+
+### API Streaming
+- `generateAgentStream()` / `generateSkillStream()` - SSE 流式生成
+- 50ms 节流渲染防止卡顿
+- 直接渲染 markdown不过滤 <think> 标签

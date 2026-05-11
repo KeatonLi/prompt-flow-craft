@@ -2,6 +2,7 @@ import request from './request';
 import type { ApiResponse, PromptRequest } from '@/types';
 import type { AgentRecord, SkillRecord } from './promptRecord';
 
+// 清理内容中的推理标记 (<think>...</think>)
 export interface AgentPromptRequest {
   name: string;
   roleDescription: string;
@@ -314,12 +315,6 @@ export const promptApi = {
         return;
       }
 
-      // 过滤掉推理标记
-      if (data === '<think>' || data === '</think>' || data === '<think>\n' || data === '</think>\n') {
-        console.log('过滤推理标记:', data);
-        return;
-      }
-
       try {
         const parsed = JSON.parse(data);
         if (parsed.content !== undefined) {
@@ -336,6 +331,7 @@ export const promptApi = {
           onError(parsed.error);
         }
       } catch (e) {
+        // 非JSON数据，直接处理
         if (data && data !== '[DONE]') {
           fullContent += data;
           onMessage(data);
@@ -446,12 +442,6 @@ export const promptApi = {
         return;
       }
 
-      // 过滤掉推理标记
-      if (data === '<think>' || data === '</think>' || data === '<think>\n' || data === '</think>\n') {
-        console.log('过滤推理标记:', data);
-        return;
-      }
-
       try {
         const parsed = JSON.parse(data);
         if (parsed.content !== undefined) {
@@ -468,6 +458,7 @@ export const promptApi = {
           onError(parsed.error);
         }
       } catch (e) {
+        // 非JSON数据，直接处理
         if (data && data !== '[DONE]') {
           fullContent += data;
           onMessage(data);

@@ -3,7 +3,7 @@
     <template #main>
       <div class="home-page">
 
-        <!-- Hero Section - Compact & Informative -->
+        <!-- Hero Section -->
         <section class="hero-section">
           <div class="hero-content">
             <div class="hero-badge">
@@ -17,7 +17,7 @@
 
             <p class="hero-desc">
               <span class="highlight">企业级 AI 提示词工程平台</span><br/>
-              通过四层架构模型，智能生成、优化、管理高质量提示词
+              首创 Agent / Skill 双引擎架构，让 AI 工具调用如虎添翼
             </p>
 
             <div class="hero-actions">
@@ -28,22 +28,22 @@
                 开始创作
               </router-link>
               <router-link to="/templates" class="btn-secondary">
-                查看模板
+                探索模板
               </router-link>
             </div>
 
             <div class="hero-quick-stats">
               <div class="quick-stat">
-                <span class="stat-num">8</span>
-                <span class="stat-label">场景分类</span>
+                <span class="stat-num">Agent</span>
+                <span class="stat-label">智能体构建</span>
               </div>
               <div class="quick-stat">
-                <span class="stat-num">4层</span>
-                <span class="stat-label">架构模型</span>
+                <span class="stat-num">Skill</span>
+                <span class="stat-label">工具技能生成</span>
               </div>
               <div class="quick-stat">
-                <span class="stat-num">API</span>
-                <span class="stat-label">成本节省</span>
+                <span class="stat-num">社区</span>
+                <span class="stat-label">模板分享</span>
               </div>
             </div>
           </div>
@@ -55,26 +55,25 @@
                 <span class="demo-dot red"></span>
                 <span class="demo-dot yellow"></span>
                 <span class="demo-dot green"></span>
-                <span class="demo-title">提示词生成示例</span>
+                <span class="demo-title">Agent 生成示例</span>
               </div>
               <div class="demo-body">
                 <div class="demo-input">
                   <span class="demo-label">输入</span>
-                  <div class="demo-text">帮我写一封商务合作邮件，目标受众是企业高管，语气专业</div>
+                  <div class="demo-text">创建一个代码审查助手，自动审查 PR 并给出建议</div>
                 </div>
                 <div class="demo-arrow">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 5v14M5 12l7 7 7-7"/>
                   </svg>
-                  <span>AI 智能生成</span>
+                  <span>AI 结构化生成</span>
                 </div>
                 <div class="demo-output">
                   <span class="demo-label">输出</span>
                   <div class="demo-result">
-                    <div class="result-line">Subject: 战略合作提案 - [公司名称]</div>
-                    <div class="result-line">Dear [CEO姓名]:</div>
-                    <div class="result-line">我代表[公司]...</div>
-                    <div class="result-tag">专业商务邮件 · 500字 · 正式语气</div>
+                    <div class="result-line">Role: 代码审查助手</div>
+                    <div class="result-line">Capabilities: PR审查, 漏洞检测...</div>
+                    <div class="result-tag">Agent · 四层架构 · 即刻使用</div>
                   </div>
                 </div>
               </div>
@@ -82,54 +81,53 @@
           </div>
         </section>
 
-        <!-- Problem & Solution Section -->
-        <section class="info-section">
-          <div class="info-grid">
-            <div class="info-card problem">
-              <div class="info-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <!-- Agent & Skill Section -->
+        <section class="feature-section">
+          <div class="section-header centered">
+            <h2>双引擎驱动 AI 工具调用</h2>
+            <p>无论是构建智能体还是定义工具技能，我们都能满足</p>
+          </div>
+
+          <div class="feature-grid">
+            <div class="feature-card agent-card">
+              <div class="feature-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <circle cx="12" cy="12" r="10"/>
-                  <path d="M12 8v4M12 16h.01"/>
+                  <path d="M12 6v6l4 2"/>
                 </svg>
               </div>
-              <h3>痛点</h3>
-              <ul>
-                <li>写提示词费时费力，效果不稳定</li>
-                <li>生成内容格式混乱，质量参差不齐</li>
-                <li>重复调用 API，成本居高不下</li>
-                <li>提示词分散，难以复用和管理</li>
+              <h3>Agent 引擎</h3>
+              <p>构建具有角色定位、核心能力和行为规范的智能体，让 AI 扮演专家角色</p>
+              <ul class="feature-list">
+                <li>定义清晰的角色与目标</li>
+                <li>配置核心能力与工具</li>
+                <li>设定行为规范与限制</li>
+                <li>选择对话风格与语气</li>
               </ul>
+              <router-link to="/generate?type=agent" class="feature-link">
+                创建 Agent →
+              </router-link>
             </div>
 
-            <div class="info-card solution">
-              <div class="info-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
+            <div class="feature-card skill-card">
+              <div class="feature-icon">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                  <path d="M2 17l10 5 10-5"/>
+                  <path d="M2 12l10 5 10-5"/>
                 </svg>
               </div>
-              <h3>解决方案</h3>
-              <ul>
-                <li>四层架构模型，结构化生成优质提示词</li>
-                <li>多维度配置，输出格式高度统一</li>
-                <li>智能缓存，相同参数零成本复用</li>
-                <li>历史记录永久保存，一键搜索复用</li>
+              <h3>Skill 引擎</h3>
+              <p>为 AI Agent 打造可调用的工具技能，支持 API、函数、Webhook 等多种类型</p>
+              <ul class="feature-list">
+                <li>API / 函数 / Webhook</li>
+                <li>自动生成调用参数</li>
+                <li>认证与限流配置</li>
+                <li>社区模板即插即用</li>
               </ul>
-            </div>
-
-            <div class="info-card features">
-              <div class="info-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                </svg>
-              </div>
-              <h3>核心功能</h3>
-              <ul>
-                <li>智能生成 - AI 自动构建最优提示词</li>
-                <li>质量分析 - 多维度评估提示词效果</li>
-                <li>自动分类 - 8 大场景智能打标签</li>
-                <li>团队协作 - 收藏分享使用追踪</li>
-              </ul>
+              <router-link to="/generate?type=skill" class="feature-link">
+                创建 Skill →
+              </router-link>
             </div>
           </div>
         </section>
@@ -152,6 +150,52 @@
           </div>
         </section>
 
+        <!-- Community Section -->
+        <section class="community-section">
+          <div class="community-box">
+            <div class="community-content">
+              <div class="community-badge">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <span>社区发布</span>
+              </div>
+              <h2>加入社区，共享优质提示词模板</h2>
+              <p>发现他人分享的 Agent 和 Skill，一键导入使用。构建自己的模板，供社区复用。</p>
+              <div class="community-actions">
+                <router-link to="/templates" class="btn-community-primary">
+                  探索社区模板
+                </router-link>
+                <router-link to="/generate" class="btn-community-secondary">
+                  贡献你的模板
+                </router-link>
+              </div>
+            </div>
+            <div class="community-visual">
+              <div class="template-preview">
+                <div class="template-card">
+                  <span class="template-icon">🤖</span>
+                  <span class="template-name">代码审查助手</span>
+                  <span class="template-author">@li.bkai</span>
+                </div>
+                <div class="template-card">
+                  <span class="template-icon">⚡</span>
+                  <span class="template-name">get_weather</span>
+                  <span class="template-author">@contributor</span>
+                </div>
+                <div class="template-card">
+                  <span class="template-icon">📝</span>
+                  <span class="template-name">技术文档写作</span>
+                  <span class="template-author">@dev_team</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- Categories Section -->
         <section class="cats-section">
           <div class="section-header">
@@ -168,24 +212,11 @@
           </div>
         </section>
 
-        <!-- Tech Stack -->
-        <section class="tech-section">
-          <div class="tech-grid">
-            <div class="tech-item" v-for="tech in techStack" :key="tech.name">
-              <span class="tech-icon">{{ tech.icon }}</span>
-              <div class="tech-info">
-                <span class="tech-name">{{ tech.name }}</span>
-                <span class="tech-value">{{ tech.value }}</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
         <!-- CTA Section -->
         <section class="cta-section">
           <div class="cta-box">
-            <h2>提升 AI 创作效率</h2>
-            <p>免费开始使用，永久保存历史记录</p>
+            <h2>开始构建你的 AI 工具库</h2>
+            <p>免费开始使用，Agent + Skill 双引擎驱动</p>
             <router-link to="/generate" class="btn-cta">
               立即开始创作
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -198,7 +229,7 @@
         <!-- Footer -->
         <footer class="footer">
           <span>Prompt Flow Craft v2.0</span>
-          <span>让 AI 创作更简单、更高效</span>
+          <span>Agent + Skill 双引擎 · 社区模板共享</span>
         </footer>
       </div>
     </template>
@@ -224,13 +255,6 @@ const categories = [
   { icon: '📊', name: '数据分析', desc: '报告、图表解读' },
   { icon: '🎨', name: '设计创意', desc: 'UI、Logo创意' },
   { icon: '💬', name: '智能对话', desc: '客服、聊天机器人' }
-]
-
-const techStack = [
-  { icon: '🎨', name: '前端', value: 'Vue 3 + TS + Vite' },
-  { icon: '⚙️', name: '后端', value: 'Java 17 + Spring Boot' },
-  { icon: '🤖', name: 'AI', value: 'LLM + Prompt Engineering' },
-  { icon: '💾', name: '存储', value: 'MySQL 8 + Hibernate' }
 ]
 </script>
 
@@ -486,80 +510,20 @@ const techStack = [
 }
 
 /* ============================================
-   Info Section
+   Feature Section (Agent & Skill)
    ============================================ */
-.info-section {
+.feature-section {
   padding: 48px 60px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.info-card {
-  padding: 24px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-}
-
-.info-card h3 {
-  font-family: var(--font-display);
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: var(--text-primary);
-}
-
-.info-card ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.info-card li {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  padding-left: 16px;
-  position: relative;
-  line-height: 1.5;
-}
-
-.info-card li::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 8px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--color-primary-500);
-}
-
-.info-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--glow-primary-soft);
-  border-radius: var(--radius-lg);
-  color: var(--color-primary-600);
-  margin-bottom: 16px;
-}
-
-/* ============================================
-   Section Header
-   ============================================ */
 .section-header {
   margin-bottom: 32px;
+}
+
+.section-header.centered {
+  text-align: center;
 }
 
 .section-header h2 {
@@ -573,6 +537,106 @@ const techStack = [
 .section-header p {
   font-size: var(--text-sm);
   color: var(--text-secondary);
+}
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.feature-card {
+  padding: 32px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-2xl);
+  transition: all var(--transition-base);
+}
+
+.feature-card:hover {
+  border-color: var(--color-primary-400);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.agent-card {
+  border-top: 3px solid var(--color-primary-500);
+}
+
+.skill-card {
+  border-top: 3px solid var(--color-accent);
+}
+
+.feature-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glow-primary-soft);
+  border-radius: var(--radius-xl);
+  color: var(--color-primary-600);
+  margin-bottom: 20px;
+}
+
+.skill-card .feature-icon {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.1));
+  color: var(--color-accent);
+}
+
+.feature-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.feature-card > p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 20px;
+}
+
+.feature-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feature-list li {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  padding-left: 20px;
+  position: relative;
+}
+
+.feature-list li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--color-primary-500);
+  font-weight: 700;
+}
+
+.feature-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-primary-600);
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.feature-link:hover {
+  gap: 10px;
+  color: var(--color-primary-500);
 }
 
 /* ============================================
@@ -685,50 +749,141 @@ const techStack = [
 }
 
 /* ============================================
-   Tech Section
+   Community Section
    ============================================ */
-.tech-section {
-  padding: 32px 60px 48px;
+.community-section {
+  padding: 48px 60px;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.tech-grid {
+.community-box {
   display: flex;
-  gap: 20px;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
+  padding: 48px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(99, 102, 241, 0.05));
+  border: 1px solid var(--color-primary-500);
+  border-radius: var(--radius-2xl);
 }
 
-.tech-item {
+.community-content {
+  flex: 1;
+  max-width: 480px;
+}
+
+.community-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--glow-primary-soft);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-primary-600);
+  margin-bottom: 20px;
+}
+
+.community-content h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.community-content p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.community-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-community-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
+  color: white;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: all var(--transition-base);
+}
+
+.btn-community-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+}
+
+.btn-community-secondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-base);
+}
+
+.btn-community-secondary:hover {
+  background: var(--bg-hover);
+  border-color: var(--color-primary-400);
+}
+
+.community-visual {
+  flex-shrink: 0;
+}
+
+.template-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.template-card {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 24px;
+  padding: 14px 18px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
+  min-width: 240px;
+  transition: all var(--transition-base);
 }
 
-.tech-icon {
+.template-card:hover {
+  border-color: var(--color-primary-400);
+  transform: translateX(-4px);
+}
+
+.template-icon {
   font-size: 1.25rem;
 }
 
-.tech-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.tech-name {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.tech-value {
+.template-name {
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.template-author {
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
 }
 
 /* ============================================
@@ -821,7 +976,7 @@ const techStack = [
     max-width: 500px;
   }
 
-  .info-grid {
+  .feature-grid {
     grid-template-columns: 1fr;
   }
 
@@ -837,14 +992,23 @@ const techStack = [
     flex: 1 1 calc(50% - 8px);
     min-width: 200px;
   }
+
+  .community-box {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .community-actions {
+    justify-content: center;
+  }
 }
 
 @media (max-width: 768px) {
   .hero-section,
-  .info-section,
+  .feature-section,
   .arch-section,
   .cats-section,
-  .tech-section,
+  .community-section,
   .cta-section {
     padding-left: 24px;
     padding-right: 24px;
@@ -857,16 +1021,20 @@ const techStack = [
     padding: 24px;
   }
 
-  .tech-grid {
-    flex-wrap: wrap;
-  }
-
   .hero-quick-stats {
-    gap: 16px;
+    gap: 20px;
   }
 
   .cats-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .community-actions {
+    flex-direction: column;
+  }
+
+  .template-preview {
+    display: none;
   }
 }
 </style>

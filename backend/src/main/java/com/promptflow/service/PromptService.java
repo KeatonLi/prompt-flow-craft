@@ -339,11 +339,22 @@ public class PromptService {
 
     private String buildAgentPromptRequest(String name, String roleDescription, String capabilities,
                                          String behaviors, String communicationStyle) {
-        return String.format("请为以下 AI Agent 生成专业的提示词：\n\n## Agent 名称\n%s\n\n## 角色定位\n%s\n\n## 核心能力\n%s\n\n## 行为规范\n%s\n\n## 对话风格\n%s\n\n请生成一个结构完整、专业的 Agent 提示词。",
-            name, roleDescription,
-            capabilities != null ? capabilities : "无",
-            behaviors != null ? behaviors : "无",
-            communicationStyle != null ? communicationStyle : "专业");
+        StringBuilder sb = new StringBuilder();
+        sb.append("请你为以下 AI Agent 生成一个专业、详细、结构完整的提示词。要求生成内容在 400-600 字之间。\n\n");
+        sb.append("## Agent 基本信息\n\n");
+        sb.append("**名称**: ").append(name).append("\n");
+        sb.append("**角色定位**: ").append(roleDescription).append("\n\n");
+        sb.append("## 核心能力\n").append(capabilities != null ? capabilities : "无").append("\n\n");
+        sb.append("## 行为规范\n").append(behaviors != null ? behaviors : "无").append("\n\n");
+        sb.append("## 对话风格\n").append(communicationStyle != null ? communicationStyle : "专业").append("\n\n");
+        sb.append("## 输出要求\n\n");
+        sb.append("1. **开头**: 使用一句精准的角色定义开篇，明确 Agent 的核心身份和价值\n");
+        sb.append("2. **能力描述**: 详细列举 Agent 能做什么，使用什么方法/思路\n");
+        sb.append("3. **行为准则**: 明确 Agent 在对话中应该遵循的原则和方式\n");
+        sb.append("4. **沟通风格**: 说明 Agent 的表达特点和语气\n");
+        sb.append("5. **输出格式**: 使用 Markdown 格式，适当使用列表、引用等结构化表达\n\n");
+        sb.append("请用中文生成这段提示词，确保内容专业、实用、有深度，让 AI 能够准确理解并执行角色任务。");
+        return sb.toString();
     }
 
     // ==================== Skill 生成方法 ====================
@@ -393,29 +404,31 @@ public class PromptService {
     private String buildSkillPromptRequest(String name, String description, SkillPrompt.SkillType skillType,
                                          String method, String endpoint, String parameters,
                                          String outputDescription) {
+        String skillTypeName = skillType != null ? skillType.name() : "api";
+        String methodStr = method != null ? method : "GET";
+        String endpointStr = endpoint != null ? endpoint : "/api/example";
+
         StringBuilder sb = new StringBuilder();
-        sb.append("请为以下 Skill 生成专业的提示词定义：\n\n");
-        sb.append("## Skill 名称\n").append(name).append("\n\n");
-        sb.append("## 功能描述\n").append(description).append("\n\n");
-        sb.append("## Skill 类型\n").append(skillType != null ? skillType.name() : "api").append("\n\n");
-
-        if (skillType == SkillPrompt.SkillType.api || skillType == null) {
-            if (method != null || endpoint != null) {
-                sb.append("## API 配置\n");
-                sb.append("- 方法: ").append(method != null ? method : "未指定").append("\n");
-                sb.append("- 端点: ").append(endpoint != null ? endpoint : "未指定").append("\n\n");
-            }
-        }
-
-        if (parameters != null && !parameters.isEmpty()) {
-            sb.append("## 输入参数\n").append(parameters).append("\n\n");
-        }
-
-        if (outputDescription != null && !outputDescription.isEmpty()) {
-            sb.append("## 输出描述\n").append(outputDescription).append("\n\n");
-        }
-
-        sb.append("请生成一个符合标准 Tool/Function Calling 格式的 Skill 定义。");
+        sb.append("请你为以下 Skill 生成一个专业、详细、结构完整的提示词定义。要求生成内容在 400-600 字之间。\n\n");
+        sb.append("## Skill 基本信息\n\n");
+        sb.append("**名称**: ").append(name).append("\n");
+        sb.append("**功能描述**: ").append(description).append("\n");
+        sb.append("**类型**: ").append(skillTypeName).append("\n\n");
+        sb.append("## 技术配置\n\n");
+        sb.append("**请求方法**: ").append(methodStr).append("\n");
+        sb.append("**接口地址**: ").append(endpointStr).append("\n\n");
+        sb.append("## 输入参数\n");
+        sb.append(parameters != null && !parameters.isEmpty() ? parameters : "未指定具体参数").append("\n\n");
+        sb.append("## 输出描述\n");
+        sb.append(outputDescription != null && !outputDescription.isEmpty() ? outputDescription : "未指定输出描述").append("\n\n");
+        sb.append("## 输出要求\n\n");
+        sb.append("1. **功能概述**: 用一句话精炼描述 Skill 的核心能力\n");
+        sb.append("2. **使用场景**: 说明在什么情况下应该调用这个 Skill\n");
+        sb.append("3. **参数说明**: 详细解释每个输入参数的作用、类型要求、是否必填\n");
+        sb.append("4. **返回值处理**: 说明输出数据的结构、可能的结果状态\n");
+        sb.append("5. **使用示例**: 提供 1-2 个典型的调用示例\n");
+        sb.append("6. **注意事项**: 列出使用时的关键注意点和错误处理方式\n\n");
+        sb.append("请用中文生成这段提示词，采用标准 Tool/Function Calling 格式，确保 AI 能够准确理解如何调用和使用这个 Skill。");
         return sb.toString();
     }
 }
