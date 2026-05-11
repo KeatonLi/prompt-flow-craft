@@ -1,8 +1,9 @@
 package com.promptflow.controller;
 
 import com.promptflow.dto.*;
-import com.promptflow.entity.PromptCache;
+import com.promptflow.entity.PromptResource;
 import com.promptflow.entity.PromptCategory;
+import com.promptflow.repository.PromptResourceRepository;
 import com.promptflow.service.PromptClassificationService;
 import com.promptflow.service.PromptHistoryService;
 import com.promptflow.util.JsonUtil;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,16 +33,91 @@ public class HistoryController {
 
     @Autowired
     private PromptClassificationService classificationService;
-    
+
+    @Autowired
+    private PromptResourceRepository promptResourceRepository;
+
     private static final int PROMPT_PREVIEW_LENGTH = 50;
-    
+
+    /**
+     * 保存Agent提示词到历史记录
+     */
+    @PostMapping("/agent")
+    public ResponseEntity<Map<String, Object>> saveAgentPrompt(@RequestBody SaveAgentPromptRequest request) {
+        try {
+            PromptResource resource = new PromptResource();
+            resource.setPromptType("agent");
+            resource.setName(request.getName());
+            resource.setRoleDescription(request.getRoleDescription());
+            resource.setCapabilities(request.getCapabilities());
+            resource.setBehaviors(request.getBehaviors());
+            resource.setCommunicationStyle(request.getCommunicationStyle());
+            resource.setGeneratedPrompt(request.getGeneratedPrompt());
+            resource.setPromptSummary(request.getRoleDescription());
+            resource.setCreatedAt(LocalDateTime.now());
+            resource.setUpdatedAt(LocalDateTime.now());
+
+            PromptResource saved = promptResourceRepository.save(resource);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "保存成功");
+            response.put("data", saved.getId());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("保存Agent提示词失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "保存失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
+    /**
+     * 保存Skill提示词到历史记录
+     */
+    @PostMapping("/skill")
+    public ResponseEntity<Map<String, Object>> saveSkillPrompt(@RequestBody SaveSkillPromptRequest request) {
+        try {
+            PromptResource resource = new PromptResource();
+            resource.setPromptType("skill");
+            resource.setName(request.getName());
+            resource.setDescription(request.getDescription());
+            resource.setSkillType(request.getSkillType());
+            resource.setMethod(request.getMethod());
+            resource.setEndpoint(request.getEndpoint());
+            resource.setParameters(request.getParameters());
+            resource.setOutputDescription(request.getOutputDescription());
+            resource.setGeneratedPrompt(request.getGeneratedPrompt());
+            resource.setPromptSummary(request.getDescription());
+            resource.setCreatedAt(LocalDateTime.now());
+            resource.setUpdatedAt(LocalDateTime.now());
+
+            PromptResource saved = promptResourceRepository.save(resource);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "保存成功");
+            response.put("data", saved.getId());
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("保存Skill提示词失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "保存失败: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
+    }
+
     /**
      * 获取所有历史记录
      */
     @GetMapping("/all")
     public ResponseEntity<Map<String, Object>> getAllHistory() {
         try {
-            List<PromptCache> historyList = promptHistoryService.getAllHistory();
+            List<PromptResource> historyList = promptHistoryService.getAllHistory();
             List<HistoryResponse> responseList = historyList.stream()
                 .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
@@ -66,7 +143,7 @@ public class HistoryController {
     @GetMapping("/recent")
     public ResponseEntity<Map<String, Object>> getRecentHistory(@RequestParam(value = "limit", defaultValue = "20") int limit) {
         try {
-            List<PromptCache> historyList = promptHistoryService.getRecentHistory(limit);
+            List<PromptResource> historyList = promptHistoryService.getRecentHistory(limit);
             List<HistoryResponse> responseList = historyList.stream()
                 .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
@@ -91,7 +168,7 @@ public class HistoryController {
     @GetMapping("/{id}")
     public ResponseEntity<Map<String, Object>> getHistoryById(@PathVariable("id") Long id) {
         try {
-            Optional<PromptCache> historyOptional = promptHistoryService.getHistoryById(id);
+            Optional<PromptResource> historyOptional = promptHistoryService.getHistoryById(id);
             
             if (historyOptional.isPresent()) {
                 HistoryResponse response = convertToHistoryResponse(historyOptional.get(), false);
@@ -122,7 +199,7 @@ public class HistoryController {
     @GetMapping("/search")
     public ResponseEntity<Map<String, Object>> searchHistory(@RequestParam(value = "keyword") String keyword) {
         try {
-            List<PromptCache> historyList = promptHistoryService.searchHistory(keyword);
+            List<PromptResource> historyList = promptHistoryService.searchHistory(keyword);
             List<HistoryResponse> responseList = historyList.stream()
                 .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
@@ -141,52 +218,55 @@ public class HistoryController {
             return ResponseEntity.internalServerError().body(errorResponse);
         }
     }
-    
+
     /**
-     * 将PromptCache实体转换为HistoryResponse DTO
-     * @param promptCache 提示词缓存实体
+     * 将PromptResource实体转换为HistoryResponse DTO
+     * @param resource 提示词资源实体
      * @param isPreview 是否预览模式（预览模式只返回摘要）
      */
-    private HistoryResponse convertToHistoryResponse(PromptCache promptCache, boolean isPreview) {
+    private HistoryResponse convertToHistoryResponse(PromptResource resource, boolean isPreview) {
         String generatedPrompt;
         if (isPreview) {
             // 预览模式：优先使用摘要，否则截取generatedPrompt
-            if (promptCache.getPromptSummary() != null && !promptCache.getPromptSummary().isEmpty()) {
-                generatedPrompt = promptCache.getPromptSummary();
-            } else if (promptCache.getGeneratedPrompt() != null && promptCache.getGeneratedPrompt().length() > PROMPT_PREVIEW_LENGTH) {
-                generatedPrompt = promptCache.getGeneratedPrompt().substring(0, PROMPT_PREVIEW_LENGTH) + "...";
+            if (resource.getPromptSummary() != null && !resource.getPromptSummary().isEmpty()) {
+                generatedPrompt = resource.getPromptSummary();
+            } else if (resource.getGeneratedPrompt() != null && resource.getGeneratedPrompt().length() > PROMPT_PREVIEW_LENGTH) {
+                generatedPrompt = resource.getGeneratedPrompt().substring(0, PROMPT_PREVIEW_LENGTH) + "...";
             } else {
-                generatedPrompt = promptCache.getGeneratedPrompt();
+                generatedPrompt = resource.getGeneratedPrompt();
             }
         } else {
             // 详情模式：返回完整内容
-            generatedPrompt = promptCache.getGeneratedPrompt();
+            generatedPrompt = resource.getGeneratedPrompt();
         }
-        
-        HistoryResponse response = new HistoryResponse(
-            promptCache.getId(),
-            promptCache.getTaskDescription(),
-            promptCache.getTargetAudience(),
-            promptCache.getOutputFormat(),
-            promptCache.getConstraints(),
-            promptCache.getExamples(),
-            promptCache.getTone(),
-            promptCache.getLength(),
-            generatedPrompt,
-            promptCache.getCreatedAt(),
-            promptCache.getHitCount()
-        );
-        
-        response.setPromptSummary(promptCache.getPromptSummary());
-        
-        response.setCategoryId(promptCache.getCategoryId());
-        response.setLikeCount(promptCache.getLikeCount());
-        response.setIsAutoTagged(promptCache.getIsAutoTagged());
-        response.setUsageScenario(promptCache.getUsageScenario());
-        response.setEffectivenessScore(promptCache.getEffectivenessScore());
-        
-        if (promptCache.getCategory() != null) {
-            PromptCategory category = promptCache.getCategory();
+
+        HistoryResponse response = new HistoryResponse();
+        response.setId(resource.getId());
+        response.setPromptType(resource.getPromptType());
+        response.setName(resource.getName());
+        response.setRoleDescription(resource.getRoleDescription());
+        response.setCapabilities(resource.getCapabilities());
+        response.setBehaviors(resource.getBehaviors());
+        response.setCommunicationStyle(resource.getCommunicationStyle());
+        response.setDescription(resource.getDescription());
+        response.setSkillType(resource.getSkillType());
+        response.setMethod(resource.getMethod());
+        response.setEndpoint(resource.getEndpoint());
+        response.setParameters(resource.getParameters());
+        response.setOutputDescription(resource.getOutputDescription());
+        response.setGeneratedPrompt(generatedPrompt);
+        response.setPromptSummary(resource.getPromptSummary());
+        response.setCreatedAt(resource.getCreatedAt());
+        response.setLikeCount(resource.getLikeCount());
+        response.setViewCount(resource.getViewCount());
+
+        response.setCategoryId(resource.getCategoryId());
+        response.setIsAutoTagged(resource.getIsAutoTagged());
+        response.setUsageScenario(resource.getUsageScenario());
+        response.setEffectivenessScore(resource.getEffectivenessScore());
+
+        if (resource.getCategory() != null) {
+            PromptCategory category = resource.getCategory();
             response.setCategory(new HistoryResponse.CategoryResponse(
                 category.getId(),
                 category.getName(),
@@ -194,19 +274,19 @@ public class HistoryController {
                 category.getColor()
             ));
         }
-        
-        if (promptCache.getAiTags() != null && !promptCache.getAiTags().isEmpty()) {
+
+        if (resource.getAiTags() != null && !resource.getAiTags().isEmpty()) {
             try {
-                response.setAiTags(JsonUtil.parseStringList(promptCache.getAiTags()));
+                response.setAiTags(JsonUtil.parseStringList(resource.getAiTags()));
             } catch (Exception e) {
                 response.setAiTags(List.of());
             }
         } else {
             response.setAiTags(List.of());
         }
-        
-        if (promptCache.getTags() != null && !promptCache.getTags().isEmpty()) {
-            List<HistoryResponse.TagResponse> tagResponses = promptCache.getTags().stream()
+
+        if (resource.getTags() != null && !resource.getTags().isEmpty()) {
+            List<HistoryResponse.TagResponse> tagResponses = resource.getTags().stream()
                 .map(tag -> new HistoryResponse.TagResponse(
                     tag.getId(),
                     tag.getName(),
@@ -218,7 +298,7 @@ public class HistoryController {
         } else {
             response.setTags(List.of());
         }
-        
+
         return response;
     }
 
@@ -271,7 +351,7 @@ public class HistoryController {
      */
     private ResponseEntity<Map<String, Object>> getHistoryPageInternal(HistoryQueryRequest request) {
         try {
-            PagedResult<PromptCache> result = promptHistoryService.getHistoryPage(request);
+            PagedResult<PromptResource> result = promptHistoryService.getHistoryPage(request);
             List<HistoryResponse> responseList = result.getList().stream()
                 .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
@@ -300,7 +380,7 @@ public class HistoryController {
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<Map<String, Object>> getHistoryByCategory(@PathVariable("categoryId") Long categoryId) {
         try {
-            List<PromptCache> historyList = promptHistoryService.getHistoryByCategory(categoryId);
+            List<PromptResource> historyList = promptHistoryService.getHistoryByCategory(categoryId);
             List<HistoryResponse> responseList = historyList.stream()
                 .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
@@ -328,7 +408,7 @@ public class HistoryController {
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "20") int size) {
         try {
-            PagedResult<PromptCache> result = promptHistoryService.getTopLikedPromptsPage(page, size);
+            PagedResult<PromptResource> result = promptHistoryService.getTopLikedPromptsPage(page, size);
             List<HistoryResponse> responseList = result.getList().stream()
                 .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());
@@ -472,7 +552,7 @@ public class HistoryController {
     @PostMapping("/{id}/classify")
     public ResponseEntity<Map<String, Object>> classifyPrompt(@PathVariable("id") Long id) {
         try {
-            Optional<PromptCache> promptOpt = promptHistoryService.getHistoryById(id);
+            Optional<PromptResource> promptOpt = promptHistoryService.getHistoryById(id);
             if (!promptOpt.isPresent()) {
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
@@ -545,9 +625,9 @@ public class HistoryController {
             if (success) {
                 response.put("message", "评分成功");
                 // 返回更新后的评分信息
-                Optional<PromptCache> updated = promptHistoryService.getHistoryById(id);
+                Optional<PromptResource> updated = promptHistoryService.getHistoryById(id);
                 if (updated.isPresent()) {
-                    PromptCache pc = updated.get();
+                    PromptResource pc = updated.get();
                     response.put("averageRating", pc.getAverageRating());
                     response.put("ratingCount", pc.getRatingCount());
                 }
@@ -571,10 +651,10 @@ public class HistoryController {
     @GetMapping("/{id}/rating")
     public ResponseEntity<Map<String, Object>> getPromptRating(@PathVariable("id") Long id) {
         try {
-            Optional<PromptCache> promptOpt = promptHistoryService.getHistoryById(id);
+            Optional<PromptResource> promptOpt = promptHistoryService.getHistoryById(id);
 
             if (promptOpt.isPresent()) {
-                PromptCache pc = promptOpt.get();
+                PromptResource pc = promptOpt.get();
                 Map<String, Object> response = new HashMap<>();
                 response.put("success", true);
                 response.put("userRating", pc.getUserRating());
@@ -605,7 +685,7 @@ public class HistoryController {
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "20") int size) {
         try {
-            PagedResult<PromptCache> result = promptHistoryService.getTopRatedPrompts(page, size);
+            PagedResult<PromptResource> result = promptHistoryService.getTopRatedPrompts(page, size);
             List<HistoryResponse> responseList = result.getList().stream()
                 .map(p -> convertToHistoryResponse(p, true))
                 .collect(Collectors.toList());

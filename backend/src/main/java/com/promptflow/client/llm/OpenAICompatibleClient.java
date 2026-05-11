@@ -169,19 +169,33 @@ public class OpenAICompatibleClient implements LLMClient {
                     new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
+                    // 调试日志：打印原始 SSE 行
+                    logger.info("[LLM SSE] 原始行: {}", line);
                     if (line.startsWith("data: ")) {
                         String data = line.substring(6);
                         if ("[DONE]".equals(data)) {
+                            logger.info("[LLM SSE] 收到 [DONE]");
                             onComplete.run();
                             return;
                         }
-                        
+
+                        logger.info("[LLM SSE] data长度: {}, 内容: {}", data.length(), data);
+                        String content = extractContentFromStream(data);
+                        logger.info("[LLM SSE] 提取的内容: {}", content);
+                        if (content != null && !content.isEmpty()) {
+                            onContent.accept(content);
+                        }
+                    } else if (line.startsWith("data:")) {
+                        // 没有空格的情况
+                        String data = line.substring(5);
+                        logger.info("[LLM SSE] data(无空格)长度: {}, 内容: {}", data.length(), data);
                         String content = extractContentFromStream(data);
                         if (content != null && !content.isEmpty()) {
                             onContent.accept(content);
                         }
                     }
                 }
+                logger.info("[LLM SSE] 流读取完成");
                 onComplete.run();
             }
             
@@ -200,7 +214,22 @@ public class OpenAICompatibleClient implements LLMClient {
             if (choices != null && !choices.isEmpty()) {
                 Map<String, Object> delta = (Map<String, Object>) choices.get(0).get("delta");
                 if (delta != null) {
-                    return (String) delta.get("content");
+                    // 优先获取 content 字段
+                    Object content = delta.get("content");
+                    if (content != null) {
+                        return content.toString();
+                    }
+                    // 有些模型（如 DeepSeek）可能在 thinking 字段返回推理内容
+                    // 如果没有 content，尝试获取其他文本字段并拼接
+                    StringBuilder sb = new StringBuilder();
+                    for (Map.Entry<String, Object> entry : delta.entrySet()) {
+                        if (entry.getValue() != null && !"role".equals(entry.getKey())) {
+                            sb.append(entry.getValue().toString());
+                        }
+                    }
+                    if (sb.length() > 0) {
+                        return sb.toString();
+                    }
                 }
             }
         } catch (Exception e) {
