@@ -81,11 +81,11 @@ Agent 可以调用一个或多个 Skill 来扩展其能力。例如：
 - 点赞、收藏、统计热度
 - 开源协作，共同完善提示词生态
 
-### 💾 智能缓存
+### 💾 提示词管理
 
-- 相同请求参数自动缓存，降低 API 调用成本
-- 哈希算法精确匹配
-- 缓存命中率实时监控
+- 已生成的 Agent/Skill 自动保存到历史记录
+- 统一 `prompt_resource` 表存储所有类型提示词
+- 哈希算法精确匹配去重
 
 ### 🏷️ 智能分类
 
@@ -173,13 +173,27 @@ npm run build
 ├──────────────┬──────────────┬──────────────┬─────────────┤
 │ Agent Gen    │ Skill Gen    │ History     │ Statistics  │
 │ Service      │ Service      │ Service     │ Service     │
-├──────────────┴──────────────┴──────────────┴─────────────┤
+├──────────────┴──────────────┴──────────────┴────────────┤
 │                Community Service (发布/点赞/收藏)            │
 └────────────────────────┬────────────────────────────────────┘
                          │
 ┌────────────────────────▼────────────────────────────────────┐
 │                    Data Layer (MySQL)                      │
-│     AgentPrompt │ SkillPrompt │ Category │ Tag            │
+│  prompt_resource (统一表) │ Category │ Tag │ Shared        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 数据库架构
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   prompt_resource (统一提示词表)              │
+├─────────────────────────────────────────────────────────────┤
+│ id, prompt_type, name                                       │
+│ Agent: roleDescription, capabilities, behaviors, style    │
+│ Skill: description, skillType, method, endpoint, params   │
+│ Generic: taskDescription, targetAudience, constraints...   │
+│ 通用: generatedPrompt, promptSummary, likeCount, views... │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -207,6 +221,14 @@ npm run build
 | `POST /api/prompt/generate/agent/stream` | POST | 生成 Agent（流式） |
 | `POST /api/prompt/generate/skill/stream` | POST | 生成 Skill（流式） |
 
+### 历史记录
+
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `POST /api/history/agent` | POST | 保存 Agent 到历史记录 |
+| `POST /api/history/skill` | POST | 保存 Skill 到历史记录 |
+| `GET /api/history/page` | GET | 分页查询历史记录 |
+
 ### 社区功能
 
 | 接口 | 方法 | 说明 |
@@ -227,38 +249,57 @@ npm run build
 
 ## 数据模型
 
-### AgentPrompt
+### prompt_resource (统一提示词表)
 
 ```json
 {
+  "id": 1,
+  "promptType": "agent",
   "name": "写作助手",
   "roleDescription": "你是一个专业的技术文档写作助手...",
-  "capabilities": "- 撰写技术文档\n- 解释技术概念\n- 提供代码示例",
-  "behaviors": "- 始终保持专业态度\n- 回答简洁明了",
+  "capabilities": "- 撰写技术文档\n- 解释技术概念",
+  "behaviors": "- 始终保持专业态度",
   "communicationStyle": "professional",
   "generatedPrompt": "完整的系统提示词内容...",
-  "authorNickname": "用户名",
   "likeCount": 42,
-  "viewCount": 1024
+  "viewCount": 1024,
+  "createdAt": "2024-01-01T00:00:00"
 }
 ```
 
-### SkillPrompt
-
 ```json
 {
+  "id": 2,
+  "promptType": "skill",
   "name": "get_weather",
   "description": "获取指定城市的当前天气信息",
   "skillType": "api",
   "method": "GET",
   "endpoint": "https://api.weather.example.com/v1/current",
-  "parameters": "{\"city\": {\"type\": \"string\", \"description\": \"城市名称\"}}",
+  "parameters": "{\"city\": {\"type\": \"string\"}}",
   "outputDescription": "返回温度、湿度、风速等信息",
   "generatedPrompt": "完整的 Tool Definition...",
-  "authorNickname": "用户名",
   "likeCount": 18,
   "viewCount": 512
 }
+```
+
+---
+
+## 测试
+
+### API 测试脚本
+
+```bash
+# 运行远程服务器 API 测试
+cd backend
+python3 test_apis.py
+```
+
+### Java 单元测试
+
+```bash
+mvn test
 ```
 
 ---
