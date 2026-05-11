@@ -21,6 +21,26 @@ export interface SkillPromptRequest {
   outputDescription?: string;
 }
 
+export interface SaveAgentRequest {
+  name: string;
+  roleDescription: string;
+  capabilities?: string;
+  behaviors?: string;
+  communicationStyle?: string;
+  generatedPrompt: string;
+}
+
+export interface SaveSkillRequest {
+  name: string;
+  description: string;
+  skillType?: string;
+  method?: string;
+  endpoint?: string;
+  parameters?: string;
+  outputDescription?: string;
+  generatedPrompt: string;
+}
+
 export const promptApi = {
   // 同步生成提示词（非流式）
   async generate(data: PromptRequest): Promise<string> {
@@ -83,6 +103,61 @@ export const promptApi = {
     let fullContent = '';
     let buffer = '';
 
+    // SSE 解析状态
+    let currentEventName = '';
+    let currentEventData = '';
+
+    function processEvent() {
+      if (!currentEventData) return;
+
+      if (currentEventName === 'message') {
+        // 处理消息事件
+        try {
+          const parsed = JSON.parse(currentEventData);
+          if (parsed.content) {
+            fullContent += parsed.content;
+            onMessage(parsed.content);
+          } else if (parsed.done) {
+            // done 事件不需要额外处理
+          }
+        } catch {
+          // 非 JSON 当纯文本处理
+          fullContent += currentEventData;
+          onMessage(currentEventData);
+        }
+      } else if (currentEventName === 'error') {
+        onError(currentEventData);
+      }
+
+      currentEventData = '';
+      currentEventName = '';
+    }
+
+    function processSSELine(line: string) {
+      const trimmed = line.trim();
+
+      if (trimmed.startsWith('event:')) {
+        // 事件名行
+        currentEventName = trimmed.substring(6).trim();
+      } else if (trimmed.startsWith('data:')) {
+        // 数据行 - 追加到当前数据
+        // 注意：空 data: 行（如 "data:"）代表一个空行，需要保留
+        const dataContent = trimmed.substring(5); // 不 trim，这样空行也能被识别
+        if (currentEventData && dataContent) {
+          // 如果当前有数据且新数据非空，加换行符
+          currentEventData += '\n';
+        } else if (currentEventData && !dataContent) {
+          // 当前有数据但新数据为空（空行），加换行符表示空行
+          currentEventData += '\n';
+        }
+        currentEventData += dataContent;
+      } else if (trimmed === '') {
+        // 空行 - 事件结束
+        processEvent();
+      }
+      // 忽略其他行
+    }
+
     fetch(url, {
       method: 'POST',
       headers: {
@@ -104,53 +179,28 @@ export const promptApi = {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
 
-        // eslint-disable-next-line no-constant-condition
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          // 解码数据
           const chunk = decoder.decode(value, { stream: true });
           buffer += chunk;
 
-          // 处理 SSE 格式的数据
-          // SSE 格式: data: xxx\n\n 或 event: xxx\ndata: xxx\n\n
+          // 按换行分割
           const lines = buffer.split('\n');
-          buffer = lines.pop() || ''; // 保留未完成的行
+          // 保留最后一行（可能不完整）
+          buffer = lines.pop() || '';
 
-          let currentData: string | null = null;
-
-          for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-
-            if (line.startsWith('data:')) {
-              currentData = line.substring(5).trim();
-            } else if (line === '' && currentData !== null) {
-              // 空行表示一个事件结束，处理当前数据
-              processSSEData(currentData);
-              currentData = null;
-            }
-          }
-
-          // 如果最后还有未处理的数据
-          if (currentData !== null && lines[lines.length - 1] === '') {
-            processSSEData(currentData);
+          for (const line of lines) {
+            processSSELine(line);
           }
         }
 
         // 处理缓冲区中剩余的数据
         if (buffer.trim()) {
-          const lines = buffer.split('\n');
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (trimmed.startsWith('data:')) {
-              const data = trimmed.substring(5).trim();
-              processSSEData(data);
-            }
-          }
+          processSSELine(buffer);
         }
 
-        // 完成
         console.log('流式读取完成，总长度:', fullContent.length);
         onDone(fullContent);
       })
@@ -164,54 +214,6 @@ export const promptApi = {
         }
       });
 
-    // 处理单个 SSE 数据
-    function processSSEData(data: string) {
-      if (!data || data === '[DONE]') {
-        if (data === '[DONE]') {
-          console.log('收到 [DONE] 标记');
-        }
-        return;
-      }
-
-      try {
-        const parsed = JSON.parse(data);
-        console.log('流式数据:', JSON.stringify(parsed));
-
-        // 检查是否有 thinking/reasoning 字段
-        if (parsed.reasoning !== undefined) {
-          console.log('收到 reasoning 字段:', parsed.reasoning);
-        }
-
-        if (parsed.content !== undefined) {
-          // 流式内容片段
-          const content = parsed.content;
-          console.log('收到 content 字段:', content);
-          if (content) {
-            fullContent += content;
-            onMessage(content);
-          }
-        } else if (parsed.done) {
-          // 完成标记
-          console.log('收到 done 事件');
-          if (parsed.fullContent) {
-            fullContent = parsed.fullContent;
-          }
-        } else if (parsed.error) {
-          // 错误
-          console.error('收到错误:', parsed.error);
-          onError(parsed.error);
-        }
-      } catch (e) {
-        // 如果不是 JSON，直接当作纯文本内容
-        console.debug('非JSON数据，作为纯文本处理:', data);
-        if (data && data !== '[DONE]') {
-          fullContent += data;
-          onMessage(data);
-        }
-      }
-    }
-
-    // 返回取消函数
     return () => {
       console.log('取消流式请求');
       controller.abort();
@@ -233,6 +235,67 @@ export const promptApi = {
     const controller = new AbortController();
     let fullContent = '';
     let buffer = '';
+
+    // SSE 解析状态
+    let currentEventName = '';
+    let currentEventData = '';
+
+    function processEvent() {
+      if (!currentEventData) return;
+
+      console.log('[Agent SSE] processEvent: currentEventName=', currentEventName, 'currentEventData=', currentEventData);
+
+      if (currentEventName === 'message') {
+        try {
+          const parsed = JSON.parse(currentEventData);
+          console.log('[Agent SSE] parsed content:', parsed.content);
+          if (parsed.content) {
+            fullContent += parsed.content;
+            onMessage(parsed.content);
+          }
+        } catch (e) {
+          // JSON 解析失败，使用原始文本（SSE data 内容本身可能包含换行符）
+          console.error('[Agent SSE] JSON parse error:', e, 'data:', currentEventData);
+          fullContent += currentEventData;
+          onMessage(currentEventData);
+        }
+      } else if (currentEventName === 'error') {
+        onError(currentEventData);
+      }
+
+      currentEventData = '';
+      currentEventName = '';
+    }
+
+    function processSSELine(line: string) {
+      // Debug: show raw line
+      console.log('[Agent SSE] raw line:', JSON.stringify(line));
+
+      if (line.startsWith('event:')) {
+        // 如果有累积的数据，先处理之前的事件
+        if (currentEventData) {
+          processEvent();
+        }
+        currentEventName = line.substring(6).trim();
+        console.log('[Agent SSE] event name:', currentEventName);
+      } else if (line.startsWith('data:')) {
+        // 提取 data 内容
+        const dataContent = line.substring(5); // 不 trim，保留原始内容
+        console.log('[Agent SSE] data content:', JSON.stringify(dataContent));
+
+        if (dataContent === '') {
+          // 空 data: 表示内容中的空行，添加换行符
+          currentEventData += '\n';
+        } else {
+          currentEventData += dataContent;
+        }
+        console.log('[Agent SSE] accumulated currentEventData:', JSON.stringify(currentEventData));
+      } else if (line.trim() === '') {
+        // 空行（非 data: 行）- 事件结束
+        console.log('[Agent SSE] empty line, calling processEvent');
+        processEvent();
+      }
+    }
 
     fetch(url, {
       method: 'POST',
@@ -265,33 +328,13 @@ export const promptApi = {
           const lines = buffer.split('\n');
           buffer = lines.pop() || '';
 
-          let currentData: string | null = null;
-
-          for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-
-            if (line.startsWith('data:')) {
-              currentData = line.substring(5).trim();
-            } else if (line === '' && currentData !== null) {
-              processSSEData(currentData);
-              currentData = null;
-            }
-          }
-
-          if (currentData !== null && lines[lines.length - 1] === '') {
-            processSSEData(currentData);
+          for (const line of lines) {
+            processSSELine(line);
           }
         }
 
         if (buffer.trim()) {
-          const lines = buffer.split('\n');
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (trimmed.startsWith('data:')) {
-              const data = trimmed.substring(5).trim();
-              processSSEData(data);
-            }
-          }
+          processSSELine(buffer);
         }
 
         console.log('Agent流式读取完成，总长度:', fullContent.length);
@@ -306,38 +349,6 @@ export const promptApi = {
           onError(error.message || '流式生成失败');
         }
       });
-
-    function processSSEData(data: string) {
-      if (!data || data === '[DONE]') {
-        if (data === '[DONE]') {
-          console.log('收到 [DONE] 标记');
-        }
-        return;
-      }
-
-      try {
-        const parsed = JSON.parse(data);
-        if (parsed.content !== undefined) {
-          const content = parsed.content;
-          if (content) {
-            fullContent += content;
-            onMessage(content);
-          }
-        } else if (parsed.done) {
-          if (parsed.fullContent) {
-            fullContent = parsed.fullContent;
-          }
-        } else if (parsed.error) {
-          onError(parsed.error);
-        }
-      } catch (e) {
-        // 非JSON数据，直接处理
-        if (data && data !== '[DONE]') {
-          fullContent += data;
-          onMessage(data);
-        }
-      }
-    }
 
     return () => {
       console.log('取消Agent流式请求');
@@ -361,6 +372,67 @@ export const promptApi = {
     let fullContent = '';
     let buffer = '';
 
+    // SSE 解析状态
+    let currentEventName = '';
+    let currentEventData = '';
+
+    function processEvent() {
+      if (!currentEventData) return;
+
+      console.log('[Skill SSE] processEvent: currentEventName=', currentEventName, 'currentEventData=', currentEventData);
+
+      if (currentEventName === 'message') {
+        try {
+          const parsed = JSON.parse(currentEventData);
+          console.log('[Skill SSE] parsed content:', parsed.content);
+          if (parsed.content) {
+            fullContent += parsed.content;
+            onMessage(parsed.content);
+          }
+        } catch (e) {
+          // JSON 解析失败，使用原始文本（SSE data 内容本身可能包含换行符）
+          console.error('[Skill SSE] JSON parse error:', e, 'data:', currentEventData);
+          fullContent += currentEventData;
+          onMessage(currentEventData);
+        }
+      } else if (currentEventName === 'error') {
+        onError(currentEventData);
+      }
+
+      currentEventData = '';
+      currentEventName = '';
+    }
+
+    function processSSELine(line: string) {
+      // Debug: show raw line
+      console.log('[Skill SSE] raw line:', JSON.stringify(line));
+
+      if (line.startsWith('event:')) {
+        // 如果有累积的数据，先处理之前的事件
+        if (currentEventData) {
+          processEvent();
+        }
+        currentEventName = line.substring(6).trim();
+        console.log('[Skill SSE] event name:', currentEventName);
+      } else if (line.startsWith('data:')) {
+        // 提取 data 内容
+        const dataContent = line.substring(5); // 不 trim，保留原始内容
+        console.log('[Skill SSE] data content:', JSON.stringify(dataContent));
+
+        if (dataContent === '') {
+          // 空 data: 表示内容中的空行，添加换行符
+          currentEventData += '\n';
+        } else {
+          currentEventData += dataContent;
+        }
+        console.log('[Skill SSE] accumulated currentEventData:', JSON.stringify(currentEventData));
+      } else if (line.trim() === '') {
+        // 空行（非 data: 行）- 事件结束
+        console.log('[Skill SSE] empty line, calling processEvent');
+        processEvent();
+      }
+    }
+
     fetch(url, {
       method: 'POST',
       headers: {
@@ -392,33 +464,13 @@ export const promptApi = {
           const lines = buffer.split('\n');
           buffer = lines.pop() || '';
 
-          let currentData: string | null = null;
-
-          for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-
-            if (line.startsWith('data:')) {
-              currentData = line.substring(5).trim();
-            } else if (line === '' && currentData !== null) {
-              processSSEData(currentData);
-              currentData = null;
-            }
-          }
-
-          if (currentData !== null && lines[lines.length - 1] === '') {
-            processSSEData(currentData);
+          for (const line of lines) {
+            processSSELine(line);
           }
         }
 
         if (buffer.trim()) {
-          const lines = buffer.split('\n');
-          for (const line of lines) {
-            const trimmed = line.trim();
-            if (trimmed.startsWith('data:')) {
-              const data = trimmed.substring(5).trim();
-              processSSEData(data);
-            }
-          }
+          processSSELine(buffer);
         }
 
         console.log('Skill流式读取完成，总长度:', fullContent.length);
@@ -434,42 +486,28 @@ export const promptApi = {
         }
       });
 
-    function processSSEData(data: string) {
-      if (!data || data === '[DONE]') {
-        if (data === '[DONE]') {
-          console.log('收到 [DONE] 标记');
-        }
-        return;
-      }
-
-      try {
-        const parsed = JSON.parse(data);
-        if (parsed.content !== undefined) {
-          const content = parsed.content;
-          if (content) {
-            fullContent += content;
-            onMessage(content);
-          }
-        } else if (parsed.done) {
-          if (parsed.fullContent) {
-            fullContent = parsed.fullContent;
-          }
-        } else if (parsed.error) {
-          onError(parsed.error);
-        }
-      } catch (e) {
-        // 非JSON数据，直接处理
-        if (data && data !== '[DONE]') {
-          fullContent += data;
-          onMessage(data);
-        }
-      }
-    }
-
     return () => {
       console.log('取消Skill流式请求');
       controller.abort();
     };
+  },
+
+  // 保存Agent提示词到历史记录
+  async saveAgent(data: SaveAgentRequest): Promise<number> {
+    const response = await request.post<ApiResponse<number>>('/history/agent', data);
+    if (!response.data.success) {
+      throw new Error(response.data.message || '保存失败');
+    }
+    return response.data.data;
+  },
+
+  // 保存Skill提示词到历史记录
+  async saveSkill(data: SaveSkillRequest): Promise<number> {
+    const response = await request.post<ApiResponse<number>>('/history/skill', data);
+    if (!response.data.success) {
+      throw new Error(response.data.message || '保存失败');
+    }
+    return response.data.data;
   },
 
   // 健康检查
