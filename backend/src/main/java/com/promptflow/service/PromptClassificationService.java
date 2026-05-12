@@ -415,6 +415,9 @@ public class PromptClassificationService {
             logger.error("保存AI标签JSON失败", e);
         }
 
+        // 标记为已自动打标签
+        prompt.setIsAutoTagged(true);
+
         promptResourceRepository.save(prompt);
         logger.info("为提示词 {} 打标签完成: {}", prompt.getName(), tagNames);
     }
@@ -458,14 +461,58 @@ public class PromptClassificationService {
         List<String> tags = new ArrayList<>();
         String[] lines = result.split("\n");
 
+        // 过滤掉LLM返回的干扰前缀
+        String[] prefixesToFilter = {"关键主题", "可能的标签", "标签", "以下是", "输出", "结果", "请输出", "标签列表"};
+
         for (String line : lines) {
             String tag = line.trim();
-            // 过滤掉编号、特殊字符等
-            tag = tag.replaceAll("^[0-9]+[.、、]\\s*", "");
-            tag = tag.replaceAll("^[「\"']|[」\"']$", "");
 
-            if (!tag.isEmpty() && tag.length() >= 2 && tag.length() <= 6) {
+            // 跳过包含这些关键词的行（它们是LLM的说明文字）
+            boolean isInterference = false;
+            for (String prefix : prefixesToFilter) {
+                if (tag.contains(prefix) || tag.startsWith(prefix + "：") || tag.startsWith(prefix + ":")) {
+                    isInterference = true;
+                    break;
+                }
+            }
+            if (isInterference) continue;
+
+            // 过滤掉编号、特殊字符、前缀符号
+            tag = tag.replaceAll("^[0-9]+[.、、.\\s]*", "");
+            tag = tag.replaceAll("^[「\"'‘’\"\"\\-–—\\s]+|[」\"'‘’\"\"\\-–—\\s]+$", "");
+
+            // 过滤掉以 "-"、"*" 等开头的项
+            tag = tag.replaceAll("^[-*+.\\s]+", "");
+
+            // 去重检查
+            if (tags.contains(tag)) continue;
+
+            // 中文标签：2-4个汉字
+            if (tag.matches("^[一-龥]{2,4}$")) {
                 tags.add(tag);
+            }
+            // 英文标签：2-10个字母
+            else if (tag.matches("^[a-zA-Z]{2,10}$")) {
+                tags.add(tag);
+            }
+        }
+
+        // 如果解析出的标签少于5个，尝试更宽松的匹配
+        if (tags.size() < 5) {
+            for (String line : lines) {
+                String tag = line.trim();
+                tag = tag.replaceAll("^[0-9]+[.、、.\\s]*", "");
+                tag = tag.replaceAll("^[「\"'‘’\"\"\\-–—\\s]+|[」\"'‘’\"\"\\-–—\\s]+$", "");
+                tag = tag.replaceAll("^[-*+.\\s]+", "");
+
+                // 去重检查
+                if (tags.contains(tag)) continue;
+
+                // 中英文混合：2-8个字符
+                if (tag.matches("^[a-zA-Z一-龥]{2,8}$")) {
+                    tags.add(tag);
+                    if (tags.size() >= 5) break;
+                }
             }
         }
 
