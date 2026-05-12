@@ -248,7 +248,7 @@
   </AppLayout>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MarkdownIt from 'markdown-it'
@@ -357,7 +357,18 @@ const reusePrompt = (item) => {
 }
 
 const deletePrompt = async (item) => {
-  if (!confirm('确定要删除这条记录吗？')) return
+  const showConfirmFn = (window as any).showConfirm
+  if (!showConfirmFn) {
+    console.error('showConfirm not available')
+    return
+  }
+  const confirmed = await showConfirmFn({
+    message: '确定要删除这条记录吗？',
+    type: 'danger',
+    confirmText: '删除',
+    cancelText: '取消'
+  })
+  if (!confirmed) return
   try {
     await fetch(`${API}/history/${item.id}`, { method: 'DELETE' })
     list.value = list.value.filter((i) => i.id !== item.id)

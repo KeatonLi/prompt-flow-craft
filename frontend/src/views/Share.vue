@@ -119,11 +119,11 @@ const loadMore = async () => {
 const handlePublish = async (data: ShareRequest) => {
   try {
     const result = await shareApi.publish(data);
-    alert(`发布成功！\n\n您的删除令牌：${result.deleteToken}\n\n请妥善保管此令牌，用于后续删除您的分享。`);
+    (window as any).showToast?.({ message: `发布成功！删除令牌：${result.deleteToken}`, type: 'success', duration: 5000 });
     showPublishModal.value = false;
     loadData();
   } catch (error: any) {
-    alert('发布失败：' + (error.message || '未知错误'));
+    (window as any).showToast?.({ message: '发布失败：' + (error.message || '未知错误'), type: 'error' });
   }
 };
 

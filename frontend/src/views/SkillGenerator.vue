@@ -734,9 +734,10 @@ const generateFromPreview = () => {
 const copyResult = async () => {
   try {
     await navigator.clipboard.writeText(skillOutput.value)
-    alert('已复制到剪贴板')
+    (window as any).showToast?.({ message: '已复制到剪贴板', type: 'success' })
   } catch (error) {
     console.error('Copy failed:', error)
+    (window as any).showToast?.({ message: '复制失败', type: 'error' })
   }
 }
 

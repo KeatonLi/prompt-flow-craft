@@ -587,28 +587,50 @@ const resetSkill = () => {
   reset()
 }
 
+const toast = (options: { message: string; type?: 'success' | 'error' | 'warning' | 'info'; duration?: number }) => {
+  ;(window as any).showToast?.(options)
+}
+
 const copyResult = async () => {
   try {
-    // 流式时 result 是纯文本，完成后是 markdown 渲染后的 HTML
+    // result.value 是纯文本 markdown 内容
     const textToCopy = result.value
     if (!textToCopy) {
-      alert('没有内容可复制')
+      toast({ message: '没有内容可复制', type: 'warning' })
       return
     }
-    await navigator.clipboard.writeText(textToCopy)
-    alert('已复制到剪贴板')
+    // 使用 textarea 方法，兼容性更好
+    const textarea = document.createElement('textarea')
+    textarea.value = textToCopy
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.appendChild(textarea)
+    textarea.select()
+    const success = document.execCommand('copy')
+    document.body.removeChild(textarea)
+    if (success) {
+      toast({ message: '已复制到剪贴板', type: 'success' })
+    } else {
+      // 降级方案：尝试 navigator.clipboard
+      try {
+        await navigator.clipboard.writeText(textToCopy)
+        toast({ message: '已复制到剪贴板', type: 'success' })
+      } catch {
+        toast({ message: '复制失败，请手动复制', type: 'error' })
+      }
+    }
   } catch (error) {
     console.error('Copy failed:', error)
-    alert('复制失败，请重试')
+    toast({ message: '复制失败，请重试', type: 'error' })
   }
 }
 
 const savePrompt = async () => {
   try {
-    // 获取纯文本内容（去掉 HTML 标签）
-    const generatedPrompt = result.value.replace(/<[^>]*>/g, '').trim()
+    // result.value 是纯文本 markdown 内容
+    const generatedPrompt = result.value.trim()
     if (!generatedPrompt) {
-      alert('没有内容可保存')
+      toast({ message: '没有内容可保存', type: 'warning' })
       return
     }
 
@@ -621,23 +643,44 @@ const savePrompt = async () => {
         communicationStyle: agentForm.value.communicationStyle,
         generatedPrompt: generatedPrompt
       })
-      alert('已保存到历史记录')
+      toast({ message: '已保存到历史记录', type: 'success' })
     } else {
+      // 将 parameters 转为 JSON 字符串
+      let parametersJson = skillForm.value.parameters
+      if (parametersJson && parametersJson.trim()) {
+        // 如果是普通文本格式，尝试转为 JSON
+        try {
+          // 检查是否已经是 JSON
+          JSON.parse(parametersJson)
+        } catch {
+          // 不是 JSON，转换为 JSON 格式
+          const lines = parametersJson.split('\n').filter(l => l.trim())
+          const obj: Record<string, string> = {}
+          lines.forEach(line => {
+            const [key, ...valueParts] = line.split(':')
+            if (key && valueParts.length) {
+              obj[key.trim()] = valueParts.join(':').trim()
+            }
+          })
+          parametersJson = JSON.stringify(obj, null, 2)
+        }
+      }
+
       await promptApi.saveSkill({
         name: skillForm.value.name,
         description: skillForm.value.description,
         skillType: skillForm.value.type,
         method: skillForm.value.method,
         endpoint: skillForm.value.endpoint,
-        parameters: skillForm.value.parameters,
+        parameters: parametersJson,
         outputDescription: skillForm.value.outputDescription,
         generatedPrompt: generatedPrompt
       })
-      alert('已保存到历史记录')
+      toast({ message: '已保存到历史记录', type: 'success' })
     }
   } catch (error) {
     console.error('Save failed:', error)
-    alert('保存失败，请重试')
+    toast({ message: '保存失败: ' + (error as Error).message, type: 'error' })
   }
 }
 
@@ -645,17 +688,20 @@ const toggleExportMenu = () => { showExportMenu.value = !showExportMenu.value }
 
 const exportPrompt = (format: 'markdown' | 'json' | 'txt') => {
   showExportMenu.value = false
+  // 使用表单名称作为文件名
+  const name = currentType.value === 'agent' ? agentForm.value.name : skillForm.value.name
+  const safeName = name ? name.replace(/[^a-zA-Z0-9一-龥]/g, '_').substring(0, 20) : 'prompt'
   const timestamp = new Date().toISOString().slice(0, 10)
   let content = ''
-  let filename = `prompt-${timestamp}`
+  let filename = `${safeName}_${timestamp}`
   let mimeType = 'text/plain'
 
   if (format === 'markdown') {
-    content = `# AI 提示词\n\n${result.value}\n\n---\n*由 Prompt Flow Craft 生成*\n`
+    content = `# ${name || 'AI 提示词'}\n\n${result.value}\n\n---\n*由 Prompt Flow Craft 生成*\n`
     filename += '.md'
     mimeType = 'text/markdown'
   } else if (format === 'json') {
-    content = JSON.stringify({ prompt: result.value, type: currentType.value, generatedAt: new Date().toISOString() }, null, 2)
+    content = JSON.stringify({ name: name, prompt: result.value, type: currentType.value, generatedAt: new Date().toISOString() }, null, 2)
     filename += '.json'
     mimeType = 'application/json'
   } else {

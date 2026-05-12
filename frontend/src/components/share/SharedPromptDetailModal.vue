@@ -76,7 +76,7 @@ const formatTime = (time: string) => {
 
 const copyContent = async () => {
   await navigator.clipboard.writeText(props.prompt.promptContent);
-  alert('已复制到剪贴板');
+  (window as any).showToast?.({ message: '已复制到剪贴板', type: 'success' });
 };
 </script>
 
