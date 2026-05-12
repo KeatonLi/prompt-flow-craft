@@ -33,18 +33,18 @@
       <!-- 提示词标签 -->
       <div v-if="history.tags && history.tags.length > 0" class="prompt-tags">
         <span
-          v-for="tag in history.tags.slice(0, 3)" 
-          :key="tag.id" 
+          v-for="tag in history.tags.slice(0, 5)"
+          :key="tag.id"
           class="prompt-tag"
-          :style="{ 
-            backgroundColor: tag.color ? tag.color + '15' : 'rgba(99, 102, 241, 0.1)', 
+          :style="{
+            backgroundColor: tag.color ? tag.color + '15' : 'rgba(99, 102, 241, 0.1)',
             color: tag.color || '#6366f1',
             borderColor: tag.color ? tag.color + '30' : 'rgba(99, 102, 241, 0.2)'
           }"
         >
           {{ tag.name }}
         </span>
-        <span v-if="history.tags.length > 3" class="more-tags">+{{ history.tags.length - 3 }}</span>
+        <span v-if="history.tags.length > 5" class="more-tags">+{{ history.tags.length - 5 }}</span>
       </div>
       
       <!-- 生成的提示词预览 -->

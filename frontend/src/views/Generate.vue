@@ -269,17 +269,23 @@
                     </span>
                   </div>
                   <div class="result-actions">
-                    <button class="action-btn" @click="copyResult" title="复制">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button class="action-btn" :class="{ success: copySuccess }" @click="copyResult" title="复制">
+                      <svg v-if="!copySuccess" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
                       </svg>
+                      <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
                     </button>
-                    <button class="action-btn" @click="savePrompt" title="保存" :disabled="isStreaming || !hasResult">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button class="action-btn" :class="{ success: saveSuccess }" @click="savePrompt" title="保存" :disabled="isStreaming || !hasResult">
+                      <svg v-if="!saveSuccess" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
                         <polyline points="17 21 17 13 7 13 7 21"/>
                         <polyline points="7 3 7 8 15 8"/>
+                      </svg>
+                      <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"/>
                       </svg>
                     </button>
                     <div class="export-wrapper">
@@ -429,10 +435,8 @@ const isStreaming = ref(false)
 const showResult = ref(false)
 const result = ref('')
 const cancelStream = ref<(() => void) | null>(null)
-
-// 流式渲染优化：直接存储纯文本，渲染只在 done 时进行一次
-let pendingRender = false
-let renderTimer: ReturnType<typeof setTimeout> | null = null
+const copySuccess = ref(false)
+const saveSuccess = ref(false)
 
 // 是否有生成结果（用于保存按钮状态）
 const hasResult = computed(() => {
@@ -569,20 +573,18 @@ const reset = () => {
     cancelStream.value()
     cancelStream.value = null
   }
-  if (renderTimer) {
-    clearTimeout(renderTimer)
-    renderTimer = null
-  }
   loading.value = false
   isStreaming.value = false
 }
 
 const resetAgent = () => {
+  if (!confirm('确定要重置 Agent 表单吗？未保存的内容将会丢失。')) return
   agentForm.value = { name: '', role: '', capabilities: '', behaviors: '', communicationStyle: 'professional' }
   reset()
 }
 
 const resetSkill = () => {
+  if (!confirm('确定要重置 Skill 表单吗？未保存的内容将会丢失。')) return
   skillForm.value = { name: '', description: '', type: 'api', method: 'GET', endpoint: '', functionCode: '', parameters: '', outputDescription: '' }
   reset()
 }
@@ -609,12 +611,16 @@ const copyResult = async () => {
     const success = document.execCommand('copy')
     document.body.removeChild(textarea)
     if (success) {
-      toast({ message: '已复制到剪贴板', type: 'success' })
+      copySuccess.value = true
+      toast({ message: '复制成功', type: 'success' })
+      setTimeout(() => { copySuccess.value = false }, 1000)
     } else {
       // 降级方案：尝试 navigator.clipboard
       try {
         await navigator.clipboard.writeText(textToCopy)
-        toast({ message: '已复制到剪贴板', type: 'success' })
+        copySuccess.value = true
+        toast({ message: '复制成功', type: 'success' })
+        setTimeout(() => { copySuccess.value = false }, 1000)
       } catch {
         toast({ message: '复制失败，请手动复制', type: 'error' })
       }
@@ -643,7 +649,9 @@ const savePrompt = async () => {
         communicationStyle: agentForm.value.communicationStyle,
         generatedPrompt: generatedPrompt
       })
-      toast({ message: '已保存到历史记录', type: 'success' })
+      saveSuccess.value = true
+      toast({ message: '保存成功', type: 'success' })
+      setTimeout(() => { saveSuccess.value = false }, 1000)
     } else {
       // 将 parameters 转为 JSON 字符串
       let parametersJson = skillForm.value.parameters
@@ -676,7 +684,9 @@ const savePrompt = async () => {
         outputDescription: skillForm.value.outputDescription,
         generatedPrompt: generatedPrompt
       })
-      toast({ message: '已保存到历史记录', type: 'success' })
+      saveSuccess.value = true
+      toast({ message: '保存成功', type: 'success' })
+      setTimeout(() => { saveSuccess.value = false }, 1000)
     }
   } catch (error) {
     console.error('Save failed:', error)
@@ -1200,6 +1210,19 @@ onUnmounted(() => {
   background: var(--bg-hover);
   border-color: var(--color-primary-400);
   color: var(--color-primary-600);
+}
+
+.action-btn.success {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: white;
+  animation: successPop 0.3s ease;
+}
+
+@keyframes successPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 .export-wrapper {

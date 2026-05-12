@@ -2,8 +2,6 @@ package com.promptflow.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.promptflow.dto.*;
-import com.promptflow.entity.AgentPrompt;
-import com.promptflow.entity.SkillPrompt;
 import com.promptflow.service.PromptService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.util.function.Consumer;
 
 /**
  * 提示词 API 控制器
@@ -37,26 +33,6 @@ public class PromptController {
     }
 
     /**
-     * 同步生成提示词
-     * POST /api/generate-prompt
-     */
-    @PostMapping("/generate-prompt")
-    public ResponseEntity<ApiResponse<String>> generatePrompt(@RequestBody PromptRequest request) {
-        logger.info("收到提示词生成请求: {}", request.getTaskDescription());
-
-        String result = promptService.generatePrompt(request);
-
-        // 保存到历史记录
-        try {
-            promptService.saveGeneralPrompt(request.getTaskDescription(), result);
-        } catch (Exception e) {
-            logger.error("保存提示词失败", e);
-        }
-
-        return ResponseEntity.ok(ApiResponse.success("提示词生成成功", result));
-    }
-
-    /**
      * 流式生成提示词（SSE）
      * POST /api/generate-prompt/stream
      */
@@ -65,40 +41,6 @@ public class PromptController {
         logger.info("收到流式提示词生成请求: {}", request.getTaskDescription());
 
         return promptService.generatePromptStream(request, null, null);
-    }
-
-    /**
-     * 生成 Agent 提示词（同步）
-     * POST /api/generate-agent
-     */
-    @PostMapping("/generate-agent")
-    public ResponseEntity<ApiResponse<AgentPrompt>> generateAgent(@RequestBody AgentPromptRequest request) {
-        logger.info("收到Agent提示词生成请求: {}", request.getName());
-
-        String generatedPrompt = promptService.generateAgentPromptText(
-            request.getName(),
-            request.getRoleDescription(),
-            request.getCapabilities(),
-            request.getBehaviors(),
-            request.getCommunicationStyle()
-        );
-
-        // 保存到数据库
-        AgentPrompt saved = null;
-        try {
-            saved = promptService.saveAgentPrompt(
-                request.getName(),
-                request.getRoleDescription(),
-                request.getCapabilities(),
-                request.getBehaviors(),
-                request.getCommunicationStyle(),
-                generatedPrompt
-            );
-        } catch (Exception e) {
-            logger.error("保存Agent提示词失败", e);
-        }
-
-        return ResponseEntity.ok(ApiResponse.success("Agent提示词生成成功", saved != null ? saved : new AgentPrompt()));
     }
 
     /**
@@ -115,62 +57,10 @@ public class PromptController {
             request.getCapabilities(),
             request.getBehaviors(),
             request.getCommunicationStyle(),
-            (generatedPrompt) -> {
-                // 保存到数据库
-                try {
-                    promptService.saveAgentPrompt(
-                        request.getName(),
-                        request.getRoleDescription(),
-                        request.getCapabilities(),
-                        request.getBehaviors(),
-                        request.getCommunicationStyle(),
-                        generatedPrompt
-                    );
-                } catch (Exception e) {
-                    logger.error("保存Agent提示词失败", e);
-                }
-            },
+            null,
             null,
             null
         );
-    }
-
-    /**
-     * 生成 Skill 提示词（同步）
-     * POST /api/generate-skill
-     */
-    @PostMapping("/generate-skill")
-    public ResponseEntity<ApiResponse<SkillPrompt>> generateSkill(@RequestBody SkillPromptRequest request) {
-        logger.info("收到Skill提示词生成请求: {}", request.getName());
-
-        String generatedPrompt = promptService.generateSkillPromptText(
-            request.getName(),
-            request.getDescription(),
-            request.getSkillType(),
-            request.getMethod(),
-            request.getEndpoint(),
-            request.getParameters(),
-            request.getOutputDescription()
-        );
-
-        // 保存到数据库
-        SkillPrompt saved = null;
-        try {
-            saved = promptService.saveSkillPrompt(
-                request.getName(),
-                request.getDescription(),
-                request.getSkillType(),
-                request.getMethod(),
-                request.getEndpoint(),
-                request.getParameters(),
-                request.getOutputDescription(),
-                generatedPrompt
-            );
-        } catch (Exception e) {
-            logger.error("保存Skill提示词失败", e);
-        }
-
-        return ResponseEntity.ok(ApiResponse.success("Skill提示词生成成功", saved != null ? saved : new SkillPrompt()));
     }
 
     /**
@@ -189,23 +79,7 @@ public class PromptController {
             request.getEndpoint(),
             request.getParameters(),
             request.getOutputDescription(),
-            (generatedPrompt) -> {
-                // 保存到数据库
-                try {
-                    promptService.saveSkillPrompt(
-                        request.getName(),
-                        request.getDescription(),
-                        request.getSkillType(),
-                        request.getMethod(),
-                        request.getEndpoint(),
-                        request.getParameters(),
-                        request.getOutputDescription(),
-                        generatedPrompt
-                    );
-                } catch (Exception e) {
-                    logger.error("保存Skill提示词失败", e);
-                }
-            },
+            null,
             null,
             null
         );
@@ -243,7 +117,7 @@ public class PromptController {
     public static class SkillPromptRequest {
         private String name;
         private String description;
-        private SkillPrompt.SkillType skillType;
+        private String skillType;
         private String method;
         private String endpoint;
         private String parameters;
@@ -253,8 +127,8 @@ public class PromptController {
         public void setName(String name) { this.name = name; }
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
-        public SkillPrompt.SkillType getSkillType() { return skillType; }
-        public void setSkillType(SkillPrompt.SkillType skillType) { this.skillType = skillType; }
+        public String getSkillType() { return skillType; }
+        public void setSkillType(String skillType) { this.skillType = skillType; }
         public String getMethod() { return method; }
         public void setMethod(String method) { this.method = method; }
         public String getEndpoint() { return endpoint; }

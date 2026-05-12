@@ -37,6 +37,13 @@
           </div>
 
           <!-- Filter Bar -->
+          <div v-if="isAdmin" class="admin-indicator">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            管理员模式已开启
+          </div>
+
           <div class="filter-bar">
             <div class="search-box">
               <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -131,7 +138,7 @@
                 @click="openDetail(item)"
               >
                 <div class="card-type-badge">
-                  <span v-if="item.type === 'agent'" class="badge agent">🤖 Agent</span>
+                  <span v-if="item.promptType === 'agent'" class="badge agent">🤖 Agent</span>
                   <span v-else class="badge skill">⚡ Skill</span>
                 </div>
 
@@ -140,6 +147,22 @@
                 <p class="card-preview">
                   {{ getPreview(item.generatedPrompt) }}
                 </p>
+
+                <!-- Tags -->
+                <div v-if="item.tags && item.tags.length > 0" class="card-tags">
+                  <span
+                    v-for="tag in item.tags.slice(0, 5)"
+                    :key="tag.id"
+                    class="tag"
+                    :style="{
+                      backgroundColor: (tag.color || '#6366f1') + '15',
+                      color: tag.color || '#6366f1',
+                      borderColor: (tag.color || '#6366f1') + '30'
+                    }"
+                  >
+                    {{ tag.name }}
+                  </span>
+                </div>
 
                 <div class="card-meta">
                   <span class="meta-time">
@@ -166,7 +189,7 @@
                       <circle cx="12" cy="12" r="3"/>
                     </svg>
                   </button>
-                  <button class="action-btn delete" @click.stop="deletePrompt(item)" title="删除">
+                  <button v-if="isAdmin" class="action-btn delete" @click.stop="deletePrompt(item)" title="删除">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                       <polyline points="3 6 5 6 21 6"/>
                       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -194,7 +217,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <div class="modal-title">
-              <span v-if="curItem?.type === 'agent'" class="badge agent">🤖 Agent</span>
+              <span v-if="curItem?.promptType === 'agent'" class="badge agent">🤖 Agent</span>
               <span v-else class="badge skill">⚡ Skill</span>
               <h2>{{ curItem?.name || curItem?.taskDescription || '提示词详情' }}</h2>
             </div>
@@ -212,7 +235,7 @@
               <div class="info-grid">
                 <div class="info-item">
                   <span class="info-label">类型</span>
-                  <span class="info-value">{{ curItem?.type === 'agent' ? 'Agent' : 'Skill' }}</span>
+                  <span class="info-value">{{ curItem?.promptType === 'agent' ? 'Agent' : 'Skill' }}</span>
                 </div>
                 <div class="info-item">
                   <span class="info-label">生成时间</span>
@@ -253,8 +276,10 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MarkdownIt from 'markdown-it'
 import AppLayout from '../components/layout/AppLayout.vue'
+import { useAdmin } from '@/composables/useAdmin'
 
 const router = useRouter()
+const { isAdmin } = useAdmin()
 
 const md = new MarkdownIt({
   html: true,
@@ -291,7 +316,7 @@ const displayedList = computed(() => {
 
   // Filter by type
   if (typeFilter.value !== 'all') {
-    result = result.filter((item) => item.type === typeFilter.value)
+    result = result.filter((item) => item.promptType === typeFilter.value)
   }
 
   // Filter by search keyword
@@ -320,8 +345,16 @@ const loadData = async (reset = false) => {
 
   try {
     const p = reset ? 1 : page.value
-    const url = `${API}/history/page?page=${p}&size=${size.value}&sortBy=${sortBy.value}&sortOrder=desc`
-    const r = await fetch(url)
+    const r = await fetch(`${API}/history/page`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        page: p,
+        size: size.value,
+        sortBy: sortBy.value,
+        sortOrder: 'desc'
+      })
+    })
     const d = await r.json()
     const newList = d.data?.list || d.data || []
 
@@ -542,6 +575,21 @@ onUnmounted(() => {
   width: 1px;
   height: 24px;
   background: var(--border-color);
+}
+
+/* Admin Indicator */
+.admin-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #92400e;
 }
 
 /* Filter Bar */
@@ -780,8 +828,26 @@ onUnmounted(() => {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   flex: 1;
+}
+
+/* Card Tags */
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid;
 }
 
 .card-meta {

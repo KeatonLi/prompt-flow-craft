@@ -5,8 +5,6 @@ import com.promptflow.client.llm.LLMClient;
 import com.promptflow.dto.*;
 import com.promptflow.dto.llm.LLMRequest;
 import com.promptflow.dto.llm.LLMResponse;
-import com.promptflow.entity.AgentPrompt;
-import com.promptflow.entity.SkillPrompt;
 import com.promptflow.service.quality.PromptQualityService;
 import com.promptflow.strategy.prompt.PromptStrategy;
 import com.promptflow.strategy.prompt.PromptStrategyFactory;
@@ -37,7 +35,6 @@ public class PromptService {
     private final LLMClient llmClient;
     private final PromptStrategyFactory strategyFactory;
     private final PromptQualityService qualityService;
-    private final PromptRecordService promptRecordService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${api.model}")
@@ -52,12 +49,10 @@ public class PromptService {
     @Autowired
     public PromptService(LLMClient llmClient,
                         PromptStrategyFactory strategyFactory,
-                        PromptQualityService qualityService,
-                        PromptRecordService promptRecordService) {
+                        PromptQualityService qualityService) {
         this.llmClient = llmClient;
         this.strategyFactory = strategyFactory;
         this.qualityService = qualityService;
-        this.promptRecordService = promptRecordService;
     }
 
     /**
@@ -132,15 +127,6 @@ public class PromptService {
                         // 完成
                         sendEvent(emitter, "done", "{\"done\": true}");
                         emitter.complete();
-
-                        // 保存到历史记录
-                        if (saveAfterComplete && fullContent.length() > 0) {
-                            try {
-                                saveGeneralPrompt(request.getTaskDescription(), fullContent.toString());
-                            } catch (Exception e) {
-                                logger.error("保存提示词失败", e);
-                            }
-                        }
 
                         if (onComplete != null) onComplete.accept(fullContent.toString());
                     },
@@ -260,52 +246,6 @@ public class PromptService {
         if (onError != null) onError.accept(error);
     }
 
-    // ==================== Save Methods ====================
-
-    /**
-     * 保存通用提示词到 Agent 表
-     */
-    public AgentPrompt saveGeneralPrompt(String taskDescription, String generatedPrompt) {
-        AgentPrompt agent = new AgentPrompt();
-        agent.setName("通用提示词");
-        agent.setRoleDescription(taskDescription);
-        agent.setGeneratedPrompt(generatedPrompt);
-        return promptRecordService.saveAgent(agent);
-    }
-
-    /**
-     * 保存 Agent 提示词
-     */
-    public AgentPrompt saveAgentPrompt(String name, String roleDescription, String capabilities,
-                                       String behaviors, String communicationStyle, String generatedPrompt) {
-        AgentPrompt agent = new AgentPrompt();
-        agent.setName(name);
-        agent.setRoleDescription(roleDescription);
-        agent.setCapabilities(capabilities);
-        agent.setBehaviors(behaviors);
-        agent.setCommunicationStyle(communicationStyle);
-        agent.setGeneratedPrompt(generatedPrompt);
-        return promptRecordService.saveAgent(agent);
-    }
-
-    /**
-     * 保存 Skill 提示词
-     */
-    public SkillPrompt saveSkillPrompt(String name, String description, SkillPrompt.SkillType skillType,
-                                       String method, String endpoint, String parameters,
-                                       String outputDescription, String generatedPrompt) {
-        SkillPrompt skill = new SkillPrompt();
-        skill.setName(name);
-        skill.setDescription(description);
-        skill.setSkillType(skillType);
-        skill.setMethod(method);
-        skill.setEndpoint(endpoint);
-        skill.setParameters(parameters);
-        skill.setOutputDescription(outputDescription);
-        skill.setGeneratedPrompt(generatedPrompt);
-        return promptRecordService.saveSkill(skill);
-    }
-
     // ==================== Agent 生成方法 ====================
 
     /**
@@ -422,7 +362,7 @@ public class PromptService {
     /**
      * 生成 Skill 提示词文本（同步）
      */
-    public String generateSkillPromptText(String name, String description, SkillPrompt.SkillType skillType,
+    public String generateSkillPromptText(String name, String description, String skillType,
                                         String method, String endpoint, String parameters,
                                         String outputDescription) {
         if (name == null || name.trim().isEmpty()) {
@@ -441,7 +381,7 @@ public class PromptService {
     /**
      * 生成 Skill 提示词（流式）
      */
-    public SseEmitter generateSkillPromptStream(String name, String description, SkillPrompt.SkillType skillType,
+    public SseEmitter generateSkillPromptStream(String name, String description, String skillType,
                                                String method, String endpoint, String parameters,
                                                String outputDescription,
                                                Consumer<String> onComplete,
@@ -458,7 +398,7 @@ public class PromptService {
         return directStreamCall(prompt, onComplete, onError);
     }
 
-    private String buildSkillPromptRequest(String name, String description, SkillPrompt.SkillType skillType,
+    private String buildSkillPromptRequest(String name, String description, String skillType,
                                          String method, String endpoint, String parameters,
                                          String outputDescription) {
         StringBuilder sb = new StringBuilder();
@@ -467,7 +407,7 @@ public class PromptService {
         sb.append("**名称**：").append(name).append("\n");
         sb.append("**功能描述**：").append(description).append("\n");
         if (skillType != null) {
-            sb.append("**类型**：").append(skillType.name()).append("\n");
+            sb.append("**类型**：").append(skillType).append("\n");
         }
         if (method != null && !method.isEmpty()) {
             sb.append("**请求方法**：").append(method).append("\n");

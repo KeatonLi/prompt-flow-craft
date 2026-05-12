@@ -59,6 +59,13 @@ public class HistoryController {
 
             PromptResource saved = promptResourceRepository.save(resource);
 
+            // 自动生成5个标签
+            try {
+                classificationService.applyFiveTagsToPrompt(saved);
+            } catch (Exception tagEx) {
+                logger.warn("自动打标签失败，不影响保存: {}", tagEx.getMessage());
+            }
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "保存成功");
@@ -95,6 +102,13 @@ public class HistoryController {
             resource.setUpdatedAt(LocalDateTime.now());
 
             PromptResource saved = promptResourceRepository.save(resource);
+
+            // 自动生成5个标签
+            try {
+                classificationService.applyFiveTagsToPrompt(saved);
+            } catch (Exception tagEx) {
+                logger.warn("自动打标签失败，不影响保存: {}", tagEx.getMessage());
+            }
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);

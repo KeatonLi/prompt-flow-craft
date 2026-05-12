@@ -228,7 +228,9 @@
 
         <!-- Footer -->
         <footer class="footer">
-          <span>Prompt Flow Craft v2.0</span>
+          <span class="footer-brand" @click="toggleAdmin" title="点击开启/关闭管理员模式">
+            Prompt Flow Craft v2.0
+          </span>
           <span>Agent + Skill 双引擎 · 社区模板共享</span>
         </footer>
       </div>
@@ -238,6 +240,9 @@
 
 <script setup lang="ts">
 import AppLayout from '../components/layout/AppLayout.vue'
+import { useAdmin } from '@/composables/useAdmin'
+
+const { toggleAdmin } = useAdmin()
 
 const architecture = [
   { name: '核心定义层', desc: '明确任务目标与核心概念' },
@@ -952,6 +957,15 @@ const categories = [
 .footer span:first-child {
   font-weight: 600;
   color: var(--text-secondary);
+}
+
+.footer-brand {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.footer-brand:hover {
+  color: var(--color-primary-600);
 }
 
 /* ============================================

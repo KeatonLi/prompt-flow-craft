@@ -330,6 +330,154 @@ public class PromptClassificationService {
     }
 
     /**
+     * 生成恰好5个AI标签（用于保存时自动打标签）
+     * 使用LLM分析提示词内容，生成5个精准的标签
+     */
+    @Transactional
+    public List<String> generateAiTagsExactly5(PromptResource prompt) {
+        logger.info("开始为提示词生成5个AI标签: {}", prompt.getName());
+
+        try {
+            // 构建专门生成5个标签的提示词
+            String tagPrompt = buildFiveTagsPrompt(prompt);
+
+            Map<String, Object> requestBody = Map.of(
+                "model", model,
+                "messages", List.of(
+                    Map.of("role", "user", "content", tagPrompt)
+                ),
+                "temperature", 0.7,
+                "max_tokens", 300
+            );
+
+            Mono<Map> responseMono = webClient.post()
+                .uri(baseUrl + "/chat/completions")
+                .header("Authorization", "Bearer " + apiKey)
+                .header("Content-Type", "application/json")
+                .bodyValue(requestBody)
+                .retrieve()
+                .bodyToMono(Map.class);
+
+            Map<String, Object> response = responseMono.block();
+
+            if (response != null && response.containsKey("choices")) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+                if (!choices.isEmpty()) {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                    String result = (String) message.get("content");
+
+                    // 解析标签列表
+                    List<String> tags = parseFiveTagsResult(result);
+                    if (tags.size() == 5) {
+                        logger.info("成功生成5个标签: {}", tags);
+                        return tags;
+                    }
+                }
+            }
+
+            // 失败时返回空列表
+            logger.warn("LLM生成标签失败，返回空列表");
+            return Collections.emptyList();
+
+        } catch (Exception e) {
+            logger.error("生成AI标签异常", e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 为提示词打上恰好5个标签（保存时自动调用）
+     */
+    @Transactional
+    public void applyFiveTagsToPrompt(PromptResource prompt) {
+        List<String> tagNames = generateAiTagsExactly5(prompt);
+
+        if (tagNames.isEmpty()) {
+            logger.warn("未能为提示词生成标签: {}", prompt.getName());
+            return;
+        }
+
+        // 关联标签
+        for (String tagName : tagNames) {
+            PromptTag tag = getOrCreateTag(tagName);
+            prompt.addTag(tag);
+            tag.incrementUsageCount();
+            tagRepository.save(tag);
+        }
+
+        // 保存标签到JSON字段
+        try {
+            String aiTagsJson = objectMapper.writeValueAsString(tagNames);
+            prompt.setAiTags(aiTagsJson);
+        } catch (Exception e) {
+            logger.error("保存AI标签JSON失败", e);
+        }
+
+        promptResourceRepository.save(prompt);
+        logger.info("为提示词 {} 打标签完成: {}", prompt.getName(), tagNames);
+    }
+
+    /**
+     * 构建生成5个标签的提示词
+     */
+    private String buildFiveTagsPrompt(PromptResource prompt) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("你是一个专业的提示词标签专家。请为以下提示词生成恰好5个精准的标签。\n\n");
+        sb.append("## 提示词信息：\n");
+        sb.append("名称：").append(prompt.getName() != null ? prompt.getName() : "").append("\n");
+
+        if ("agent".equals(prompt.getPromptType())) {
+            sb.append("角色描述：").append(prompt.getRoleDescription() != null ? prompt.getRoleDescription() : "").append("\n");
+            sb.append("核心能力：").append(prompt.getCapabilities() != null ? prompt.getCapabilities() : "").append("\n");
+            sb.append("行为准则：").append(prompt.getBehaviors() != null ? prompt.getBehaviors() : "").append("\n");
+        } else if ("skill".equals(prompt.getPromptType())) {
+            sb.append("描述：").append(prompt.getDescription() != null ? prompt.getDescription() : "").append("\n");
+            sb.append("技能类型：").append(prompt.getSkillType() != null ? prompt.getSkillType() : "").append("\n");
+            sb.append("方法：").append(prompt.getMethod() != null ? prompt.getMethod() : "").append("\n");
+        }
+
+        sb.append("生成的提示词：").append(prompt.getGeneratedPrompt() != null ? prompt.getGeneratedPrompt().substring(0, Math.min(500, prompt.getGeneratedPrompt().length())) : "").append("\n\n");
+
+        sb.append("## 要求：\n");
+        sb.append("1. 生成恰好5个标签，不要多也不要少\n");
+        sb.append("2. 每个标签应该是2-4个汉字\n");
+        sb.append("3. 标签要精准反映提示词的核心主题、功能和用途\n");
+        sb.append("4. 只输出5个标签，用换行分隔，不要包含任何解释或其他内容\n\n");
+        sb.append("## 输出格式：\n");
+        sb.append("标签1\n标签2\n标签3\n标签4\n标签5");
+
+        return sb.toString();
+    }
+
+    /**
+     * 解析5个标签的LLM返回结果
+     */
+    private List<String> parseFiveTagsResult(String result) {
+        List<String> tags = new ArrayList<>();
+        String[] lines = result.split("\n");
+
+        for (String line : lines) {
+            String tag = line.trim();
+            // 过滤掉编号、特殊字符等
+            tag = tag.replaceAll("^[0-9]+[.、、]\\s*", "");
+            tag = tag.replaceAll("^[「\"']|[」\"']$", "");
+
+            if (!tag.isEmpty() && tag.length() >= 2 && tag.length() <= 6) {
+                tags.add(tag);
+            }
+        }
+
+        // 确保恰好返回5个
+        if (tags.size() > 5) {
+            return tags.subList(0, 5);
+        }
+
+        return tags;
+    }
+
+    /**
      * 保存分类和标签结果
      */
     @Transactional

@@ -103,6 +103,7 @@ export interface SharedPrompt {
   likeCount: number;
   viewCount: number;
   sourcePromptId?: number;
+  isLiked?: boolean;
   createdAt: string;
   updatedAt: string;
 }
