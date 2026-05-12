@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 /**
@@ -293,6 +295,11 @@ public class PromptService {
         SseEmitter emitter = new SseEmitter(SSE_TIMEOUT);
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
+        StringBuilder fullContent = new StringBuilder();
+        StringBuilder pendingContent = new StringBuilder();
+        AtomicBoolean foundPromptStart = new AtomicBoolean(false);
+        AtomicInteger lastSentIndex = new AtomicInteger(0);
+
         executor.execute(() -> {
             try {
                 // 直接构建 LLM 请求，不走策略模式
@@ -306,18 +313,76 @@ public class PromptService {
                     .stream(true)
                     .build();
 
-                StringBuilder fullContent = new StringBuilder();
-
                 llmClient.callStream(llmRequest,
                     chunk -> {
-                        fullContent.append(chunk);
-                        // 直接发送 chunk，不做处理
-                        sendEvent(emitter, "message", chunk);
+                        synchronized (fullContent) {
+                            fullContent.append(chunk);
+                        }
+                        synchronized (pendingContent) {
+                            pendingContent.append(chunk);
+
+                            String pending = pendingContent.toString();
+
+                            // 如果还没找到提示词开始，寻找 "# " 模式
+                            if (!foundPromptStart.get()) {
+                                // 查找 "\n# " 或开头的 "# " - 这表示真正的提示词内容开始了
+                                int promptStart = -1;
+
+                                // 先检查开头是否是 "# "
+                                if (pending.length() >= 2 && pending.charAt(0) == '#' && pending.charAt(1) == ' ') {
+                                    promptStart = 0;
+                                } else {
+                                    // 在字符串中查找 "\n# "
+                                    for (int i = 0; i < pending.length() - 2; i++) {
+                                        if (pending.charAt(i) == '\n' && pending.charAt(i+1) == '#' && pending.charAt(i+2) == ' ') {
+                                            promptStart = i + 1;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (promptStart >= 0) {
+                                    foundPromptStart.set(true);
+                                    String actualContent = pending.substring(promptStart);
+                                    pendingContent.setLength(0);
+                                    pendingContent.append(actualContent);
+                                    lastSentIndex.set(actualContent.length());
+                                    try {
+                                        sendEvent(emitter, "message", actualContent);
+                                    } catch (Exception e) {
+                                        logger.error("发送SSE事件失败", e);
+                                    }
+                                }
+                            } else {
+                                // 已经找到开始了，发送新增的内容
+                                String newContent = pendingContent.toString();
+                                int sent = lastSentIndex.get();
+                                if (newContent.length() > sent) {
+                                    String toSend = newContent.substring(sent);
+                                    lastSentIndex.set(newContent.length());
+                                    if (!toSend.isEmpty()) {
+                                        try {
+                                            sendEvent(emitter, "message", toSend);
+                                        } catch (Exception e) {
+                                            logger.error("发送SSE事件失败", e);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     },
                     () -> {
-                        sendEvent(emitter, "done", "{\"done\": true}");
+                        try {
+                            sendEvent(emitter, "done", "{\"done\": true}");
+                        } catch (Exception e) {
+                            logger.error("发送完成事件失败", e);
+                        }
                         emitter.complete();
-                        if (onComplete != null) onComplete.accept(fullContent.toString());
+                        if (onComplete != null) {
+                            synchronized (fullContent) {
+                                onComplete.accept(fullContent.toString());
+                            }
+                        }
                     },
                     error -> {
                         handleStreamError(emitter, error, onError);
@@ -339,7 +404,13 @@ public class PromptService {
     private String buildAgentPromptRequest(String name, String roleDescription, String capabilities,
                                          String behaviors, String communicationStyle) {
         StringBuilder sb = new StringBuilder();
-        sb.append("你是一个专业的 AI 提示词工程师。请为以下 Agent 生成提示词，输出必须使用 Markdown 格式。\n\n");
+        sb.append("你是一个专业的 AI 提示词工程师。\n\n");
+        sb.append("【关键要求】你的输出必须严格遵循以下规则：\n");
+        sb.append("1. 输出内容只能是提示词本身，不能包含任何其他文字\n");
+        sb.append("2. 如果你输出了\"我来\"、\"以下是\"、\"用户要求\"、\"要求：\"、\"让我\"等解释性文字，视为错误\n");
+        sb.append("3. 第一行输出必须是：# ").append(name).append("\n");
+        sb.append("4. 严格按顺序输出角色定义、核心能力、行为准则等四个部分\n");
+        sb.append("5. 不允许在提示词内容之前或之后添加任何说明\n\n");
         sb.append("## Agent 信息\n\n");
         sb.append("**名称**：").append(name).append("\n");
         sb.append("**角色定位**：").append(roleDescription).append("\n");
@@ -353,7 +424,7 @@ public class PromptService {
             sb.append("**对话风格**：").append(communicationStyle).append("\n");
         }
         sb.append("\n---\n\n");
-        sb.append("请直接输出完整的提示词内容，使用 Markdown 格式（包含标题、列表、代码块等），无需任何解释。");
+        sb.append("【开始输出】\n");
         return sb.toString();
     }
 
@@ -402,7 +473,7 @@ public class PromptService {
                                          String method, String endpoint, String parameters,
                                          String outputDescription) {
         StringBuilder sb = new StringBuilder();
-        sb.append("你是一个专业的 AI 提示词工程师。请为以下 Skill 生成提示词定义，输出必须使用 Markdown 格式。\n\n");
+        sb.append("你是一个专业的 AI 提示词工程师。收到 Skill 信息后，直接输出对应的完整提示词，不要包含任何解释、说明、思考过程或过渡性语句（如\"我来生成\"、\"下面是\"等）。\n\n");
         sb.append("## Skill 信息\n\n");
         sb.append("**名称**：").append(name).append("\n");
         sb.append("**功能描述**：").append(description).append("\n");
@@ -422,7 +493,13 @@ public class PromptService {
             sb.append("**输出格式**：").append(outputDescription).append("\n");
         }
         sb.append("\n---\n\n");
-        sb.append("请直接输出完整的提示词内容，使用 Markdown 格式（包含标题、列表、代码块等），采用标准 Tool/Function Calling 格式，无需任何解释。");
+        sb.append("## 输出要求\n");
+        sb.append("直接输出 Markdown 格式的完整提示词，必须包含：\n");
+        sb.append("1. 工具名称和功能描述\n");
+        sb.append("2. 参数定义（JSON Schema 格式）\n");
+        sb.append("3. 返回值说明\n");
+        sb.append("4. 使用示例\n");
+        sb.append("重要：输出内容必须以 # ").append(name).append(" 作为开头，直接开始输出提示词，不要有任何前缀说明。\n");
         return sb.toString();
     }
 }
