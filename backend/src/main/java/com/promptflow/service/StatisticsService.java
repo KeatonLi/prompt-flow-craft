@@ -20,31 +20,31 @@ public class StatisticsService {
 
     @Autowired
     private PromptResourceRepository promptResourceRepository;
-    
+
     @Autowired
     private PromptCategoryRepository promptCategoryRepository;
-    
+
     /**
      * 获取完整的使用统计数据
      */
     public UsageStatistics getUsageStatistics() {
         UsageStatistics stats = new UsageStatistics();
-        
+
         // 基础统计
         stats.setTotalPrompts(promptResourceRepository.count());
         stats.setTodayCount(promptResourceRepository.countToday());
         stats.setWeekCount(promptResourceRepository.countThisWeek());
         stats.setMonthCount(promptResourceRepository.countThisMonth());
-        
+
         // 总点赞数（处理null）
         Long totalLikes = promptResourceRepository.sumTotalLikes();
         stats.setTotalLikes(totalLikes != null ? totalLikes : 0L);
         stats.setTotalRatings(0L);
-        
+
         // 平均评分
         Double avgRating = promptResourceRepository.getAverageRating();
         stats.setAverageRating(avgRating != null ? Math.round(avgRating * 10) / 10.0 : 0.0);
-        
+
         // 缓存命中率
         Long totalHits = promptResourceRepository.sumTotalHits();
         long totalPrompts = promptResourceRepository.count();
@@ -64,28 +64,28 @@ public class StatisticsService {
 
         // 分类统计
         stats.setCategoryStats(getCategoryStats());
-        
+
         // 每日趋势（最近30天）
         stats.setDailyTrends(getDailyTrends(30));
-        
+
         // 最热提示词（按点赞数）
         List<PromptResource> topPrompts = promptResourceRepository.findByLikeCountGreaterThanZeroOrderByLikeCountDesc(PageRequest.of(0, 10)).getContent();
         stats.setTopPrompts(topPrompts);
-        
+
         // 最近活动
         List<Object[]> recent = promptResourceRepository.findRecentHistorySummary(PageRequest.of(0, 10));
         stats.setRecentActivities(convertToPromptResourceList(recent));
-        
+
         return stats;
     }
-    
+
     /**
      * 获取分类统计
      */
     private List<UsageStatistics.CategoryStat> getCategoryStats() {
         List<Object[]> results = promptResourceRepository.countByCategory();
         Map<Long, Long> categoryCountMap = new HashMap<>();
-        
+
         long total = 0;
         for (Object[] row : results) {
             Long categoryId = (Long) row[0];
@@ -93,32 +93,32 @@ public class StatisticsService {
             categoryCountMap.put(categoryId, count);
             total += count;
         }
-        
+
         // 获取所有分类
         List<PromptCategory> categories = promptCategoryRepository.findAll();
         Map<Long, String> categoryNameMap = categories.stream()
                 .collect(Collectors.toMap(PromptCategory::getId, PromptCategory::getName));
-        
+
         List<UsageStatistics.CategoryStat> stats = new ArrayList<>();
-        
+
         // 填充有数据的分类
         for (Map.Entry<Long, Long> entry : categoryCountMap.entrySet()) {
             String name = categoryNameMap.getOrDefault(entry.getKey(), "未分类");
             double percentage = total > 0 ? Math.round((double) entry.getValue() / total * 1000) / 10.0 : 0.0;
             stats.add(new UsageStatistics.CategoryStat(name, entry.getValue(), percentage));
         }
-        
+
         // 如果没有数据，添加提示
         if (stats.isEmpty()) {
             stats.add(new UsageStatistics.CategoryStat("暂无数据", 0, 0.0));
         }
-        
+
         // 按数量排序
         stats.sort((a, b) -> Long.compare(b.getCount(), a.getCount()));
-        
+
         return stats;
     }
-    
+
     /**
      * 获取每日趋势
      */
@@ -179,64 +179,68 @@ public class StatisticsService {
 
         return new ArrayList<>(trendMap.values());
     }
-    
+
     /**
      * 将查询结果转换为PromptResource列表
+     * 查询返回的列顺序: id, name, promptSummary, createdAt, hitCount, categoryId, likeCount, isAutoTagged, usageScenario, effectivenessScore, aiTags, promptType
      */
     private List<PromptResource> convertToPromptResourceList(List<Object[]> results) {
         return results.stream()
                 .map(row -> {
                     PromptResource p = new PromptResource();
                     p.setId((Long) row[0]);
-                    p.setTaskDescription((String) row[1]);
-                    p.setTargetAudience((String) row[2]);
-                    p.setPromptSummary((String) row[3]);
-                    if (row[4] != null) {
-                        // 支持多种日期格式解析
-                        String dateStr = String.valueOf(row[4]);
-                        try {
-                            if (dateStr.contains("T")) {
-                                // ISO格式: 2026-03-04T16:47:49.190167
-                                LocalDateTime dateTime = LocalDateTime.parse(dateStr);
-                                p.setCreatedAt(dateTime);
-                            } else if (dateStr.contains(" ")) {
-                                // 标准格式: 2026-03-04 16:47:49
-                                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                                p.setCreatedAt(LocalDateTime.parse(dateStr, formatter));
-                            } else {
-                                // 只有日期: 2026-03-04
-                                p.setCreatedAt(LocalDate.parse(dateStr).atStartOfDay());
+                    p.setName((String) row[1]);
+                    p.setPromptSummary((String) row[2]);
+                    if (row[3] != null) {
+                        if (row[3] instanceof LocalDateTime) {
+                            // 直接使用 LocalDateTime 对象
+                            p.setCreatedAt((LocalDateTime) row[3]);
+                        } else if (row[3] instanceof String) {
+                            // 支持多种日期格式解析
+                            String dateStr = (String) row[3];
+                            try {
+                                if (dateStr.contains("T")) {
+                                    // ISO格式: 2026-03-04T16:47:49.190167
+                                    p.setCreatedAt(LocalDateTime.parse(dateStr));
+                                } else if (dateStr.contains(" ")) {
+                                    // 标准格式: 2026-03-04 16:47:49
+                                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                                    p.setCreatedAt(LocalDateTime.parse(dateStr, formatter));
+                                } else {
+                                    // 只有日期: 2026-03-04
+                                    p.setCreatedAt(LocalDate.parse(dateStr).atStartOfDay());
+                                }
+                            } catch (Exception e) {
+                                // 解析失败，使用当前时间
+                                p.setCreatedAt(LocalDateTime.now());
                             }
-                        } catch (Exception e) {
-                            // 解析失败，使用当前时间
-                            p.setCreatedAt(LocalDateTime.now());
                         }
                     }
-                    p.setHitCount((Integer) row[5]);
-                    p.setCategoryId((Long) row[6]);
-                    p.setLikeCount((Integer) row[7]);
-                    p.setIsAutoTagged((Boolean) row[8]);
-                    p.setUsageScenario((String) row[9]);
-                    p.setEffectivenessScore((Integer) row[10]);
-                    p.setAiTags((String) row[11]);
+                    p.setHitCount(row[4] != null ? ((Number) row[4]).intValue() : 0);
+                    p.setCategoryId(row[5] != null ? ((Number) row[5]).longValue() : null);
+                    p.setLikeCount(row[6] != null ? ((Number) row[6]).intValue() : 0);
+                    p.setIsAutoTagged((Boolean) row[7]);
+                    p.setUsageScenario((String) row[8]);
+                    p.setEffectivenessScore(row[9] != null ? ((Number) row[9]).intValue() : null);
+                    p.setAiTags((String) row[10]);
                     return p;
                 })
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * 获取简化的统计数据（用于首页展示）
      */
     public Map<String, Object> getSimpleStats() {
         Map<String, Object> stats = new HashMap<>();
-        
+
         Long totalLikes = promptResourceRepository.sumTotalLikes();
-        
+
         stats.put("totalPrompts", promptResourceRepository.count());
         stats.put("todayCount", 0L);
         stats.put("weekCount", 0L);
         stats.put("totalLikes", totalLikes != null ? totalLikes : 0L);
-        
+
         return stats;
     }
 }

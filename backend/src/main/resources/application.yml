@@ -5,7 +5,13 @@ server:
 spring:
   application:
     name: prompt-flow-craft
-  
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+
   # 数据库配置
   datasource:
     url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=${DB_TIMEZONE:Asia/Shanghai}
