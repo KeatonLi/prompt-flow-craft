@@ -10,7 +10,8 @@
 ## 项目结构
 
 ```
-backend/src/main/java/com/promptflow/
+backend/
+├── src/main/java/com/promptflow/
 ├── controller/           # REST 控制器
 │   ├── PromptController.java       # 提示词生成（同步/流式）
 │   ├── HistoryController.java      # 历史记录 CRUD
@@ -64,7 +65,28 @@ backend/src/main/java/com/promptflow/
 │   ├── DataInitializer.java        # 数据初始化（8 分类）
 │   └── GlobalExceptionHandler.java # 全局异常处理
 └── util/                # 工具类
+└── src/main/resources/
+    └── prompts/          # 提示词模板（与代码分离）
+        ├── agent_prompt_template.txt      # Agent 提示词模板
+        ├── skill_prompt_template.txt     # Skill 提示词模板
+        ├── generate_prompt_template.txt  # 通用生成模板
+        ├── classification_prompt_template.txt  # 分类模板
+        └── five_tags_prompt_template.txt # 打标签模板
 ```
+
+## 提示词模板
+
+提示词模板独立存放于 `resources/prompts/` 目录，便于迭代优化，无需修改代码。
+
+### 模板变量说明
+
+| 模板 | 变量 | 说明 |
+|------|------|------|
+| agent_prompt_template | `{name}`, `{roleDescription}`, `{capabilities}`, `{behaviors}`, `{communicationStyle}` | Agent 生成 |
+| skill_prompt_template | `{name}`, `{description}`, `{skillType}`, `{method}`, `{endpoint}`, `{parameters}`, `{outputDescription}` | Skill 生成 |
+| generate_prompt_template | `{taskDescription}`, `{targetAudience}`, `{outputFormat}`, `{tone}`, `{length}`, `{constraints}`, `{examples}` | 通用生成 |
+| classification_prompt_template | `{categoryList}`, `{taskDescription}`, `{targetAudience}`, `{outputFormat}`, `{tone}`, `{generatedPrompt}` | 自动分类 |
+| five_tags_prompt_template | `{name}`, `{roleDescription}`, `{capabilities}`, `{behaviors}`, `{description}`, `{skillType}`, `{method}`, `{generatedPrompt}` | AI 打标签 |
 
 ## 数据库模型
 

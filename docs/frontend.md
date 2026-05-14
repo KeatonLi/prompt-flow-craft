@@ -354,6 +354,19 @@ interface HistoryQueryRequest {
 |------|--------|------|
 | `VITE_API_BASE_URL` | `/api` | API 基础地址 |
 
+## 品牌资源
+
+品牌 Logo 位于 `public/` 目录：
+
+| 文件 | 说明 |
+|------|------|
+| `brand-logo.png` | 品牌标识（导航栏使用） |
+| `favicon.ico` | 网站 favicon |
+| `favicon.svg` | SVG favicon |
+| `apple-touch-icon.png` | iOS 主屏图标 |
+
+Logo 更新后需重新部署生效。
+
 ## 常用命令
 
 ```bash
