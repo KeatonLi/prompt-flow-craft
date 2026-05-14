@@ -6,11 +6,11 @@
     <!-- Header -->
     <div class="card-header">
       <div class="author-section">
-        <div class="author-avatar" :style="{ background: getAvatarGradient(prompt.authorNickname) }">
-          {{ prompt.authorNickname[0].toUpperCase() }}
+        <div class="author-avatar" :style="{ background: getAvatarGradient(prompt.authorNickname || '') }">
+          {{ (prompt.authorNickname || '?')[0].toUpperCase() }}
         </div>
         <div class="author-meta">
-          <span class="author-name">@{{ prompt.authorNickname }}</span>
+          <span class="author-name">@{{ prompt.authorNickname || '匿名用户' }}</span>
           <span class="publish-time">{{ formatTime(prompt.createdAt) }}</span>
         </div>
       </div>

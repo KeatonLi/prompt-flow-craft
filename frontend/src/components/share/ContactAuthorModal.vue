@@ -7,8 +7,8 @@
       </div>
       <div class="modal-body">
         <div class="author-info">
-          <div class="author-avatar">{{ prompt.authorNickname[0].toUpperCase() }}</div>
-          <div class="author-name">{{ prompt.authorNickname }}</div>
+          <div class="author-avatar">{{ (prompt.authorNickname || '?')[0].toUpperCase() }}</div>
+          <div class="author-name">{{ prompt.authorNickname || '匿名用户' }}</div>
         </div>
         <div class="contact-section">
           <label>联系方式</label>

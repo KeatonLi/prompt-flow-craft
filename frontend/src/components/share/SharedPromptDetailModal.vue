@@ -26,11 +26,11 @@
       <div class="modal-body" v-if="promptData">
         <!-- Author Card -->
         <div class="author-card">
-          <div class="author-avatar" :style="{ background: getAvatarGradient(promptData.authorNickname) }">
-            {{ promptData.authorNickname[0].toUpperCase() }}
+          <div class="author-avatar" :style="{ background: getAvatarGradient(promptData.authorNickname || '') }">
+            {{ (promptData.authorNickname || '?')[0].toUpperCase() }}
           </div>
           <div class="author-info">
-            <span class="author-name">@{{ promptData.authorNickname }}</span>
+            <span class="author-name">@{{ promptData.authorNickname || '匿名用户' }}</span>
             <span class="publish-time">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/>
