@@ -13,41 +13,7 @@
         <!-- Brand -->
         <router-link to="/" class="navbar-brand">
           <div class="brand-icon">
-            <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#60a5fa"/>
-                  <stop offset="50%" stop-color="#3b82f6"/>
-                  <stop offset="100%" stop-color="#1d4ed8"/>
-                </linearGradient>
-                <linearGradient id="brandGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#818cf8"/>
-                  <stop offset="100%" stop-color="#6366f1"/>
-                </linearGradient>
-                <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="2" result="blur"/>
-                  <feMerge>
-                    <feMergeNode in="blur"/>
-                    <feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-              </defs>
-              <!-- Outer ring -->
-              <circle cx="18" cy="18" r="15" stroke="url(#brandGrad)" stroke-width="1.5" fill="none" opacity="0.4"/>
-              <!-- Rotating orbital dots -->
-              <circle cx="18" cy="4" r="2" fill="url(#brandGrad)" filter="url(#glow)"/>
-              <circle cx="30.5" cy="12.5" r="1.5" fill="url(#brandGrad2)" opacity="0.7"/>
-              <circle cx="30.5" cy="23.5" r="1" fill="url(#brandGrad)" opacity="0.5"/>
-              <circle cx="18" cy="32" r="1.5" fill="url(#brandGrad2)" opacity="0.6"/>
-              <circle cx="5.5" cy="23.5" r="1" fill="url(#brandGrad)" opacity="0.5"/>
-              <circle cx="5.5" cy="12.5" r="1.5" fill="url(#brandGrad2)" opacity="0.7"/>
-              <!-- Center flowing lines -->
-              <path d="M10 18 Q14 12 18 18 Q22 24 26 18" stroke="url(#brandGrad)" stroke-width="2" fill="none" stroke-linecap="round"/>
-              <path d="M10 18 Q14 24 18 18 Q22 12 26 18" stroke="url(#brandGrad2)" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6"/>
-              <!-- Core dot -->
-              <circle cx="18" cy="18" r="3" fill="url(#brandGrad)" filter="url(#glow)"/>
-              <circle cx="18" cy="18" r="1.5" fill="white"/>
-            </svg>
+            <img src="/brand-logo.png" alt="PromptFlow" width="36" height="36" />
           </div>
           <span class="brand-text">PromptFlow</span>
         </router-link>
@@ -346,26 +312,29 @@ onMounted(() => {
 }
 
 .brand-icon {
-  width: 44px;
-  height: 44px;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1));
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   transition: all var(--transition-base);
+  overflow: hidden;
 }
 
 .brand-icon:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.15));
-  border-color: rgba(59, 130, 246, 0.3);
   transform: scale(1.05);
+}
+
+.brand-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .brand-text {
   font-family: var(--font-display);
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   font-weight: 800;
   background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #6366f1 100%);
   -webkit-background-clip: text;
