@@ -19,6 +19,9 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import jakarta.annotation.PostConstruct;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,6 +62,10 @@ public class PromptClassificationService {
     // 分类关键词映射（用于快速规则匹配）
     private final Map<Long, List<String>> categoryKeywords = new HashMap<>();
 
+    // 提示词模板
+    private String classificationPromptTemplate;
+    private String fiveTagsPromptTemplate;
+
     public PromptClassificationService() {
         this.webClient = WebClient.builder().build();
     }
@@ -66,6 +73,48 @@ public class PromptClassificationService {
     @PostConstruct
     public void init() {
         initCategoryKeywords();
+        loadPromptTemplates();
+    }
+
+    /**
+     * 加载提示词模板
+     */
+    private void loadPromptTemplates() {
+        try {
+            classificationPromptTemplate = loadTemplate("prompts/classification_prompt_template.txt");
+            fiveTagsPromptTemplate = loadTemplate("prompts/five_tags_prompt_template.txt");
+            logger.info("分类标签提示词模板加载成功");
+        } catch (Exception e) {
+            logger.error("加载分类标签提示词模板失败", e);
+            throw new RuntimeException("加载分类标签提示词模板失败", e);
+        }
+    }
+
+    /**
+     * 从 classpath 加载模板文件
+     */
+    private String loadTemplate(String path) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(path)) {
+            if (is == null) {
+                throw new RuntimeException("找不到模板文件: " + path);
+            }
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException("读取模板文件失败: " + path, e);
+        }
+    }
+
+    /**
+     * 替换模板中的占位符
+     */
+    private String replacePlaceholders(String template, Object... keyValues) {
+        String result = template;
+        for (int i = 0; i < keyValues.length; i += 2) {
+            String key = (String) keyValues[i];
+            String value = keyValues[i + 1] != null ? (String) keyValues[i + 1] : "";
+            result = result.replace("{" + key + "}", value);
+        }
+        return result;
     }
 
     // 初始化分类关键词
@@ -246,33 +295,17 @@ public class PromptClassificationService {
             .map(c -> c.getId() + ". " + c.getName() + " - " + c.getDescription())
             .collect(Collectors.joining("\n"));
 
-        return String.format(
-            "你是一个专业的提示词分类专家。请分析以下提示词内容，完成分类和标签提取任务。\n\n" +
-            "## 可选分类：\n%s\n\n" +
-            "## 提示词内容：\n" +
-            "任务描述：%s\n" +
-            "目标受众：%s\n" +
-            "输出格式：%s\n" +
-            "语调风格：%s\n" +
-            "生成的提示词：%s\n\n" +
-            "## 任务要求：\n" +
-            "1. 选择最匹配的分类ID（只能选一个）\n" +
-            "2. 精确提取3个关键词作为标签（只输出3个，不要多输出，标签应该反映提示词的核心主题和用途）\n" +
-            "3. 给出置信度分数（0-1之间）\n\n" +
-            "## 输出格式（必须严格遵循JSON格式）：\n" +
-            "{\n" +
-            "    \"categoryId\": 分类ID数字,\n" +
-            "    \"categoryName\": \"分类名称\",\n" +
-            "    \"tags\": [\"标签1\", \"标签2\", \"标签3\"],\n" +
-            "    \"confidence\": 0.95\n" +
-            "}",
-            categoryList,
-            prompt.getTaskDescription(),
-            prompt.getTargetAudience(),
-            prompt.getOutputFormat(),
-            prompt.getTone(),
-            prompt.getGeneratedPrompt().substring(0, Math.min(300, prompt.getGeneratedPrompt().length()))
-        );
+        String generatedPrompt = prompt.getGeneratedPrompt() != null
+            ? prompt.getGeneratedPrompt().substring(0, Math.min(300, prompt.getGeneratedPrompt().length()))
+            : "";
+
+        return replacePlaceholders(classificationPromptTemplate,
+            "categoryList", categoryList,
+            "taskDescription", prompt.getTaskDescription() != null ? prompt.getTaskDescription() : "",
+            "targetAudience", prompt.getTargetAudience() != null ? prompt.getTargetAudience() : "",
+            "outputFormat", prompt.getOutputFormat() != null ? prompt.getOutputFormat() : "",
+            "tone", prompt.getTone() != null ? prompt.getTone() : "",
+            "generatedPrompt", generatedPrompt);
     }
 
     /**
@@ -426,32 +459,36 @@ public class PromptClassificationService {
      * 构建生成5个标签的提示词
      */
     private String buildFiveTagsPrompt(PromptResource prompt) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("你是一个专业的提示词标签专家。请为以下提示词生成恰好5个精准的标签。\n\n");
-        sb.append("## 提示词信息：\n");
-        sb.append("名称：").append(prompt.getName() != null ? prompt.getName() : "").append("\n");
+        String generatedPrompt = prompt.getGeneratedPrompt() != null
+            ? prompt.getGeneratedPrompt().substring(0, Math.min(500, prompt.getGeneratedPrompt().length()))
+            : "";
+
+        String roleDescription = "";
+        String capabilities = "";
+        String behaviors = "";
+        String description = "";
+        String skillType = "";
+        String method = "";
 
         if ("agent".equals(prompt.getPromptType())) {
-            sb.append("角色描述：").append(prompt.getRoleDescription() != null ? prompt.getRoleDescription() : "").append("\n");
-            sb.append("核心能力：").append(prompt.getCapabilities() != null ? prompt.getCapabilities() : "").append("\n");
-            sb.append("行为准则：").append(prompt.getBehaviors() != null ? prompt.getBehaviors() : "").append("\n");
+            roleDescription = prompt.getRoleDescription() != null ? prompt.getRoleDescription() : "";
+            capabilities = prompt.getCapabilities() != null ? prompt.getCapabilities() : "";
+            behaviors = prompt.getBehaviors() != null ? prompt.getBehaviors() : "";
         } else if ("skill".equals(prompt.getPromptType())) {
-            sb.append("描述：").append(prompt.getDescription() != null ? prompt.getDescription() : "").append("\n");
-            sb.append("技能类型：").append(prompt.getSkillType() != null ? prompt.getSkillType() : "").append("\n");
-            sb.append("方法：").append(prompt.getMethod() != null ? prompt.getMethod() : "").append("\n");
+            description = prompt.getDescription() != null ? prompt.getDescription() : "";
+            skillType = prompt.getSkillType() != null ? prompt.getSkillType() : "";
+            method = prompt.getMethod() != null ? prompt.getMethod() : "";
         }
 
-        sb.append("生成的提示词：").append(prompt.getGeneratedPrompt() != null ? prompt.getGeneratedPrompt().substring(0, Math.min(500, prompt.getGeneratedPrompt().length())) : "").append("\n\n");
-
-        sb.append("## 要求：\n");
-        sb.append("1. 生成恰好5个标签，不要多也不要少\n");
-        sb.append("2. 每个标签应该是2-4个汉字\n");
-        sb.append("3. 标签要精准反映提示词的核心主题、功能和用途\n");
-        sb.append("4. 只输出5个标签，用换行分隔，不要包含任何解释或其他内容\n\n");
-        sb.append("## 输出格式：\n");
-        sb.append("标签1\n标签2\n标签3\n标签4\n标签5");
-
-        return sb.toString();
+        return replacePlaceholders(fiveTagsPromptTemplate,
+            "name", prompt.getName() != null ? prompt.getName() : "",
+            "roleDescription", roleDescription,
+            "capabilities", capabilities,
+            "behaviors", behaviors,
+            "description", description,
+            "skillType", skillType,
+            "method", method,
+            "generatedPrompt", generatedPrompt);
     }
 
     /**

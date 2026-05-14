@@ -11,12 +11,15 @@ import com.promptflow.strategy.prompt.PromptStrategyFactory;
 import com.promptflow.strategy.prompt.StrategyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,6 +42,11 @@ public class PromptService {
     private final PromptQualityService qualityService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    // 提示词模板缓存
+    private String agentPromptTemplate;
+    private String skillPromptTemplate;
+    private String generatePromptTemplate;
+
     @Value("${api.model}")
     private String defaultModel;
 
@@ -55,6 +63,49 @@ public class PromptService {
         this.llmClient = llmClient;
         this.strategyFactory = strategyFactory;
         this.qualityService = qualityService;
+        loadPromptTemplates();
+    }
+
+    /**
+     * 启动时加载提示词模板
+     */
+    @PostConstruct
+    public void loadPromptTemplates() {
+        try {
+            agentPromptTemplate = loadTemplate("prompts/agent_prompt_template.txt");
+            skillPromptTemplate = loadTemplate("prompts/skill_prompt_template.txt");
+            logger.info("提示词模板加载成功");
+        } catch (Exception e) {
+            logger.error("加载提示词模板失败", e);
+            throw new RuntimeException("加载提示词模板失败", e);
+        }
+    }
+
+    /**
+     * 从 classpath 加载模板文件
+     */
+    private String loadTemplate(String path) {
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream(path)) {
+            if (is == null) {
+                throw new RuntimeException("找不到模板文件: " + path);
+            }
+            return new String(is.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException("读取模板文件失败: " + path, e);
+        }
+    }
+
+    /**
+     * 替换模板中的占位符
+     */
+    private String replacePlaceholders(String template, Object... keyValues) {
+        String result = template;
+        for (int i = 0; i < keyValues.length; i += 2) {
+            String key = (String) keyValues[i];
+            String value = keyValues[i + 1] != null ? (String) keyValues[i + 1] : "";
+            result = result.replace("{" + key + "}", value);
+        }
+        return result;
     }
 
     /**
@@ -403,29 +454,12 @@ public class PromptService {
 
     private String buildAgentPromptRequest(String name, String roleDescription, String capabilities,
                                          String behaviors, String communicationStyle) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("你是一个专业的 AI 提示词工程师。\n\n");
-        sb.append("【关键要求】你的输出必须严格遵循以下规则：\n");
-        sb.append("1. 输出内容只能是提示词本身，不能包含任何其他文字\n");
-        sb.append("2. 如果你输出了\"我来\"、\"以下是\"、\"用户要求\"、\"要求：\"、\"让我\"等解释性文字，视为错误\n");
-        sb.append("3. 第一行输出必须是：# ").append(name).append("\n");
-        sb.append("4. 严格按顺序输出角色定义、核心能力、行为准则等四个部分\n");
-        sb.append("5. 不允许在提示词内容之前或之后添加任何说明\n\n");
-        sb.append("## Agent 信息\n\n");
-        sb.append("**名称**：").append(name).append("\n");
-        sb.append("**角色定位**：").append(roleDescription).append("\n");
-        if (capabilities != null && !capabilities.isEmpty()) {
-            sb.append("**核心能力**：\n").append(capabilities).append("\n");
-        }
-        if (behaviors != null && !behaviors.isEmpty()) {
-            sb.append("**行为准则**：\n").append(behaviors).append("\n");
-        }
-        if (communicationStyle != null && !communicationStyle.isEmpty()) {
-            sb.append("**对话风格**：").append(communicationStyle).append("\n");
-        }
-        sb.append("\n---\n\n");
-        sb.append("【开始输出】\n");
-        return sb.toString();
+        return replacePlaceholders(agentPromptTemplate,
+            "name", name,
+            "roleDescription", roleDescription,
+            "capabilities", capabilities != null ? capabilities : "",
+            "behaviors", behaviors != null ? behaviors : "",
+            "communicationStyle", communicationStyle != null ? communicationStyle : "");
     }
 
     // ==================== Skill 生成方法 ====================
@@ -472,34 +506,13 @@ public class PromptService {
     private String buildSkillPromptRequest(String name, String description, String skillType,
                                          String method, String endpoint, String parameters,
                                          String outputDescription) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("你是一个专业的 AI 提示词工程师。收到 Skill 信息后，直接输出对应的完整提示词，不要包含任何解释、说明、思考过程或过渡性语句（如\"我来生成\"、\"下面是\"等）。\n\n");
-        sb.append("## Skill 信息\n\n");
-        sb.append("**名称**：").append(name).append("\n");
-        sb.append("**功能描述**：").append(description).append("\n");
-        if (skillType != null) {
-            sb.append("**类型**：").append(skillType).append("\n");
-        }
-        if (method != null && !method.isEmpty()) {
-            sb.append("**请求方法**：").append(method).append("\n");
-        }
-        if (endpoint != null && !endpoint.isEmpty()) {
-            sb.append("**接口端点**：").append(endpoint).append("\n");
-        }
-        if (parameters != null && !parameters.isEmpty()) {
-            sb.append("**输入参数**：\n").append(parameters).append("\n");
-        }
-        if (outputDescription != null && !outputDescription.isEmpty()) {
-            sb.append("**输出格式**：").append(outputDescription).append("\n");
-        }
-        sb.append("\n---\n\n");
-        sb.append("## 输出要求\n");
-        sb.append("直接输出 Markdown 格式的完整提示词，必须包含：\n");
-        sb.append("1. 工具名称和功能描述\n");
-        sb.append("2. 参数定义（JSON Schema 格式）\n");
-        sb.append("3. 返回值说明\n");
-        sb.append("4. 使用示例\n");
-        sb.append("重要：输出内容必须以 # ").append(name).append(" 作为开头，直接开始输出提示词，不要有任何前缀说明。\n");
-        return sb.toString();
+        return replacePlaceholders(skillPromptTemplate,
+            "name", name,
+            "description", description,
+            "skillType", skillType != null ? skillType : "",
+            "method", method != null ? method : "",
+            "endpoint", endpoint != null ? endpoint : "",
+            "parameters", parameters != null ? parameters : "",
+            "outputDescription", outputDescription != null ? outputDescription : "");
     }
 }
