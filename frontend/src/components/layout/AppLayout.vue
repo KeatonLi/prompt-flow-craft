@@ -383,25 +383,26 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 18px;
-  border-radius: var(--radius-lg);
-  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: 9999px;
+  color: var(--text-muted);
   text-decoration: none;
   font-family: var(--font-body);
-  font-size: var(--text-sm);
+  font-size: 14px;
   font-weight: 500;
-  transition: all var(--transition-base);
+  transition: all 0.2s ease;
   animation: fadeInUp 0.4s ease-out backwards;
 }
 
 .nav-item:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
+  background: #f1f5f9;
+  color: var(--text-body);
 }
 
 .nav-item.active {
-  color: var(--color-primary-600);
-  background: var(--glow-primary-soft);
+  background: var(--brand-50, #eff6ff);
+  color: var(--brand-600, #2563eb);
+  font-weight: 600;
 }
 
 .nav-icon {

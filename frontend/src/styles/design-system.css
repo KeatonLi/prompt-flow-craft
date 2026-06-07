@@ -208,6 +208,226 @@
 }
 
 /* ============================================
+   2a. 视觉规范 v1.0 — 额外设计令牌
+   ============================================ */
+
+:root {
+  /* 规范背景层 */
+  --bg-page: #f5f7fa;
+  --bg-inner: #f8fafc;
+
+  /* 规范文字层 */
+  --text-body: #334155;
+
+  /* 品牌色锚点 */
+  --brand-600: #2563eb;
+  --brand-50: #eff6ff;
+  --dark-anchor: #0f172a;
+
+  /* 规范边框 */
+  --border-light: rgba(0, 0, 0, 0.06);
+  --border-card: rgba(0, 0, 0, 0.04);
+
+  /* 规范字号 (px 精确值) */
+  --text-xs-px: 12px;
+  --text-sm-px: 13px;
+  --text-base-px: 14px;
+  --text-lg-px: 16px;
+  --text-xl-px: 20px;
+  --text-2xl-px: 28px;
+  --text-3xl-px: 36px;
+}
+
+/* ============================================
+   规范阴影工具类
+   ============================================ */
+.shadow-card {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.02),
+    0 8px 16px rgba(0, 0, 0, 0.02);
+}
+
+.shadow-card-hover {
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    0 12px 24px rgba(0, 0, 0, 0.04),
+    0 24px 48px rgba(0, 0, 0, 0.02);
+}
+
+.shadow-nav {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-btn {
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+}
+
+/* ============================================
+   规范按钮工具类
+   ============================================ */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  background: #2563eb;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+  transition: all 0.2s ease;
+  text-decoration: none;
+  line-height: 1;
+}
+.btn-primary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  background: #0f172a;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  line-height: 1;
+}
+.btn-secondary:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 13px;
+  color: #334155;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  line-height: 1;
+}
+.btn-ghost:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+/* ============================================
+   规范空状态组件
+   ============================================ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  width: 80px;
+  height: 80px;
+  background: #f8fafc;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.empty-state-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.empty-state-desc {
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 20px;
+  max-width: 300px;
+  line-height: 1.6;
+}
+
+.empty-state-cta {
+  display: inline-flex;
+  padding: 10px 20px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.empty-state-cta:hover {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+/* 规范标签样式 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  background: #f1f5f9;
+  color: #64748b;
+  border: none;
+}
+.tag.active {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+/* 全局过渡动画 */
+* {
+  transition: background-color 0.2s ease,
+              border-color 0.2s ease,
+              box-shadow 0.2s ease,
+              transform 0.2s ease;
+}
+
+/* 卡片悬浮 */
+.card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+}
+
+/* ============================================
    3. 工具类 (Utility Classes)
    ============================================ */
 

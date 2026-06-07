@@ -162,16 +162,11 @@
                 </p>
 
                 <!-- Tags -->
-                <div v-if="item.tags && item.tags.length > 0" class="card-tags">
+                <div v-if="item.tags && filteredTags(item.tags).length > 0" class="card-tags">
                   <span
-                    v-for="tag in item.tags.slice(0, 5)"
+                    v-for="tag in filteredTags(item.tags).slice(0, 5)"
                     :key="tag.id"
                     class="tag"
-                    :style="{
-                      backgroundColor: (tag.color || '#6366f1') + '15',
-                      color: tag.color || '#6366f1',
-                      borderColor: (tag.color || '#6366f1') + '30'
-                    }"
                   >
                     {{ tag.name }}
                   </span>
@@ -350,6 +345,19 @@ const displayedList = computed(() => {
 
 const changeTypeFilter = (type) => {
   typeFilter.value = type
+}
+
+/** 过滤半成品标签：去掉含特殊字符、过短或过长的标签 */
+const filteredTags = (tags) => {
+  if (!tags) return []
+  const badPattern = /[:：\-]|可能的|关键主题/
+  return tags.filter(tag => {
+    if (!tag.name) return false
+    const name = tag.name.trim()
+    if (badPattern.test(name)) return false
+    if (name.length < 2 || name.length > 10) return false
+    return true
+  })
 }
 
 const loadData = async (reset = false) => {
@@ -856,11 +864,14 @@ onUnmounted(() => {
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  border-radius: 999px;
-  border: 1px solid;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  background: #f1f5f9;
+  color: #64748b;
+  border: none;
 }
 
 .card-meta {

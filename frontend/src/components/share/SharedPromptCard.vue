@@ -136,14 +136,12 @@ const formatCount = (count: number) => {
 
 const getAvatarGradient = (name: string) => {
   const gradients = [
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-    'linear-gradient(135deg, #5ee7df 0%, #b490ca 100%)',
-    'linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)',
+    'linear-gradient(135deg, #3b82f6, #2563eb)',
+    'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+    'linear-gradient(135deg, #6366f1, #4f46e5)',
+    'linear-gradient(135deg, #2563eb, #1d4ed8)',
+    'linear-gradient(135deg, #7c3aed, #6d28d9)',
+    'linear-gradient(135deg, #4f46e5, #4338ca)',
   ];
   const index = name.charCodeAt(0) % gradients.length;
   return gradients[index];

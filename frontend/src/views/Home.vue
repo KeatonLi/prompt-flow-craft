@@ -348,37 +348,37 @@ const categories = [
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
+  background: #2563eb;
   color: white;
-  font-size: var(--text-sm);
+  font-size: 13px;
   font-weight: 600;
-  border-radius: var(--radius-lg);
+  border-radius: 9999px;
   text-decoration: none;
-  transition: all var(--transition-base);
+  transition: all 0.2s ease;
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.35);
+  background: #1d4ed8;
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
   padding: 12px 24px;
-  background: var(--bg-panel);
-  color: var(--text-primary);
-  font-size: var(--text-sm);
+  background: #0f172a;
+  color: white;
+  font-size: 13px;
   font-weight: 600;
-  border-radius: var(--radius-lg);
+  border-radius: 9999px;
   text-decoration: none;
-  border: 1px solid var(--border-color);
-  transition: all var(--transition-base);
+  transition: all 0.2s ease;
 }
 
 .btn-secondary:hover {
-  background: var(--bg-card);
-  border-color: var(--border-hover);
+  background: #1e293b;
+  transform: translateY(-1px);
 }
 
 .hero-quick-stats {
@@ -547,21 +547,29 @@ const categories = [
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  gap: 32px;
+  padding-top: 48px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .feature-card {
   padding: 32px;
   background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-2xl);
-  transition: all var(--transition-base);
+  border: 1px solid var(--border-card, rgba(0,0,0,0.04));
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 4px 8px rgba(0, 0, 0, 0.02),
+    0 8px 16px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
 }
 
 .feature-card:hover {
-  border-color: var(--color-primary-400);
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.06),
+    0 12px 24px rgba(0, 0, 0, 0.04),
+    0 24px 48px rgba(0, 0, 0, 0.02);
 }
 
 .agent-card {
