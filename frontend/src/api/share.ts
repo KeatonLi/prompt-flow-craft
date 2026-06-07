@@ -55,6 +55,12 @@ export const shareApi = {
       .then(() => undefined);
   },
 
+  // 管理员删除（不需要 token）
+  adminDelete(id: number): Promise<void> {
+    return request.delete<ApiResponse<void>>(`/share/admin/${id}`)
+      .then(() => undefined);
+  },
+
   // 点赞
   like(id: number): Promise<void> {
     return request.post<ApiResponse<void>>(`/share/${id}/like`)

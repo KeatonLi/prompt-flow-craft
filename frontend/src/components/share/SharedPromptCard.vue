@@ -73,6 +73,15 @@
           </svg>
           联系
         </button>
+        <button v-if="isAdmin" class="btn-delete" @click.stop="$emit('adminDelete', prompt)" title="管理员删除">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            <line x1="10" y1="11" x2="10" y2="17"/>
+            <line x1="14" y1="11" x2="14" y2="17"/>
+          </svg>
+          删除
+        </button>
       </div>
     </div>
   </div>
@@ -85,11 +94,13 @@ import { shareApi } from '@/api/share';
 
 const props = defineProps<{
   prompt: SharedPrompt;
+  isAdmin?: boolean;
 }>();
 
 const emit = defineEmits<{
   (e: 'view', prompt: SharedPrompt): void;
   (e: 'contact', prompt: SharedPrompt): void;
+  (e: 'adminDelete', prompt: SharedPrompt): void;
 }>();
 
 const isLiked = ref(props.prompt.isLiked || false);
@@ -188,7 +199,7 @@ const handleLike = async () => {
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899, #f59e0b);
+  background: linear-gradient(90deg, #3b82f6, #6366f1);
   opacity: 0;
   transition: opacity 0.3s;
 }
@@ -271,12 +282,12 @@ const handleLike = async () => {
 }
 
 .prompt-preview {
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: var(--bg-inner, #f8fafc);
   border-radius: var(--radius-lg);
   padding: 14px;
   flex: 1;
   min-height: 90px;
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid var(--border-color);
 }
 
 .preview-label {
@@ -311,8 +322,8 @@ const handleLike = async () => {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  background: #fafbfc;
-  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  background: var(--bg-hover, #fafbfc);
+  border-top: 1px solid var(--border-color);
 }
 
 .stats {
@@ -373,7 +384,7 @@ const handleLike = async () => {
 }
 
 .btn-view {
-  background: white;
+  background: var(--bg-card);
   color: var(--text-primary);
   border: 1px solid var(--border-color);
 }
@@ -397,5 +408,27 @@ const handleLike = async () => {
 
 .btn-contact:active {
   transform: translateY(0);
+}
+
+.btn-delete {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 14px;
+  border-radius: var(--radius-lg);
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.btn-delete:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #b91c1c;
 }
 </style>

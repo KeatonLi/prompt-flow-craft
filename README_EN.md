@@ -137,6 +137,68 @@ Agent is an AI intelligent agent with specific role positioning and capabilities
 User Input → Role Modeling → Capability Orchestration → Constraint Injection → LLM Inference → Streaming Output → Auto-Save
 ```
 
+### 🔄 Pipeline Engine — Multi-Role Review Pipeline
+
+**Key Highlight** — Unlike traditional AI apps that rely on a single LLM call, Prompt Flow Craft employs a **multi-stage pipeline review** mechanism. Every generation passes through three independent LLM roles for cross-validation:
+
+```
+User Input
+    │
+    ▼
+┌─────────────────────────────┐
+│  S1: Draft Generator        │ ← Role 1: Drafts the initial prompt
+│  "Generates draft based on  │
+│   user requirements"        │
+└──────────┬──────────────────┘
+           │ Streaming output
+           ▼
+┌─────────────────────────────┐
+│  S2: Quality Auditor        │ ← Role 2: Reviews quality
+│  "Scores against 5 metrics" │
+│  Completeness / Clarity /   │
+│  Structure / Executability  │
+│  / Safety                   │
+└──────────┬──────────────────┘
+           │ Score ≥ 80? → Pass ✅
+           │ Score < 80?
+           ▼
+┌─────────────────────────────┐
+│  S3: Prompt Refiner         │ ← Role 3: Targeted refinement
+│  "Optimizes based on audit  │
+│   findings"                 │
+└──────────┬──────────────────┘
+           │
+           ▼
+       Back to S2 for re-audit
+   (max 2 rounds, prevents infinite loops)
+           │
+           ▼
+      Final Output ✅
+```
+
+**Why this matters:**
+
+| Traditional Approach | Pipeline Approach |
+|---------------------|-------------------|
+| Single LLM call, one-shot output | **3** LLM calls, **3** independent prompts |
+| Output quality is hit-or-miss | **Quality score every round**, auto-retry below threshold |
+| No guard against hallucinations | **Dedicated auditor role** catches issues |
+| No iteration | **Configurable rounds + quality threshold** |
+| Opaque process | **SSE streaming for each stage**, fully transparent |
+
+**Technical Architecture:**
+```
+PipelineOrchestrator              ← Orchestrator, schedules stages
+ ├─ PipelineStage                 ← Stage interface (abstract strategy)
+ │   ├─ DraftGeneratorStage       ← S1 Draft generation
+ │   ├─ QualityAuditStage         ← S2 Quality audit (5-dimension scoring)
+ │   └─ PromptRefineStage         ← S3 Refinement optimization
+ ├─ PipelineContext                ← Cross-stage data transfer
+ └─ PipelineConfig                 ← Configurable rounds/threshold/toggle
+```
+
+> **Config example**: Set `pipeline.max-rounds: 2`, `pipeline.quality-threshold: 80` in `application.yml` — zero code changes to adjust review strictness.
+
 ### ⚡ Skill Engine
 
 Skill is an external tool callable by Agent, supporting **Four Skill Types**:

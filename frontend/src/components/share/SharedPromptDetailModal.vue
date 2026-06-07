@@ -207,14 +207,12 @@ const copyContent = async () => {
 
 const getAvatarGradient = (name: string) => {
   const gradients = [
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-    'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-    'linear-gradient(135deg, #5ee7df 0%, #b490ca 100%)',
-    'linear-gradient(135deg, #d299c2 0%, #fef9d7 100%)',
+    'linear-gradient(135deg, #3b82f6, #2563eb)',
+    'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+    'linear-gradient(135deg, #6366f1, #4f46e5)',
+    'linear-gradient(135deg, #2563eb, #1d4ed8)',
+    'linear-gradient(135deg, #7c3aed, #6d28d9)',
+    'linear-gradient(135deg, #4f46e5, #4338ca)',
   ];
   const index = name.charCodeAt(0) % gradients.length;
   return gradients[index];
@@ -262,7 +260,7 @@ onMounted(() => {
   align-items: flex-start;
   padding: 24px 28px;
   border-bottom: 1px solid var(--border-color);
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: linear-gradient(135deg, var(--bg-hover, #f8fafc) 0%, var(--bg-card, #f1f5f9) 100%);
 }
 
 .header-content {
@@ -293,7 +291,7 @@ onMounted(() => {
 }
 
 .close-btn {
-  background: white;
+  background: var(--bg-card);
   border: 1px solid var(--border-color);
   width: 36px;
   height: 36px;
@@ -325,7 +323,8 @@ onMounted(() => {
   align-items: center;
   gap: 16px;
   padding: 20px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: var(--bg-inner, #f8fafc);
+  border: 1px solid var(--border-card, rgba(0,0,0,0.04));
   border-radius: var(--radius-2xl);
   margin-bottom: 24px;
 }
@@ -353,7 +352,7 @@ onMounted(() => {
 
 .author-name {
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 16px;
 }
 
@@ -380,7 +379,7 @@ onMounted(() => {
 .author-stats .stat-value {
   font-size: 20px;
   font-weight: 800;
-  color: #f8fafc;
+  color: var(--text-primary);
 }
 
 .author-stats .stat-label {
@@ -423,42 +422,43 @@ onMounted(() => {
 }
 
 .prompt-section .markdown-body {
-  background: #0f172a;
+  background: var(--bg-inner, #f8fafc);
+  border: 1px solid var(--border-card, rgba(0,0,0,0.04));
   padding: 20px;
   border-radius: var(--radius-xl);
   font-size: 13px;
   line-height: 1.8;
   max-height: 350px;
   overflow-y: auto;
-  color: #e2e8f0;
+  color: var(--text-body, #334155);
 }
 
 .markdown-body :deep(h1),
 .markdown-body :deep(h2),
 .markdown-body :deep(h3) {
-  color: #f8fafc;
+  color: var(--text-primary);
   margin-top: 1em;
   margin-bottom: 0.5em;
   font-weight: 700;
 }
 
 .markdown-body :deep(h2) {
-  color: #60a5fa;
+  color: var(--color-primary-600);
   font-size: 1.1em;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 6px;
 }
 
 .markdown-body :deep(p) {
   margin: 0 0 0.8em 0;
-  color: #cbd5e1;
+  color: var(--text-secondary);
 }
 
 .markdown-body :deep(ul),
 .markdown-body :deep(ol) {
   margin: 0.5em 0;
   padding-left: 1.5em;
-  color: #cbd5e1;
+  color: var(--text-secondary);
 }
 
 .markdown-body :deep(li) {
@@ -467,25 +467,25 @@ onMounted(() => {
 
 .markdown-body :deep(code) {
   padding: 0.2em 0.4em;
-  background: #1e293b;
+  background: var(--bg-hover);
   border-radius: 4px;
   font-family: var(--font-mono);
   font-size: 0.9em;
-  color: #fbbf24;
+  color: var(--color-primary-600);
 }
 
 .markdown-body :deep(pre) {
   margin: 1em 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: #1e293b;
+  background: var(--bg-hover);
 }
 
 .markdown-body :deep(pre code) {
   display: block;
   padding: 1em;
   background: transparent;
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-size: 0.85rem;
   line-height: 1.6;
 }
@@ -516,7 +516,7 @@ onMounted(() => {
 }
 
 .btn-like {
-  background: #f1f5f9;
+  background: var(--bg-hover, #f1f5f9);
   color: var(--text-secondary);
 }
 
@@ -531,12 +531,12 @@ onMounted(() => {
 }
 
 .btn-copy {
-  background: #f1f5f9;
+  background: var(--bg-hover, #f1f5f9);
   color: var(--text-primary);
 }
 
 .btn-copy:hover {
-  background: #e2e8f0;
+  background: var(--bg-hover);
 }
 
 .btn-copy.success {

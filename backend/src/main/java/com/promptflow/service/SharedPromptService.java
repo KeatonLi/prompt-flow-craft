@@ -88,6 +88,16 @@ public class SharedPromptService {
     }
 
     @Transactional
+    public boolean adminDelete(Long id) {
+        Optional<SharedPrompt> optional = repository.findById(id);
+        if (optional.isEmpty()) {
+            return false;
+        }
+        repository.delete(optional.get());
+        return true;
+    }
+
+    @Transactional
     public boolean like(Long id) {
         Optional<SharedPrompt> optional = repository.findById(id);
         if (optional.isEmpty()) {

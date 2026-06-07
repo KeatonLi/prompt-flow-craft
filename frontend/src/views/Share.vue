@@ -80,8 +80,10 @@
             v-for="prompt in list"
             :key="prompt.id"
             :prompt="prompt"
+            :isAdmin="isAdmin"
             @view="handleView"
             @contact="handleContact"
+            @adminDelete="handleAdminDelete"
           />
         </div>
 
@@ -157,8 +159,10 @@ import PublishPromptModal from '@/components/share/PublishPromptModal.vue';
 import ContactAuthorModal from '@/components/share/ContactAuthorModal.vue';
 import SharedPromptDetailModal from '@/components/share/SharedPromptDetailModal.vue';
 import { shareApi } from '@/api/share';
+import { useAdmin } from '@/composables/useAdmin';
 import type { SharedPrompt, ShareRequest } from '@/types';
 
+const { isAdmin } = useAdmin();
 const loading = ref(false);
 const list = ref<SharedPrompt[]>([]);
 const page = ref(1);
@@ -214,6 +218,19 @@ const handleView = (prompt: SharedPrompt) => {
 
 const handleContact = (prompt: SharedPrompt) => {
   selectedPrompt.value = prompt;
+};
+
+const handleAdminDelete = async (prompt: SharedPrompt) => {
+  if (!isAdmin.value) return;
+  if (!confirm(`确定要删除「${prompt.description?.slice(0, 30) || '这个提示词'}」吗？`)) return;
+  try {
+    await shareApi.adminDelete(prompt.id);
+    list.value = list.value.filter(p => p.id !== prompt.id);
+    totalCount.value--;
+    (window as any).showToast?.({ message: '管理员删除成功', type: 'success' });
+  } catch (error: any) {
+    (window as any).showToast?.({ message: '删除失败：' + (error.message || '未知错误'), type: 'error' });
+  }
 };
 
 onMounted(() => {
@@ -396,7 +413,7 @@ onMounted(() => {
 }
 
 .sort-tabs button.active {
-  background: white;
+  background: var(--bg-card);
   color: var(--color-primary-600);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }

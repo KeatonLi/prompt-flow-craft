@@ -115,6 +115,23 @@ public class SharedPromptController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * 管理员删除 — 不需要 deleteToken
+     */
+    @DeleteMapping("/admin/{id}")
+    public ResponseEntity<Map<String, Object>> adminDelete(@PathVariable Long id) {
+        boolean deleted = service.adminDelete(id);
+        Map<String, Object> response = new HashMap<>();
+        if (deleted) {
+            response.put("success", true);
+            response.put("message", "管理员删除成功");
+        } else {
+            response.put("success", false);
+            response.put("message", "记录不存在");
+        }
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/{id}/like")
     public ResponseEntity<Map<String, Object>> like(@PathVariable Long id) {
         boolean success = service.like(id);

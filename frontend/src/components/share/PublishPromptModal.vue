@@ -199,7 +199,8 @@ const handleHistorySelect = (record: PromptRecord) => {
   justify-content: space-between;
   align-items: flex-start;
   padding: 28px 28px 24px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
 }
 
 .header-content {
@@ -225,18 +226,18 @@ const handleHistorySelect = (record: PromptRecord) => {
   margin: 0 0 4px;
   font-size: 20px;
   font-weight: 800;
-  color: #f8fafc;
+  color: #1e40af;
 }
 
 .modal-header p {
   margin: 0;
   font-size: 13px;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .close-btn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(59, 130, 246, 0.2);
   width: 36px;
   height: 36px;
   border-radius: var(--radius-lg);
@@ -244,14 +245,14 @@ const handleHistorySelect = (record: PromptRecord) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #94a3b8;
+  color: #64748b;
   transition: all 0.2s;
 }
 
 .close-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.1);
   border-color: rgba(239, 68, 68, 0.3);
-  color: #f87171;
+  color: #ef4444;
 }
 
 /* Body */
@@ -317,9 +318,9 @@ const handleHistorySelect = (record: PromptRecord) => {
 .form-textarea.code {
   font-family: var(--font-mono, monospace);
   font-size: 13px;
-  background: #0f172a;
-  color: #e2e8f0;
-  border-color: #334155;
+  background: var(--bg-inner, #f8fafc);
+  color: var(--text-body, #334155);
+  border-color: var(--border-color);
 }
 
 .form-textarea.code:focus {
@@ -371,7 +372,7 @@ const handleHistorySelect = (record: PromptRecord) => {
   justify-content: flex-end;
   gap: 12px;
   padding: 20px 28px;
-  background: #f8fafc;
+  background: var(--bg-hover, #f8fafc);
   border-top: 1px solid var(--border-color);
 }
 
@@ -390,13 +391,13 @@ const handleHistorySelect = (record: PromptRecord) => {
 }
 
 .btn-cancel {
-  background: white;
+  background: var(--bg-card);
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
 }
 
 .btn-cancel:hover {
-  background: #f1f5f9;
+  background: var(--bg-hover);
   color: var(--text-primary);
 }
 
