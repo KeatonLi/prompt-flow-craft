@@ -3,272 +3,92 @@
     <template #main>
       <div class="generate-page">
         <div class="generate-container">
-
-          <!-- Left Panel: Configuration -->
-          <div class="config-panel">
-            <div class="config-wrapper">
-              <!-- Type Selector -->
-              <div class="type-selector">
-                <button
-                  v-for="t in promptTypes"
-                  :key="t.value"
-                  class="type-btn"
-                  :class="{ active: currentType === t.value }"
-                  @click="switchType(t.value)"
-                >
-                  <span class="type-btn-icon" v-html="t.icon"></span>
-                  <span class="type-btn-text">{{ t.name }}</span>
-                </button>
+          <!-- Left Panel: Input -->
+          <div class="input-panel">
+            <div class="input-wrapper">
+              <!-- Type + Mode Selector -->
+              <div class="input-header">
+                <div class="type-selector">
+                  <button
+                    v-for="t in promptTypes"
+                    :key="t.value"
+                    class="type-btn"
+                    :class="{ active: currentType === t.value }"
+                    @click="switchType(t.value)"
+                  >
+                    <span class="type-btn-icon" v-html="t.icon"></span>
+                    <span class="type-btn-text">{{ t.name }}</span>
+                  </button>
+                </div>
+                <label class="pipeline-toggle" title="启用多阶段流水线审查">
+                  <input type="checkbox" v-model="pipelineMode" :disabled="loading" />
+                  <span class="toggle-track">
+                    <span class="toggle-knob"></span>
+                  </span>
+                  <span class="toggle-label">Pipeline</span>
+                </label>
               </div>
 
-              <!-- Agent Form -->
-              <Transition name="slide-fade" mode="out-in">
-                <div v-if="currentType === 'agent'" key="agent" class="form-card">
-                  <div class="form-card-header">
-                    <h2 class="form-card-title">
-                      <span class="title-icon">🤖</span>
-                      创建 Agent
-                    </h2>
-                    <button class="btn-example" @click="loadAgentExample">
+              <!-- Big Text Input -->
+              <div class="input-area">
+                <textarea
+                  v-model="userInput"
+                  ref="inputRef"
+                  class="big-input"
+                  :placeholder="inputPlaceholder"
+                  rows="6"
+                  @keydown.ctrl.enter="doGenerate"
+                ></textarea>
+                <div class="input-footer">
+                  <span class="input-hint">Ctrl+Enter 发送</span>
+                  <div class="input-actions">
+                    <button class="btn-example" @click="loadExample" title="填入示例">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
                       </svg>
-                      示例
                     </button>
-                  </div>
-
-                  <div class="form-card-body">
-                    <div class="form-group">
-                      <label class="form-label">
-                        Agent 名称 <span class="required">*</span>
-                      </label>
-                      <input
-                        v-model="agentForm.name"
-                        type="text"
-                        class="form-input"
-                        :class="{ 'error': agentForm.name && !hasChinese(agentForm.name) }"
-                        placeholder="例如：技术文档助手"
-                      />
-                      <div v-if="agentForm.name && !hasChinese(agentForm.name)" class="form-error">请输入中文名称</div>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label">
-                        角色定位 <span class="required">*</span>
-                      </label>
-                      <textarea
-                        v-model="agentForm.role"
-                        class="form-textarea"
-                        :class="{ 'error': agentForm.role && !hasChinese(agentForm.role) }"
-                        placeholder="描述 Agent 的核心身份和专业领域..."
-                        rows="4"
-                      ></textarea>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label">核心能力</label>
-                      <textarea
-                        v-model="agentForm.capabilities"
-                        class="form-textarea"
-                        placeholder="- 撰写技术设计文档&#10;- 解释系统架构和设计模式..."
-                        rows="3"
-                      ></textarea>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label">行为准则</label>
-                      <textarea
-                        v-model="agentForm.behaviors"
-                        class="form-textarea"
-                        placeholder="- 语言简洁专业...&#10;- 主动提供实际应用案例..."
-                        rows="2"
-                      ></textarea>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label">对话风格</label>
-                      <div class="style-chips">
-                        <button
-                          v-for="style in communicationStyles"
-                          :key="style.value"
-                          class="style-chip"
-                          :class="{ active: agentForm.communicationStyle === style.value }"
-                          @click="agentForm.communicationStyle = style.value"
-                        >
-                          <span class="chip-icon" v-html="style.icon"></span>
-                          <span class="chip-text">{{ style.name }}</span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="form-card-footer">
-                    <button class="btn-reset" @click="resetAgent">重置</button>
-                    <button class="btn-generate" :disabled="!canGenerateAgent || loading" @click="generateAgent">
-                      <template v-if="loading && currentType === 'agent'">
+                    <button class="btn-reset" @click="resetAll" :disabled="loading" title="清空">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="1 4 1 10 7 10"/>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                      </svg>
+                    </button>
+                    <button
+                      class="btn-generate"
+                      :disabled="!userInput.trim() || loading"
+                      @click="doGenerate"
+                    >
+                      <template v-if="loading">
                         <span class="spinner"></span>
                         生成中...
                       </template>
                       <template v-else>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                          <line x1="22" y1="2" x2="11" y2="13"/>
+                          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                         </svg>
-                        生成提示词
+                        生成
                       </template>
                     </button>
                   </div>
                 </div>
-
-                <!-- Skill Form -->
-                <div v-else key="skill" class="form-card">
-                  <div class="form-card-header">
-                    <h2 class="form-card-title">
-                      <span class="title-icon">⚡</span>
-                      创建 Skill
-                    </h2>
-                    <button class="btn-example" @click="loadSkillExample">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                      </svg>
-                      示例
-                    </button>
-                  </div>
-
-                  <div class="form-card-body">
-                    <div class="form-row two-col">
-                      <div class="form-group">
-                        <label class="form-label">
-                          Skill 名称 <span class="required">*</span>
-                        </label>
-                        <input
-                          v-model="skillForm.name"
-                          type="text"
-                          class="form-input"
-                          :class="{ 'error': skillForm.name && !hasChinese(skillForm.name) }"
-                          placeholder="例如：天气查询"
-                        />
-                        <div v-if="skillForm.name && !hasChinese(skillForm.name)" class="form-error">请输入中文名称</div>
-                      </div>
-                      <div class="form-group">
-                        <label class="form-label">工具类型</label>
-                        <div class="type-chips">
-                          <button
-                            v-for="t in skillTypes"
-                            :key="t.value"
-                            class="type-chip"
-                            :class="{ active: skillForm.type === t.value }"
-                            @click="skillForm.type = t.value"
-                          >
-                            <span class="chip-icon">{{ t.icon }}</span>
-                            <span class="chip-text">{{ t.name }}</span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="form-group">
-                      <label class="form-label">
-                        功能描述 <span class="required">*</span>
-                      </label>
-                      <textarea
-                        v-model="skillForm.description"
-                        class="form-textarea"
-                        :class="{ 'error': skillForm.description && !hasChinese(skillForm.description) }"
-                        placeholder="清晰描述这个工具能做什么..."
-                        rows="3"
-                      ></textarea>
-                    </div>
-
-                    <div v-if="skillForm.type === 'api'" class="form-row two-col">
-                      <div class="form-group">
-                        <label class="form-label">请求方法</label>
-                        <select v-model="skillForm.method" class="form-select">
-                          <option value="GET">GET</option>
-                          <option value="POST">POST</option>
-                          <option value="PUT">PUT</option>
-                          <option value="DELETE">DELETE</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label class="form-label">API 端点</label>
-                        <input
-                          v-model="skillForm.endpoint"
-                          type="text"
-                          class="form-input"
-                          placeholder="https://..."
-                        />
-                      </div>
-                    </div>
-
-                    <div v-if="skillForm.type === 'function'" class="form-group">
-                      <label class="form-label">函数代码</label>
-                      <textarea
-                        v-model="skillForm.functionCode"
-                        class="form-textarea code"
-                        placeholder="// 输入函数实现..."
-                        rows="4"
-                      ></textarea>
-                    </div>
-
-                    <div class="form-row two-col">
-                      <div class="form-group">
-                        <label class="form-label">输入参数 <span class="optional">(可选)</span></label>
-                        <textarea
-                          v-model="skillForm.parameters"
-                          class="form-textarea"
-                          placeholder="city: 城市名..."
-                          rows="2"
-                        ></textarea>
-                      </div>
-                      <div class="form-group">
-                        <label class="form-label">输出格式 <span class="optional">(可选)</span></label>
-                        <textarea
-                          v-model="skillForm.outputDescription"
-                          class="form-textarea"
-                          placeholder="描述返回的数据结构..."
-                          rows="2"
-                        ></textarea>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="form-card-footer">
-                    <button class="btn-reset" @click="resetSkill">重置</button>
-                    <button class="btn-generate" :disabled="!canGenerateSkill || loading" @click="generateSkill">
-                      <template v-if="loading && currentType === 'skill'">
-                        <span class="spinner"></span>
-                        生成中...
-                      </template>
-                      <template v-else>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                        </svg>
-                        生成提示词
-                      </template>
-                    </button>
-                  </div>
-                </div>
-              </Transition>
+              </div>
             </div>
           </div>
 
-          <!-- Right Panel: Result -->
+          <!-- Right Panel: Thinking + Result -->
           <div class="result-panel">
+            <!-- Pipeline Thinking Process -->
             <Transition name="result-appear">
-              <div v-if="showResult" class="result-card">
+              <div v-if="showResult || thinkingTrace.length > 0" class="result-card">
                 <div class="result-card-header">
                   <div class="result-title">
                     <svg class="result-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                      <polyline points="14 2 14 8 20 8"/>
+                      <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                     </svg>
-                    <span>生成的提示词</span>
-                    <span v-if="isStreaming" class="streaming-badge">
-                      <span class="stream-dot"></span>
-                      生成中
-                    </span>
+                    <span>生成过程</span>
                   </div>
-                  <div class="result-actions">
+                  <div v-if="!isStreaming && result" class="result-actions">
                     <button class="action-btn" :class="{ success: copySuccess }" @click="copyResult" title="复制">
                       <svg v-if="!copySuccess" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
@@ -278,70 +98,74 @@
                         <polyline points="20 6 9 17 4 12"/>
                       </svg>
                     </button>
-                    <button class="action-btn" :class="{ success: saveSuccess }" @click="savePrompt" title="保存" :disabled="isStreaming || !hasResult">
-                      <svg v-if="!saveSuccess" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                        <polyline points="17 21 17 13 7 13 7 21"/>
-                        <polyline points="7 3 7 8 15 8"/>
+                  </div>
+                </div>
+
+                <!-- Thinking Trace -->
+                <div class="thinking-trace">
+                  <div
+                    v-for="(step, idx) in thinkingTrace"
+                    :key="idx"
+                    class="thinking-step"
+                    :class="'step-' + step.type"
+                  >
+                    <div class="step-header">
+                      <span class="step-icon">{{ stepIcons[step.type] || '●' }}</span>
+                      <span class="step-title">{{ step.title }}</span>
+                      <span v-if="step.status === 'running'" class="step-badge running">
+                        <span class="running-dot"></span> 进行中
+                      </span>
+                      <span v-if="step.status === 'done'" class="step-badge done">✓ 完成</span>
+                      <span v-if="step.status === 'error'" class="step-badge error">✗ 失败</span>
+                      <span v-if="step.score !== undefined" class="step-score" :class="scoreClass(step.score)">
+                        {{ step.score }}分
+                      </span>
+                    </div>
+                    <div v-if="step.content" class="step-content" :class="{ 'is-streaming': step.status === 'running' }">
+                      <div v-if="step.type === 'audit'" class="audit-summary">{{ step.content }}</div>
+                      <div v-else class="step-markdown" v-html="renderMarkdown(step.content)"></div>
+                    </div>
+                    <div v-if="step.collapsible" class="step-toggle" @click="toggleStep(idx)">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"/>
                       </svg>
-                      <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                    </button>
-                    <div class="export-wrapper">
-                      <button class="action-btn" @click="toggleExportMenu" title="导出">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                          <polyline points="7 10 12 15 17 10"/>
-                          <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
-                      </button>
-                      <Transition name="dropdown">
-                        <div v-if="showExportMenu" class="export-menu">
-                          <button @click="exportPrompt('markdown')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                            </svg>
-                            Markdown
-                          </button>
-                          <button @click="exportPrompt('json')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                              <polyline points="16 18 22 12 16 6"/>
-                              <polyline points="8 6 2 12 8 18"/>
-                            </svg>
-                            JSON
-                          </button>
-                          <button @click="exportPrompt('txt')">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            </svg>
-                            纯文本
-                          </button>
-                        </div>
-                      </Transition>
+                      {{ step.expanded ? '收起' : '展开详情' }}
                     </div>
                   </div>
                 </div>
-                <div class="result-card-body">
-                  <div class="result-content">
-                    <div class="markdown-body" v-html="displayedResultWithCursor"></div>
-                  </div>
+
+                <!-- Final Result -->
+                <div v-if="result && !isStreaming" class="result-divider">
+                  <span class="divider-label">最终输出</span>
+                </div>
+                <div v-if="result" class="result-body">
+                  <div class="markdown-body" v-html="displayedResultWithCursor"></div>
                 </div>
               </div>
             </Transition>
 
             <!-- Empty State -->
-            <div v-if="!showResult" class="result-empty">
+            <div v-if="!showResult && thinkingTrace.length === 0" class="result-empty">
               <div class="empty-icon">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                   <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                 </svg>
               </div>
-              <h3 class="empty-title">开始创建提示词</h3>
-              <p class="empty-desc">填写左侧配置信息，点击生成按钮</p>
+              <h3 class="empty-title">告诉我想创建什么样的提示词</h3>
+              <p class="empty-desc">在左侧输入需求描述，点击生成或按 Ctrl+Enter</p>
+              <div class="example-hints">
+                <button class="hint-chip" @click="fillExample('agent')">
+                  🤖 创建一个客服助手 Agent
+                </button>
+                <button class="hint-chip" @click="fillExample('skill')">
+                  ⚡ 写一个天气查询工具
+                </button>
+                <button class="hint-chip" @click="fillExample('agent-dev')">
+                  💻 帮我写一个代码审查 Agent
+                </button>
+              </div>
             </div>
           </div>
-
         </div>
       </div>
     </template>
@@ -349,13 +173,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import MarkdownIt from 'markdown-it'
 import hljs from 'highlight.js'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import { promptApi } from '@/api/prompt'
-import type { PromptRecord } from '@/types'
+import type { PipelineStageEvent, PipelineStageCompleteEvent } from '@/api/prompt'
 
 const highlightCode = (str: string, lang: string) => {
   if (lang && hljs.getLanguage(lang)) {
@@ -379,10 +203,40 @@ const md = new MarkdownIt({
 })
 
 const route = useRoute()
-const showExportMenu = ref(false)
 
+// ========== 状态 ==========
 const currentType = ref<'agent' | 'skill'>('agent')
+const userInput = ref('')
+const loading = ref(false)
+const isStreaming = ref(false)
+const showResult = ref(false)
+const result = ref('')
+const cancelStream = ref<(() => void) | null>(null)
+const pipelineMode = ref(true) // 默认启用 Pipeline
+const copySuccess = ref(false)
+const inputRef = ref<HTMLTextAreaElement | null>(null)
 
+// 思考过程追踪
+interface ThinkingStep {
+  type: 'draft' | 'audit' | 'refine'
+  title: string
+  status: 'pending' | 'running' | 'done' | 'error'
+  content: string
+  score?: number
+  expanded: boolean
+  collapsible: boolean
+}
+
+const thinkingTrace = ref<ThinkingStep[]>([])
+const currentStepIdx = ref(-1)
+
+const stepIcons: Record<string, string> = {
+  draft: '📝',
+  audit: '🔍',
+  refine: '✨'
+}
+
+// ========== 类型选择 ==========
 const promptTypes = [
   {
     value: 'agent',
@@ -396,168 +250,236 @@ const promptTypes = [
   }
 ]
 
-const skillTypes = [
-  { value: 'api', name: 'API', icon: '🌐' },
-  { value: 'function', name: '函数', icon: '⚡' },
-  { value: 'webhook', name: 'Webhook', icon: '🪝' },
-  { value: 'data', name: '数据源', icon: '📊' }
-]
-
-const communicationStyles = [
-  { value: 'professional', name: '专业', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/></svg>' },
-  { value: 'friendly', name: '友好', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/></svg>' },
-  { value: 'concise', name: '简洁', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>' },
-  { value: 'detailed', name: '详细', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>' },
-  { value: 'casual', name: '轻松', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/></svg>' }
-]
-
-const agentForm = ref({
-  name: '',
-  role: '',
-  capabilities: '',
-  behaviors: '',
-  communicationStyle: 'professional'
+const inputPlaceholder = computed(() => {
+  if (currentType.value === 'agent') {
+    return '描述你想要创建的 Agent...\n例如：帮我创建一个技术文档助手，它能将复杂的编程概念用通俗的语言解释清楚，并自动生成 API 文档\n\n提示：描述越详细，生成的提示词质量越高'
+  }
+  return '描述你想要创建的 Skill 工具...\n例如：帮我创建一个天气查询工具，接收城市名称参数，返回实时天气 JSON 数据'
 })
 
-const skillForm = ref({
-  name: '',
-  description: '',
-  type: 'api' as 'api' | 'function' | 'webhook' | 'data',
-  method: 'GET',
-  endpoint: '',
-  functionCode: '',
-  parameters: '',
-  outputDescription: ''
-})
-
-const loading = ref(false)
-const isStreaming = ref(false)
-const showResult = ref(false)
-const result = ref('')
-const cancelStream = ref<(() => void) | null>(null)
-const copySuccess = ref(false)
-const saveSuccess = ref(false)
-
-// 是否有生成结果（用于保存按钮状态）
-const hasResult = computed(() => {
-  // 检查 result.value 是否有内容（去掉 HTML 标签后）
-  const text = result.value.replace(/<[^>]*>/g, '').trim()
-  return text.length > 0
-})
-
-const hasChinese = (text: string): boolean => /[一-龥]/.test(text)
-
-const canGenerateAgent = computed(() => {
-  const name = agentForm.value.name.trim()
-  const role = agentForm.value.role.trim()
-  if (!name || !role) return false
-  return hasChinese(name) && hasChinese(role)
-})
-
-const canGenerateSkill = computed(() => {
-  const name = skillForm.value.name.trim()
-  const desc = skillForm.value.description.trim()
-  if (!name || !desc) return false
-  return hasChinese(name) && hasChinese(desc)
-})
-
-// 流式时：实时渲染 markdown
-// 结束时：渲染 markdown
+// ========== 渲染 ==========
 const displayedResultWithCursor = computed(() => {
   const content = result.value || ''
   if (isStreaming.value) {
-    // 流式时：实时渲染 markdown
     const rendered = md.render(content)
     return rendered + '<span class="typing-cursor"></span>'
   }
-  // 结束时：渲染 markdown
   return md.render(content)
 })
 
+function renderMarkdown(text: string): string {
+  if (!text) return ''
+  return md.render(text)
+}
+
+function scoreClass(score: number): string {
+  if (score >= 80) return 'score-excellent'
+  if (score >= 60) return 'score-good'
+  return 'score-poor'
+}
+
+// ========== 操作 ==========
 const switchType = (type: 'agent' | 'skill') => {
   currentType.value = type
-  reset()
+  resetAll()
 }
 
-const loadAgentExample = () => {
-  agentForm.value = {
-    name: '技术文档助手',
-    role: '你是一位资深技术文档专家，擅长将复杂的编程概念和技术架构用通俗易懂的语言解释清楚。',
-    capabilities: '- 撰写技术设计文档和API接口文档\n- 解释系统架构、设计模式和微服务设计\n- 提供代码示例和最佳实践建议',
-    behaviors: '- 语言简洁专业，避免冗余\n- 主动提供实际应用案例',
-    communicationStyle: 'professional'
+const loadExample = () => {
+  if (currentType.value === 'agent') {
+    userInput.value = '帮我创建一个技术文档助手，它能将复杂的编程概念和技术架构用通俗易懂的语言解释清楚，擅长撰写技术设计文档和API接口文档，语言简洁专业，主动提供实际应用案例'
+  } else {
+    userInput.value = '帮我创建一个天气查询工具，接收城市名称作为参数，通过HTTP GET请求获取实时天气数据，返回JSON格式的天气信息'
   }
 }
 
-const loadSkillExample = () => {
-  skillForm.value = {
-    name: '天气查询助手',
-    description: '根据用户提供的城市名称或位置信息，获取该城市的实时天气信息。',
-    type: 'api',
-    method: 'GET',
-    endpoint: 'https://api.weather.example.com/v1/current',
-    functionCode: '',
-    parameters: 'city: 城市名，必填\nunits: 温度单位，默认 metric',
-    outputDescription: '返回 JSON 格式的天气数据'
+const fillExample = (type: string) => {
+  currentType.value = type as 'agent' | 'skill'
+  loadExample()
+}
+
+const doGenerate = async () => {
+  if (!userInput.value.trim()) {
+    toast({ message: '请先描述你的需求', type: 'warning' })
+    await nextTick()
+    inputRef.value?.focus()
+    return
   }
-}
-
-const generateAgent = async () => {
-  if (!canGenerateAgent.value || loading.value) return
-  startGeneration()
-
-  cancelStream.value = promptApi.generateAgentStream(
-    {
-      name: agentForm.value.name,
-      roleDescription: agentForm.value.role,
-      capabilities: agentForm.value.capabilities,
-      behaviors: agentForm.value.behaviors,
-      communicationStyle: agentForm.value.communicationStyle
-    },
-    onStreamContent,
-    onStreamDone,
-    onStreamError
-  )
-}
-
-const generateSkill = async () => {
-  if (!canGenerateSkill.value || loading.value) return
-  startGeneration()
-
-  cancelStream.value = promptApi.generateSkillStream(
-    {
-      name: skillForm.value.name,
-      description: skillForm.value.description,
-      skillType: skillForm.value.type,
-      method: skillForm.value.method,
-      endpoint: skillForm.value.endpoint,
-      parameters: skillForm.value.parameters,
-      outputDescription: skillForm.value.outputDescription
-    },
-    onStreamContent,
-    onStreamDone,
-    onStreamError
-  )
-}
-
-const startGeneration = () => {
+  if (loading.value) return
+  
+  // 重置状态
+  result.value = ''
+  showResult.value = true
   loading.value = true
   isStreaming.value = true
-  showResult.value = true
-  result.value = ''
+  thinkingTrace.value = []
+  currentStepIdx.value = -1
+
+  if (pipelineMode.value) {
+    await generateWithPipeline()
+  } else {
+    await generateSimple()
+  }
+}
+
+// 简单模式（单次生成）
+const generateSimple = async () => {
+  const text = userInput.value.trim()
+  const api = currentType.value === 'agent'
+    ? promptApi.generateAgentStream({
+        name: extractName(text) || '助手',
+        roleDescription: text,
+        capabilities: '',
+        behaviors: '',
+        communicationStyle: 'professional'
+      }, onStreamContent, onStreamDone, onStreamError)
+    : promptApi.generateSkillStream({
+        name: extractName(text) || '工具',
+        description: text,
+        skillType: 'api',
+        method: 'GET',
+        endpoint: '',
+        parameters: '',
+        outputDescription: ''
+      }, onStreamContent, onStreamDone, onStreamError)
+
+  cancelStream.value = api
+}
+
+// Pipeline 模式（多阶段）
+const generateWithPipeline = async () => {
+  const text = userInput.value.trim()
+  const isAgent = currentType.value === 'agent'
+  const name = extractName(text) || (isAgent ? '智能助手' : '智能工具')
+
+  // 初始化思考步骤
+  thinkingTrace.value = [
+    { type: 'draft', title: '草稿生成', status: 'pending', content: '', expanded: true, collapsible: false },
+    { type: 'audit', title: '质量审查', status: 'pending', content: '', expanded: true, collapsible: false },
+    { type: 'refine', title: '精炼优化', status: 'pending', content: '', expanded: false, collapsible: true }
+  ]
+
+  // 当前输出的步骤索引（0=draft, 1=audit, 2=refine）
+  let activeStep = 0
+  currentStepIdx.value = 0
+
+  const requestData = isAgent
+    ? {
+        promptType: 'agent' as const,
+        name: name,
+        roleDescription: text,
+        capabilities: '',
+        behaviors: '',
+        communicationStyle: 'professional'
+      }
+    : {
+        promptType: 'skill' as const,
+        name: name,
+        description: text,
+        skillType: 'api' as const,
+        method: 'GET',
+        endpoint: '',
+        parameters: '',
+        outputDescription: ''
+      }
+
+  cancelStream.value = promptApi.generatePipelineStream(
+    requestData,
+    {
+      onStageStart: (event: PipelineStageEvent) => {
+        // 映射 stage 到步骤索引
+        const stageMap: Record<string, number> = { draft: 0, audit: 1, refine: 2 }
+        const idx = stageMap[event.stage] ?? 0
+        activeStep = idx
+        currentStepIdx.value = idx
+
+        // 标记为进行中
+        for (let i = 0; i < thinkingTrace.value.length; i++) {
+          if (i < idx) thinkingTrace.value[i].status = 'done'
+          else if (i === idx) thinkingTrace.value[i].status = 'running'
+          else thinkingTrace.value[i].status = 'pending'
+        }
+
+        // 清空当前步骤的内容
+        thinkingTrace.value[idx].content = ''
+      },
+
+      onMessage: (content: string) => {
+        // 追加内容到当前步骤
+        const step = thinkingTrace.value[activeStep]
+        if (step) {
+          step.content += content
+        }
+      },
+
+      onStageComplete: (event: PipelineStageCompleteEvent) => {
+        const stageMap: Record<string, number> = { draft: 0, audit: 1, refine: 2 }
+        const idx = stageMap[event.stage] ?? 0
+
+        if (event.status === 'ok') {
+          thinkingTrace.value[idx].status = 'done'
+          if (event.score !== undefined) {
+            thinkingTrace.value[idx].score = event.score
+          }
+          // 审计阶段完成时展开精炼步骤
+          if (event.stage === 'audit') {
+            thinkingTrace.value[2].expanded = true
+          }
+        } else {
+          thinkingTrace.value[idx].status = 'error'
+        }
+      },
+
+      onDone: (fullContent: string) => {
+        isStreaming.value = false
+        loading.value = false
+        cancelStream.value = null
+        // 所有未完成步骤标记为完成
+        thinkingTrace.value.forEach(s => {
+          if (s.status === 'running') s.status = 'done'
+        })
+        // 最终结果展示
+        result.value = fullContent
+      },
+
+      onError: (err: string) => {
+        isStreaming.value = false
+        loading.value = false
+        cancelStream.value = null
+        // 当前步骤标记错误
+        if (thinkingTrace.value[currentStepIdx.value]) {
+          thinkingTrace.value[currentStepIdx.value].status = 'error'
+        }
+        toast({ message: err || '生成失败', type: 'error' })
+      }
+    }
+  )
+}
+
+/** 从用户输入中提取一个简短名称 */
+function extractName(text: string): string {
+  // 尝试从 "叫做XXX"、"名为XXX"、"名字是XXX" 中提取
+  const patterns = [
+    /叫(?:做)?\s*([\u4e00-\u9fa5\w]{2,10})/,
+    /名(?:为|字)?\s*[:：]?\s*([\u4e00-\u9fa5\w]{2,10})/,
+    /称(?:为)?\s*([\u4e00-\u9fa5\w]{2,10})/,
+    /(?:创建|写|设计|生成)(?:一个|个)?([\u4e00-\u9fa5\w]{2,10})/
+  ]
+  for (const p of patterns) {
+    const m = text.match(p)
+    if (m) return m[1]
+  }
+  return ''
 }
 
 const onStreamContent = (content: string) => {
-  // 直接追加纯文本，不做 markdown 渲染
   result.value += content
 }
 
-const onStreamDone = () => {
+const onStreamDone = (fullContent: string) => {
   isStreaming.value = false
   loading.value = false
   cancelStream.value = null
-  // 注意：result.value 此时已经是实时渲染的 HTML（由 displayedResultWithCursor 处理）
-  // 不需要再次调用 md.render()
+  result.value = fullContent || result.value
 }
 
 const onStreamError = () => {
@@ -566,27 +488,22 @@ const onStreamError = () => {
   cancelStream.value = null
 }
 
-const reset = () => {
+const resetAll = () => {
   result.value = ''
   showResult.value = false
+  thinkingTrace.value = []
   if (cancelStream.value) {
     cancelStream.value()
     cancelStream.value = null
   }
   loading.value = false
   isStreaming.value = false
+  currentStepIdx.value = -1
 }
 
-const resetAgent = () => {
-  if (!confirm('确定要重置 Agent 表单吗？未保存的内容将会丢失。')) return
-  agentForm.value = { name: '', role: '', capabilities: '', behaviors: '', communicationStyle: 'professional' }
-  reset()
-}
-
-const resetSkill = () => {
-  if (!confirm('确定要重置 Skill 表单吗？未保存的内容将会丢失。')) return
-  skillForm.value = { name: '', description: '', type: 'api', method: 'GET', endpoint: '', functionCode: '', parameters: '', outputDescription: '' }
-  reset()
+const toggleStep = (idx: number) => {
+  const step = thinkingTrace.value[idx]
+  if (step) step.expanded = !step.expanded
 }
 
 const toast = (options: { message: string; type?: 'success' | 'error' | 'warning' | 'info'; duration?: number }) => {
@@ -594,174 +511,38 @@ const toast = (options: { message: string; type?: 'success' | 'error' | 'warning
 }
 
 const copyResult = async () => {
+  const textToCopy = result.value
+  if (!textToCopy) {
+    toast({ message: '没有内容可复制', type: 'warning' })
+    return
+  }
   try {
-    // result.value 是纯文本 markdown 内容
-    const textToCopy = result.value
-    if (!textToCopy) {
-      toast({ message: '没有内容可复制', type: 'warning' })
-      return
-    }
-    // 使用 textarea 方法，兼容性更好
+    await navigator.clipboard.writeText(textToCopy)
+    copySuccess.value = true
+    toast({ message: '复制成功', type: 'success' })
+    setTimeout(() => { copySuccess.value = false }, 1000)
+  } catch {
     const textarea = document.createElement('textarea')
     textarea.value = textToCopy
     textarea.style.position = 'fixed'
     textarea.style.opacity = '0'
     document.body.appendChild(textarea)
     textarea.select()
-    const success = document.execCommand('copy')
+    document.execCommand('copy')
     document.body.removeChild(textarea)
-    if (success) {
-      copySuccess.value = true
-      toast({ message: '复制成功', type: 'success' })
-      setTimeout(() => { copySuccess.value = false }, 1000)
-    } else {
-      // 降级方案：尝试 navigator.clipboard
-      try {
-        await navigator.clipboard.writeText(textToCopy)
-        copySuccess.value = true
-        toast({ message: '复制成功', type: 'success' })
-        setTimeout(() => { copySuccess.value = false }, 1000)
-      } catch {
-        toast({ message: '复制失败，请手动复制', type: 'error' })
-      }
-    }
-  } catch (error) {
-    console.error('Copy failed:', error)
-    toast({ message: '复制失败，请重试', type: 'error' })
+    copySuccess.value = true
+    setTimeout(() => { copySuccess.value = false }, 1000)
   }
-}
-
-const savePrompt = async () => {
-  try {
-    // result.value 是纯文本 markdown 内容
-    const generatedPrompt = result.value.trim()
-    if (!generatedPrompt) {
-      toast({ message: '没有内容可保存', type: 'warning' })
-      return
-    }
-
-    if (currentType.value === 'agent') {
-      await promptApi.saveAgent({
-        name: agentForm.value.name,
-        roleDescription: agentForm.value.role,
-        capabilities: agentForm.value.capabilities,
-        behaviors: agentForm.value.behaviors,
-        communicationStyle: agentForm.value.communicationStyle,
-        generatedPrompt: generatedPrompt
-      })
-      saveSuccess.value = true
-      toast({ message: '保存成功', type: 'success' })
-      setTimeout(() => { saveSuccess.value = false }, 1000)
-    } else {
-      // 将 parameters 转为 JSON 字符串
-      let parametersJson = skillForm.value.parameters
-      if (parametersJson && parametersJson.trim()) {
-        // 如果是普通文本格式，尝试转为 JSON
-        try {
-          // 检查是否已经是 JSON
-          JSON.parse(parametersJson)
-        } catch {
-          // 不是 JSON，转换为 JSON 格式
-          const lines = parametersJson.split('\n').filter(l => l.trim())
-          const obj: Record<string, string> = {}
-          lines.forEach(line => {
-            const [key, ...valueParts] = line.split(':')
-            if (key && valueParts.length) {
-              obj[key.trim()] = valueParts.join(':').trim()
-            }
-          })
-          parametersJson = JSON.stringify(obj, null, 2)
-        }
-      }
-
-      await promptApi.saveSkill({
-        name: skillForm.value.name,
-        description: skillForm.value.description,
-        skillType: skillForm.value.type,
-        method: skillForm.value.method,
-        endpoint: skillForm.value.endpoint,
-        parameters: parametersJson,
-        outputDescription: skillForm.value.outputDescription,
-        generatedPrompt: generatedPrompt
-      })
-      saveSuccess.value = true
-      toast({ message: '保存成功', type: 'success' })
-      setTimeout(() => { saveSuccess.value = false }, 1000)
-    }
-  } catch (error) {
-    console.error('Save failed:', error)
-    toast({ message: '保存失败: ' + (error as Error).message, type: 'error' })
-  }
-}
-
-const toggleExportMenu = () => { showExportMenu.value = !showExportMenu.value }
-
-const exportPrompt = (format: 'markdown' | 'json' | 'txt') => {
-  showExportMenu.value = false
-  // 使用表单名称作为文件名
-  const name = currentType.value === 'agent' ? agentForm.value.name : skillForm.value.name
-  const safeName = name ? name.replace(/[^a-zA-Z0-9一-龥]/g, '_').substring(0, 20) : 'prompt'
-  const timestamp = new Date().toISOString().slice(0, 10)
-  let content = ''
-  let filename = `${safeName}_${timestamp}`
-  let mimeType = 'text/plain'
-
-  if (format === 'markdown') {
-    content = `# ${name || 'AI 提示词'}\n\n${result.value}\n\n---\n*由 Prompt Flow Craft 生成*\n`
-    filename += '.md'
-    mimeType = 'text/markdown'
-  } else if (format === 'json') {
-    content = JSON.stringify({ name: name, prompt: result.value, type: currentType.value, generatedAt: new Date().toISOString() }, null, 2)
-    filename += '.json'
-    mimeType = 'application/json'
-  } else {
-    content = result.value
-    filename += '.txt'
-  }
-
-  const blob = new Blob([content], { type: mimeType })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
-}
-
-const handleClickOutside = (event: MouseEvent) => {
-  const target = event.target as HTMLElement
-  if (!target.closest('.export-wrapper')) showExportMenu.value = false
-}
-
-function handleReuseHistory(event: Event) {
-  const customEvent = event as CustomEvent<PromptRecord>
-  const record = customEvent.detail
-
-  if (record.generatedPrompt) {
-    agentForm.value = {
-      name: record.name || '',
-      role: record.roleDescription || record.taskDescription || '',
-      capabilities: record.capabilities || '',
-      behaviors: record.behaviors || '',
-      communicationStyle: record.communicationStyle || 'professional'
-    }
-  }
-  currentType.value = 'agent'
 }
 
 onMounted(() => {
   if (route.query.task) {
-    agentForm.value.role = String(route.query.task)
+    userInput.value = String(route.query.task)
   }
-  window.addEventListener('click', handleClickOutside)
-  window.addEventListener('reuse-history', handleReuseHistory)
+  if (cancelStream.value) cancelStream.value()
 })
 
 onUnmounted(() => {
-  window.removeEventListener('click', handleClickOutside)
-  window.removeEventListener('reuse-history', handleReuseHistory)
   if (cancelStream.value) cancelStream.value()
 })
 </script>
@@ -775,7 +556,7 @@ onUnmounted(() => {
 
 .generate-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 380px 1fr;
   gap: 24px;
   max-width: 1400px;
   margin: 0 auto;
@@ -789,42 +570,47 @@ onUnmounted(() => {
   }
 }
 
-/* ===== Config Panel ===== */
-.config-panel {
+/* ===== Input Panel ===== */
+.input-panel {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.config-wrapper {
+.input-wrapper {
   display: flex;
   flex-direction: column;
   gap: 16px;
   flex: 1;
-  overflow-y: auto;
 }
 
-/* ===== Type Selector ===== */
+/* ===== Input Header ===== */
+.input-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .type-selector {
   display: flex;
-  gap: 8px;
-  padding: 6px;
+  gap: 6px;
+  padding: 5px;
   background: var(--bg-panel);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
-  width: fit-content;
 }
 
 .type-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
+  gap: 6px;
+  padding: 10px 18px;
   border: none;
   border-radius: var(--radius-lg);
   background: transparent;
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-base);
@@ -846,8 +632,68 @@ onUnmounted(() => {
   align-items: center;
 }
 
-/* ===== Form Card ===== */
-.form-card {
+/* ===== Pipeline Toggle ===== */
+.pipeline-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  opacity: 0.8;
+  transition: opacity var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.pipeline-toggle:hover {
+  opacity: 1;
+}
+
+.pipeline-toggle .toggle-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+}
+
+.pipeline-toggle input {
+  display: none;
+}
+
+.pipeline-toggle .toggle-track {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  background: var(--border-color);
+  border-radius: 999px;
+  transition: background var(--transition-base);
+}
+
+.pipeline-toggle .toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  transition: transform var(--transition-base);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.pipeline-toggle input:checked + .toggle-track {
+  background: var(--color-primary-500);
+}
+
+.pipeline-toggle input:checked + .toggle-track .toggle-knob {
+  transform: translateX(16px);
+}
+
+.pipeline-toggle input:disabled + .toggle-track {
+  opacity: 0.5;
+}
+
+/* ===== Big Input Area ===== */
+.input-area {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-2xl);
@@ -855,42 +701,68 @@ onUnmounted(() => {
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+  transition: border-color var(--transition-base);
 }
 
-.form-card-header {
+.input-area:focus-within {
+  border-color: var(--color-primary-400);
+  box-shadow: 0 0 0 3px var(--glow-primary-soft);
+}
+
+.big-input {
+  flex: 1;
+  width: 100%;
+  padding: 20px;
+  border: none;
+  resize: none;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+  background: transparent;
+  font-family: inherit;
+  min-height: 180px;
+}
+
+.big-input:focus {
+  outline: none;
+}
+
+.big-input::placeholder {
+  color: var(--text-placeholder);
+  font-size: 0.9rem;
+}
+
+.input-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color);
   background: var(--bg-panel);
 }
 
-.form-card-title {
+.input-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.input-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin: 0;
+  gap: 8px;
 }
 
-.title-icon {
-  font-size: 1.25rem;
-}
-
+/* ===== Buttons ===== */
 .btn-example {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   background: var(--bg-card);
   color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-base);
 }
@@ -901,179 +773,16 @@ onUnmounted(() => {
   background: var(--glow-primary-soft);
 }
 
-.form-card-body {
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  flex: 1;
-  overflow-y: auto;
-}
-
-.form-card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 16px 20px;
-  border-top: 1px solid var(--border-color);
-  background: var(--bg-panel);
-}
-
-/* ===== Form Elements ===== */
-.form-row {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.form-row.two-col {
-  flex-direction: row;
-  gap: 16px;
-}
-
-.form-row.two-col > .form-group {
-  flex: 1;
-}
-
-@media (max-width: 640px) {
-  .form-row.two-col {
-    flex-direction: column;
-  }
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.required {
-  color: var(--color-error);
-  font-size: 0.7rem;
-}
-
-.optional {
-  color: var(--text-muted);
-  font-weight: 400;
-  font-size: 0.75rem;
-}
-
-.form-error {
-  font-size: 0.75rem;
-  color: var(--color-error);
-  font-weight: 500;
-}
-
-.form-input,
-.form-select,
-.form-textarea {
-  width: 100%;
-  padding: 12px 14px;
-  font-size: 0.9rem;
-  color: var(--text-primary);
-  background: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-base);
-  font-family: inherit;
-}
-
-.form-input:hover,
-.form-select:hover,
-.form-textarea:hover {
-  border-color: var(--border-hover);
-}
-
-.form-input:focus,
-.form-select:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 3px var(--glow-primary-soft);
-  background: var(--bg-card);
-}
-
-.form-input::placeholder,
-.form-textarea::placeholder {
-  color: var(--text-placeholder);
-}
-
-.form-input.error,
-.form-textarea.error {
-  border-color: var(--color-error);
-}
-
-.form-textarea {
-  resize: vertical;
-  min-height: 72px;
-  line-height: 1.6;
-}
-
-.form-textarea.code {
-  font-family: var(--font-mono);
-  font-size: 0.85rem;
-}
-
-.form-select {
-  cursor: pointer;
-}
-
-/* ===== Chips ===== */
-.style-chips,
-.type-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.style-chip,
-.type-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  background: var(--bg-card);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-base);
-}
-
-.style-chip:hover,
-.type-chip:hover {
-  border-color: var(--color-primary-400);
-  color: var(--text-primary);
-}
-
-.style-chip.active,
-.type-chip.active {
-  border-color: var(--color-primary-500);
-  background: var(--glow-primary-soft);
-  color: var(--color-primary-600);
-}
-
-/* ===== Buttons ===== */
 .btn-reset {
-  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   background: transparent;
   color: var(--text-secondary);
-  font-size: 0.9rem;
-  font-weight: 600;
   cursor: pointer;
   transition: all var(--transition-base);
 }
@@ -1083,16 +792,21 @@ onUnmounted(() => {
   color: var(--text-primary);
 }
 
+.btn-reset:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .btn-generate {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 28px;
+  padding: 10px 24px;
   border: none;
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, var(--color-primary-600), var(--color-primary-700));
   color: white;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
   transition: all var(--transition-base);
@@ -1162,31 +876,6 @@ onUnmounted(() => {
   color: var(--color-primary-500);
 }
 
-.streaming-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: var(--glow-primary-soft);
-  color: var(--color-primary-600);
-  font-size: 0.75rem;
-  font-weight: 600;
-  border-radius: var(--radius-full);
-}
-
-.stream-dot {
-  width: 6px;
-  height: 6px;
-  background: var(--color-primary-500);
-  border-radius: 50%;
-  animation: pulse 1s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
 .result-actions {
   display: flex;
   gap: 8px;
@@ -1225,91 +914,265 @@ onUnmounted(() => {
   100% { transform: scale(1); }
 }
 
-.export-wrapper {
-  position: relative;
+/* ===== Thinking Trace ===== */
+.thinking-trace {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  flex: 1;
 }
 
-.export-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 8px;
-  padding: 6px;
-  background: var(--bg-panel);
+.thinking-step {
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-dropdown);
-  min-width: 130px;
-  z-index: 10;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: all var(--transition-base);
 }
 
-.export-menu button {
+.thinking-step.step-draft {
+  border-left: 3px solid var(--color-primary-500);
+}
+
+.thinking-step.step-audit {
+  border-left: 3px solid #f59e0b;
+}
+
+.thinking-step.step-refine {
+  border-left: 3px solid #8b5cf6;
+}
+
+.step-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 12px;
-  border: none;
-  border-radius: var(--radius-md);
-  background: transparent;
-  color: var(--text-primary);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all var(--transition-fast);
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--bg-panel);
+  flex-wrap: wrap;
 }
 
-.export-menu button:hover {
+.step-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.step-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.step-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.step-badge.running {
   background: var(--glow-primary-soft);
   color: var(--color-primary-600);
 }
 
-.result-card-body {
-  flex: 1;
+.step-badge.done {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+}
+
+.step-badge.error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+}
+
+.running-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--color-primary-500);
+  border-radius: 50%;
+  animation: pulse-dot 1s ease-in-out infinite;
+  margin-right: 2px;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.step-score {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.step-score.score-excellent {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--color-success);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.step-score.score-good {
+  background: rgba(234, 179, 8, 0.1);
+  color: #b8860b;
+  border: 1px solid rgba(234, 179, 8, 0.2);
+}
+
+.step-score.score-poor {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-error);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.step-content {
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-height: 400px;
   overflow-y: auto;
 }
 
-.result-content {
-  padding: 20px;
+.step-content.is-streaming {
+  background: rgba(59, 130, 246, 0.02);
+}
+
+.step-content :deep(.markdown-body),
+.step-markdown :deep(.markdown-body) {
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+.step-content :deep(.markdown-body h1),
+.step-content :deep(.markdown-body h2),
+.step-content :deep(.markdown-body h3),
+.step-markdown :deep(.markdown-body h1),
+.step-markdown :deep(.markdown-body h2),
+.step-markdown :deep(.markdown-body h3) {
+  font-size: 0.95rem;
+  margin: 0.5em 0 0.25em;
+  color: var(--text-primary);
+}
+
+.step-content :deep(.markdown-body p),
+.step-markdown :deep(.markdown-body p) {
+  margin: 0 0 0.4em;
+}
+
+.step-content :deep(.markdown-body ul),
+.step-content :deep(.markdown-body ol),
+.step-markdown :deep(.markdown-body ul),
+.step-markdown :deep(.markdown-body ol) {
+  margin: 0.3em 0;
+  padding-left: 1.2em;
+}
+
+.step-content :deep(.markdown-body code),
+.step-markdown :deep(.markdown-body code) {
+  font-size: 0.82em;
+}
+
+.step-content :deep(.markdown-body pre),
+.step-markdown :deep(.markdown-body pre) {
+  margin: 0.5em 0;
+  border-radius: var(--radius-md);
+}
+
+.audit-summary {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.step-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary-600);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.step-toggle:hover {
+  background: var(--bg-hover);
+}
+
+/* ===== Result Divider ===== */
+.result-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px 8px;
+}
+
+.result-divider::before,
+.result-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.divider-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.result-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
   background: var(--bg-panel);
 }
 
-.result-content :deep(.markdown-body) {
+.result-body :deep(.markdown-body) {
   font-size: 0.9rem;
   line-height: 1.8;
   color: var(--text-secondary);
 }
 
-.result-content :deep(.markdown-body h1),
-.result-content :deep(.markdown-body h2),
-.result-content :deep(.markdown-body h3) {
+.result-body :deep(.markdown-body h1),
+.result-body :deep(.markdown-body h2),
+.result-body :deep(.markdown-body h3) {
   color: var(--text-primary);
   margin-top: 1em;
   margin-bottom: 0.5em;
   font-weight: 700;
 }
 
-.result-content :deep(.markdown-body h2) {
+.result-body :deep(.markdown-body h2) {
   color: var(--color-primary-600);
   font-size: 1em;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 6px;
 }
 
-.result-content :deep(.markdown-body p) {
-  margin: 0 0 0.8em 0;
+.result-body :deep(.markdown-body p) {
+  margin: 0 0 0.8em;
 }
 
-.result-content :deep(.markdown-body ul),
-.result-content :deep(.markdown-body ol) {
+.result-body :deep(.markdown-body ul),
+.result-body :deep(.markdown-body ol) {
   margin: 0.5em 0;
   padding-left: 1.3em;
 }
 
-.result-content :deep(.markdown-body li) {
+.result-body :deep(.markdown-body li) {
   margin: 4px 0;
 }
 
-.result-content :deep(.markdown-body code) {
+.result-body :deep(.markdown-body code) {
   padding: 0.2em 0.4em;
   background: var(--bg-hover);
   border-radius: 4px;
@@ -1318,14 +1181,14 @@ onUnmounted(() => {
   color: var(--color-primary-600);
 }
 
-.result-content :deep(.markdown-body pre) {
+.result-body :deep(.markdown-body pre) {
   margin: 1em 0;
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: #1e1e2e;
 }
 
-.result-content :deep(.markdown-body pre code) {
+.result-body :deep(.markdown-body pre code) {
   display: block;
   padding: 1em;
   background: transparent;
@@ -1386,21 +1249,37 @@ onUnmounted(() => {
 .empty-desc {
   font-size: 0.9rem;
   color: var(--text-secondary);
-  margin: 0;
+  margin: 0 0 20px;
+}
+
+.example-hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 400px;
+}
+
+.hint-chip {
+  padding: 10px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-align: left;
+}
+
+.hint-chip:hover {
+  border-color: var(--color-primary-400);
+  color: var(--color-primary-600);
+  background: var(--glow-primary-soft);
 }
 
 /* ===== Transitions ===== */
-.slide-fade-enter-active,
-.slide-fade-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-fade-enter-from,
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
 .result-appear-enter-active {
   animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -1410,21 +1289,24 @@ onUnmounted(() => {
   to { opacity: 1; transform: translateY(0); }
 }
 
-.dropdown-enter-active,
-.dropdown-leave-active {
-  transition: all 0.2s ease;
-}
-
-.dropdown-enter-from,
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
   .generate-page {
     padding: 16px;
+  }
+
+  .generate-container {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .input-panel {
+    min-height: 200px;
+  }
+
+  .input-header {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .type-selector {
@@ -1436,17 +1318,13 @@ onUnmounted(() => {
     justify-content: center;
   }
 
-  .form-card-footer {
-    flex-direction: column;
-  }
-
-  .btn-reset, .btn-generate {
-    width: 100%;
-    justify-content: center;
+  .big-input {
+    min-height: 120px;
   }
 
   .result-empty {
-    min-height: 300px;
+    min-height: 200px;
   }
 }
 </style>
+

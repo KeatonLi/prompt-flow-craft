@@ -4,6 +4,7 @@ import Generate from '../views/Generate.vue'
 import Templates from '../views/Templates.vue'
 import Statistics from '../views/Statistics.vue'
 import Share from '../views/Share.vue'
+import NotFound from '../views/NotFound.vue'
 
 const routes = [
   {
@@ -30,6 +31,11 @@ const routes = [
     path: '/statistics',
     name: 'Statistics',
     component: Statistics
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: NotFound
   }
 ]
 

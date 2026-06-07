@@ -169,26 +169,25 @@ public class OpenAICompatibleClient implements LLMClient {
                     new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    // 调试日志：打印原始 SSE 行
-                    logger.info("[LLM SSE] 原始行: {}", line);
+                    logger.debug("[LLM SSE] 原始行: {}", line);
                     if (line.startsWith("data: ")) {
                         String data = line.substring(6);
                         if ("[DONE]".equals(data)) {
-                            logger.info("[LLM SSE] 收到 [DONE]");
+                            logger.debug("[LLM SSE] 收到 [DONE]");
                             onComplete.run();
                             return;
                         }
 
-                        logger.info("[LLM SSE] data长度: {}, 内容: {}", data.length(), data);
+                        logger.debug("[LLM SSE] data长度: {}, 内容: {}", data.length(), data);
                         String content = extractContentFromStream(data);
-                        logger.info("[LLM SSE] 提取的内容: {}", content);
+                        logger.debug("[LLM SSE] 提取的内容: {}", content);
                         if (content != null && !content.isEmpty()) {
                             onContent.accept(content);
                         }
                     } else if (line.startsWith("data:")) {
                         // 没有空格的情况
                         String data = line.substring(5);
-                        logger.info("[LLM SSE] data(无空格)长度: {}, 内容: {}", data.length(), data);
+                        logger.debug("[LLM SSE] data(无空格)长度: {}, 内容: {}", data.length(), data);
                         String content = extractContentFromStream(data);
                         if (content != null && !content.isEmpty()) {
                             onContent.accept(content);

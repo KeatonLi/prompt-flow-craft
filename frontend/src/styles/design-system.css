@@ -396,8 +396,10 @@
 
 .btn--secondary:hover:not(:disabled) {
   background: var(--bg-hover);
-  border-color: var(--border-hover);
-  color: var(--text-primary);
+  border-color: var(--color-primary-400);
+  color: var(--color-primary-600);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px var(--glow-primary-soft);
 }
 
 .btn--ghost {

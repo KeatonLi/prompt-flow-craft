@@ -6,6 +6,10 @@ import com.promptflow.dto.*;
 import com.promptflow.dto.llm.LLMRequest;
 import com.promptflow.dto.llm.LLMResponse;
 import com.promptflow.service.quality.PromptQualityService;
+import com.promptflow.strategy.pipeline.PipelineConfig;
+import com.promptflow.strategy.pipeline.PipelineContext;
+import com.promptflow.strategy.pipeline.PipelineOrchestrator;
+import com.promptflow.strategy.pipeline.dto.PipelineRequest;
 import com.promptflow.strategy.prompt.PromptStrategy;
 import com.promptflow.strategy.prompt.PromptStrategyFactory;
 import com.promptflow.strategy.prompt.StrategyContext;
@@ -40,6 +44,8 @@ public class PromptService {
     private final LLMClient llmClient;
     private final PromptStrategyFactory strategyFactory;
     private final PromptQualityService qualityService;
+    private final PipelineOrchestrator pipelineOrchestrator;
+    private final PipelineConfig pipelineConfig;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // 提示词模板缓存
@@ -59,10 +65,14 @@ public class PromptService {
     @Autowired
     public PromptService(LLMClient llmClient,
                         PromptStrategyFactory strategyFactory,
-                        PromptQualityService qualityService) {
+                        PromptQualityService qualityService,
+                        PipelineOrchestrator pipelineOrchestrator,
+                        PipelineConfig pipelineConfig) {
         this.llmClient = llmClient;
         this.strategyFactory = strategyFactory;
         this.qualityService = qualityService;
+        this.pipelineOrchestrator = pipelineOrchestrator;
+        this.pipelineConfig = pipelineConfig;
         loadPromptTemplates();
     }
 
@@ -297,6 +307,83 @@ public class PromptService {
             emitter.completeWithError(e);
         }
         if (onError != null) onError.accept(error);
+    }
+
+    // ==================== Pipeline 生成方法 ====================
+
+    /**
+     * 使用 Pipeline 流水线生成 Agent 提示词（流式）
+     * 经过：草稿生成 → 质量审计 → 条件精炼 三个阶段
+     */
+    public SseEmitter generateWithPipelineStream(PipelineRequest pipelineReq) {
+        validatePipelineRequest(pipelineReq);
+
+        PipelineContext ctx = buildPipelineContext(pipelineReq);
+        return pipelineOrchestrator.executeStream(ctx);
+    }
+
+    /**
+     * 使用 Pipeline 流水线生成（同步）
+     */
+    public String generateWithPipeline(PipelineRequest pipelineReq) {
+        validatePipelineRequest(pipelineReq);
+
+        PipelineContext ctx = buildPipelineContext(pipelineReq);
+        return pipelineOrchestrator.execute(ctx);
+    }
+
+    /**
+     * 构建 Pipeline 上下文
+     */
+    private PipelineContext buildPipelineContext(PipelineRequest req) {
+        PipelineContext.Builder builder = PipelineContext.builder()
+            .promptType(req.getPromptType());
+
+        if ("agent".equals(req.getPromptType())) {
+            builder.agentFields(
+                req.getName(),
+                req.getRoleDescription(),
+                req.getCapabilities(),
+                req.getBehaviors(),
+                req.getCommunicationStyle()
+            );
+        } else {
+            builder.skillFields(
+                req.getName(),
+                req.getDescription(),
+                req.getSkillType(),
+                req.getMethod(),
+                req.getEndpoint(),
+                req.getParameters(),
+                req.getOutputDescription()
+            );
+        }
+
+        return builder.build();
+    }
+
+    private void validatePipelineRequest(PipelineRequest req) {
+        if (req == null) {
+            throw new IllegalArgumentException("请求不能为空");
+        }
+        if (req.getPromptType() == null || req.getPromptType().trim().isEmpty()) {
+            throw new IllegalArgumentException("promptType 不能为空");
+        }
+        if ("agent".equals(req.getPromptType())) {
+            if (req.getName() == null || req.getName().trim().isEmpty()) {
+                throw new IllegalArgumentException("Agent名称不能为空");
+            }
+            if (req.getRoleDescription() == null || req.getRoleDescription().trim().isEmpty()) {
+                throw new IllegalArgumentException("Agent角色定位不能为空");
+            }
+        } else {
+            if (req.getName() == null || req.getName().trim().isEmpty()) {
+                throw new IllegalArgumentException("Skill名称不能为空");
+            }
+            if (req.getDescription() == null || req.getDescription().trim().isEmpty()) {
+                throw new IllegalArgumentException("Skill功能描述不能为空");
+            }
+        }
     }
 
     // ==================== Agent 生成方法 ====================

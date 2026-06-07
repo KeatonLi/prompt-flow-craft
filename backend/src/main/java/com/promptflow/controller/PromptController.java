@@ -3,6 +3,7 @@ package com.promptflow.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.promptflow.dto.*;
 import com.promptflow.service.PromptService;
+import com.promptflow.strategy.pipeline.dto.PipelineRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 提示词 API 控制器
@@ -44,9 +48,11 @@ public class PromptController {
     }
 
     /**
-     * 生成 Agent 提示词（流式）
+     * 流式生成 Agent 提示词（流式）
      * POST /api/generate-agent/stream
+     * @deprecated 请使用 /api/pipeline/stream 替代，支持多阶段审查
      */
+    @Deprecated
     @PostMapping(value = "/generate-agent/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter generateAgentStream(@RequestBody AgentPromptRequest request) {
         logger.info("收到Agent提示词流式生成请求: {}", request.getName());
@@ -66,7 +72,9 @@ public class PromptController {
     /**
      * 生成 Skill 提示词（流式）
      * POST /api/generate-skill/stream
+     * @deprecated 请使用 /api/pipeline/stream 替代，支持多阶段审查
      */
+    @Deprecated
     @PostMapping(value = "/generate-skill/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter generateSkillStream(@RequestBody SkillPromptRequest request) {
         logger.info("收到Skill提示词流式生成请求: {}", request.getName());
@@ -83,6 +91,39 @@ public class PromptController {
             null,
             null
         );
+    }
+
+    /**
+     * Pipeline 流水线生成（流式）
+     * 经过：草稿生成 → 质量审查 → 精炼优化 三个阶段
+     * POST /api/pipeline/stream
+     */
+    @PostMapping(value = "/pipeline/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter generatePipelineStream(@RequestBody PipelineRequest request) {
+        logger.info("收到 Pipeline 流式生成请求: type={}, name={}", request.getPromptType(), request.getName());
+        return promptService.generateWithPipelineStream(request);
+    }
+
+    /**
+     * Pipeline 流水线生成（同步）
+     * POST /api/pipeline/generate
+     */
+    @PostMapping("/pipeline/generate")
+    public ResponseEntity<Map<String, Object>> generatePipeline(@RequestBody PipelineRequest request) {
+        logger.info("收到 Pipeline 同步生成请求: type={}, name={}", request.getPromptType(), request.getName());
+        try {
+            String result = promptService.generateWithPipeline(request);
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("data", result);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Pipeline 生成失败", e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.internalServerError().body(errorResponse);
+        }
     }
 
     /**

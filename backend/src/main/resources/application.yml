@@ -42,3 +42,11 @@ logging:
     root: ${LOG_LEVEL_ROOT:INFO}
     com.promptflow: ${LOG_LEVEL_PROMPTFLOW:DEBUG}
     org.springframework.ai: ${LOG_LEVEL_SPRING_AI:DEBUG}
+
+pipeline:
+  max-rounds: 2
+  quality-threshold: 80
+  audit-enabled: true
+  refine-enabled: true
+  audit-model: ""
+  refine-model: ""

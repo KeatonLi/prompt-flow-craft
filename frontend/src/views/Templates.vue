@@ -105,10 +105,23 @@
 
           <!-- History List -->
           <div class="history-list" ref="listRef">
-            <!-- Loading State -->
-            <div v-if="pending && list.length === 0" class="loading-state">
-              <div class="loading-spinner"></div>
-              <span>加载中...</span>
+            <!-- Skeleton Loading -->
+            <div v-if="pending && list.length === 0" class="skeleton-grid">
+              <div v-for="n in 6" :key="n" class="skeleton-card">
+                <div class="skeleton-header">
+                  <div class="skeleton-line w-40"></div>
+                  <div class="skeleton-line w-20"></div>
+                </div>
+                <div class="skeleton-body">
+                  <div class="skeleton-line w-100"></div>
+                  <div class="skeleton-line w-80"></div>
+                  <div class="skeleton-line w-60"></div>
+                </div>
+                <div class="skeleton-footer">
+                  <div class="skeleton-tag"></div>
+                  <div class="skeleton-tag"></div>
+                </div>
+              </div>
             </div>
 
             <!-- Empty State -->
@@ -1186,5 +1199,92 @@ onUnmounted(() => {
   .info-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ===== Skeleton Loading ===== */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  padding: 4px;
+}
+
+.skeleton-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.skeleton-header {
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.skeleton-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-footer {
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.skeleton-line {
+  height: 14px;
+  border-radius: 6px;
+  background: var(--bg-hover);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-line.w-20 { width: 20%; }
+.skeleton-line.w-40 { width: 40%; }
+.skeleton-line.w-60 { width: 60%; }
+.skeleton-line.w-80 { width: 80%; }
+.skeleton-line.w-100 { width: 100%; }
+
+.skeleton-tag {
+  width: 60px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--bg-hover);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-tag::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(200%); }
 }
 </style>

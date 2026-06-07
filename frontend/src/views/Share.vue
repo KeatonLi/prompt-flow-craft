@@ -280,12 +280,13 @@ onMounted(() => {
 }
 
 .hero-desc {
-  font-size: 16px;
+  font-size: 15px;
   color: #94a3b8;
   margin: 0 0 28px;
-  max-width: 400px;
+  max-width: 480px;
   margin-left: auto;
   margin-right: auto;
+  line-height: 1.6;
 }
 
 .hero-section .publish-btn {

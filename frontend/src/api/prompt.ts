@@ -20,6 +20,45 @@ export interface SkillPromptRequest {
   outputDescription?: string;
 }
 
+/** Pipeline 统一请求 */
+export interface PipelineRequest {
+  promptType: 'agent' | 'skill';
+  name: string;
+  roleDescription?: string;
+  capabilities?: string;
+  behaviors?: string;
+  communicationStyle?: string;
+  description?: string;
+  skillType?: string;
+  method?: string;
+  endpoint?: string;
+  parameters?: string;
+  outputDescription?: string;
+}
+
+/** Pipeline SSE 事件类型 */
+export interface PipelineStageEvent {
+  stage: 'draft' | 'audit' | 'refine';
+  name: string;
+  round: number;
+}
+
+export interface PipelineStageCompleteEvent {
+  stage: 'draft' | 'audit' | 'refine';
+  status: 'ok' | 'error';
+  score?: number;
+  needsRefine?: boolean;
+  message?: string;
+}
+
+export interface PipelineStreamCallbacks {
+  onStageStart: (event: PipelineStageEvent) => void;
+  onMessage: (content: string) => void;
+  onStageComplete: (event: PipelineStageCompleteEvent) => void;
+  onDone: (fullContent: string) => void;
+  onError: (error: string) => void;
+}
+
 export interface SaveAgentRequest {
   name: string;
   roleDescription: string;
@@ -419,5 +458,115 @@ export const promptApi = {
   health(): Promise<{ status: string }> {
     return request.get<ApiResponse<{ status: string }>>('/health')
       .then(res => res.data.data);
+  },
+
+  // Pipeline 流水线生成（流式） — 支持多阶段审查
+  generatePipelineStream(
+    data: PipelineRequest,
+    callbacks: PipelineStreamCallbacks
+  ): () => void {
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || '/api';
+    const url = `${apiUrl}/pipeline/stream`;
+
+    const controller = new AbortController();
+    let fullContent = '';
+    let buffer = '';
+
+    // SSE 解析状态
+    let currentEventName = '';
+    let currentEventData = '';
+
+    function processEvent() {
+      if (!currentEventData) return;
+
+      try {
+        const parsed = JSON.parse(currentEventData);
+
+        if (currentEventName === 'stage-start') {
+          callbacks.onStageStart(parsed as PipelineStageEvent);
+        } else if (currentEventName === 'message') {
+          fullContent += currentEventData;
+          callbacks.onMessage(currentEventData);
+        } else if (currentEventName === 'stage-complete') {
+          callbacks.onStageComplete(parsed as PipelineStageCompleteEvent);
+        } else if (currentEventName === 'error') {
+          callbacks.onError(parsed.error || currentEventData);
+        }
+      } catch {
+        // 非 JSON，当纯文本消息处理
+        if (currentEventName === 'message') {
+          fullContent += currentEventData;
+          callbacks.onMessage(currentEventData);
+        }
+      }
+
+      currentEventData = '';
+      currentEventName = '';
+    }
+
+    function processSSELine(line: string) {
+      const trimmed = line.trim();
+
+      if (trimmed.startsWith('event:')) {
+        if (currentEventData) processEvent();
+        currentEventName = trimmed.substring(6).trim();
+      } else if (trimmed.startsWith('data:')) {
+        const dataContent = trimmed.substring(5);
+        if (currentEventData && dataContent) {
+          currentEventData += '\n';
+        } else if (currentEventData && !dataContent) {
+          currentEventData += '\n';
+        }
+        currentEventData += dataContent;
+      } else if (trimmed === '') {
+        processEvent();
+      }
+    }
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
+      },
+      body: JSON.stringify(data),
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!response.body) throw new Error('响应体为空');
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          buffer += chunk;
+
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            processSSELine(line);
+          }
+        }
+
+        if (buffer.trim()) processSSELine(buffer);
+        callbacks.onDone(fullContent);
+      })
+      .catch((error) => {
+        if (error.name === 'AbortError') {
+          callbacks.onDone(fullContent);
+        } else {
+          callbacks.onError(error.message || '流水线生成失败');
+        }
+      });
+
+    return () => {
+      controller.abort();
+    };
   }
 };

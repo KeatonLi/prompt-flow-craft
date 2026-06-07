@@ -174,6 +174,16 @@ upload_files() {
         "backend/target/prompt-flow-craft-1.0.0.jar" \
         "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/backend.jar"
 
+    # 上传环境变量配置文件
+    if [ -f ".env" ]; then
+        echo -e "${YELLOW}上传环境变量配置...${NC}"
+        scp -i "$SSH_KEY_ABS" -P "$SERVER_PORT" \
+            ".env" \
+            "$SERVER_USER@$SERVER_HOST:$REMOTE_DIR/.env"
+    else
+        echo -e "${YELLOW}本地 .env 文件不存在，跳过环境变量上传${NC}"
+    fi
+
     # 上传前端文件
     echo -e "${YELLOW}上传前端文件...${NC}"
     scp -i "$SSH_KEY_ABS" -P "$SERVER_PORT" -r \

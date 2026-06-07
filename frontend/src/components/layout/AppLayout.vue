@@ -13,7 +13,18 @@
         <!-- Brand -->
         <router-link to="/" class="navbar-brand">
           <div class="brand-icon">
-            <img src="/brand-logo.png" alt="PromptFlow" width="36" height="36" />
+            <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+              <rect width="36" height="36" rx="10" fill="url(#brand-gradient)"/>
+              <path d="M10 18l6-6 6 6-6 6-6-6z" fill="white" opacity="0.9"/>
+              <path d="M14 14l4-4 4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <path d="M14 22l4 4 4-4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <defs>
+                <linearGradient id="brand-gradient" x1="0" y1="0" x2="36" y2="36">
+                  <stop stop-color="#3b82f6"/>
+                  <stop offset="1" stop-color="#6366f1"/>
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
           <span class="brand-text">PromptFlow</span>
         </router-link>
@@ -169,7 +180,7 @@ const navItems = [
   },
   {
     path: '/templates',
-    label: '已生成提示词',
+    label: '历史',
     icon: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>'
   },
   {
@@ -208,6 +219,21 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* ===== Theme Transitions ===== */
+.app-layout,
+.app-layout * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.app-layout :deep(.navbar-container),
+.app-layout :deep(.nav-item),
+.app-layout :deep(.action-btn),
+.app-layout :deep(.form-card),
+.app-layout :deep(.result-card),
+.app-layout :deep(.form-input),
+.app-layout :deep(.form-textarea) {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
 /* ============================================
    App Layout Container
    ============================================ */
