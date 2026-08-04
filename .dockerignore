@@ -1,0 +1,22 @@
+# 版本控制与本地工具
+.git
+.reasonix
+.idea
+.vscode
+.claude
+.codegraph
+*.iml
+
+# 构建产物（避免污染构建上下文）
+**/target
+**/dist
+**/node_modules
+frontend/dist
+
+# 本地环境与日志
+.env
+.env.local
+*.log
+deploy.sh
+dist.tar.gz
+.DS_Store
