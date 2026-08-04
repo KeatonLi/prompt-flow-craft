@@ -58,10 +58,10 @@ npm run lint
 
 **Backend:**
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` - Database config
-- `MODEL_API_KEY` - LLM API key (required)
-- `MODEL_API_BASE_URL` - LLM API base URL (default: https://dashscope.aliyuncs.com/compatible-mode/v1)
-- `MODEL_NAME` - Model name (default: qwen-turbo-2025-07-15)
-- `SERVER_PORT` - Server port (default: 8080)
+- `LLM_AUTH_TOKEN` - LLM API key (required)
+- `LLM_BASE_URL` - LLM API base URL (default: https://dashscope.aliyuncs.com/compatible-mode/v1)
+- `LLM_MODEL` - Model name (default: qwen-turbo-2025-07-15)
+- `SERVER_PORT` - Server port (default: 80)
 
 ## Architecture
 

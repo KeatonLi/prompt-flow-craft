@@ -224,15 +224,15 @@ backend/
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `DB_HOST` | localhost | 数据库地址 |
+| `DB_HOST` | - | 数据库地址 |
 | `DB_PORT` | 3306 | 数据库端口 |
-| `DB_NAME` | prompt_flow_craft | 数据库名 |
-| `DB_USERNAME` | root | 用户名 |
+| `DB_NAME` | - | 数据库名 |
+| `DB_USERNAME` | - | 用户名 |
 | `DB_PASSWORD` | - | 密码 |
-| `MODEL_API_KEY` | - | LLM API Key（必填） |
-| `MODEL_API_BASE_URL` | https://dashscope.aliyuncs.com/compatible-mode/v1 | API 地址 |
-| `MODEL_NAME` | qwen-turbo-2025-07-15 | 模型名称 |
-| `SERVER_PORT` | 8080 | 服务端口 |
+| `LLM_AUTH_TOKEN` | - | LLM API Key（必填） |
+| `LLM_BASE_URL` | https://dashscope.aliyuncs.com/compatible-mode/v1 | API 地址 |
+| `LLM_MODEL` | qwen-turbo-2025-07-15 | 模型名称 |
+| `SERVER_PORT` | 80 | 服务端口 |
 
 ## 常用命令
 

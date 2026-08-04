@@ -399,7 +399,7 @@ export DB_PORT=3306
 export DB_NAME=prompt_flow
 export DB_USERNAME=root
 export DB_PASSWORD=your_password
-export MODEL_API_KEY=your_api_key
+export LLM_AUTH_TOKEN=your_api_key
 
 # 4. 构建后端
 cd backend
@@ -486,11 +486,8 @@ docker-compose up -d
 ### 健康检查
 
 ```bash
-# 后端健康状态
-curl http://111.231.107.210:8080/api/health
-
-# 数据库连接状态
-curl http://111.231.107.210:8080/api/health/db
+# 后端健康状态（默认端口 80，可用 SERVER_PORT 调整）
+curl http://your-server/api/health
 ```
 
 ### 日志管理
@@ -509,9 +506,8 @@ grep ERROR /opt/prompt-flow-craft/backend.log
 
 | 服务 | 地址 |
 |------|------|
-| 前端应用 | http://111.231.107.210:3000 |
-| 后端 API | http://111.231.107.210:8080/api |
-| API 文档 | http://111.231.107.210:8080/swagger-ui.html |
+| 前端应用 | http://your-server |
+| 后端 API | http://your-server/api |
 
 ---
 

@@ -391,7 +391,7 @@ export DB_PORT=3306
 export DB_NAME=prompt_flow
 export DB_USERNAME=root
 export DB_PASSWORD=your_password
-export MODEL_API_KEY=your_api_key
+export LLM_AUTH_TOKEN=your_api_key
 
 # 4. Build backend
 cd backend
@@ -478,11 +478,8 @@ docker-compose up -d
 ### Health Check
 
 ```bash
-# Backend health
-curl http://111.231.107.210:8080/api/health
-
-# Database connection
-curl http://111.231.107.210:8080/api/health/db
+# Backend health (default port 80, adjustable via SERVER_PORT)
+curl http://your-server/api/health
 ```
 
 ### Log Management
@@ -501,9 +498,8 @@ grep ERROR /opt/prompt-flow-craft/backend.log
 
 | Service | URL |
 |---------|-----|
-| Frontend | http://111.231.107.210:3000 |
-| Backend API | http://111.231.107.210:8080/api |
-| API Docs | http://111.231.107.210:8080/swagger-ui.html |
+| Frontend | http://your-server |
+| Backend API | http://your-server/api |
 
 ---
 

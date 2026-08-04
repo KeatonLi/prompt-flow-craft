@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:80}
   address: 0.0.0.0
 
 spring:
@@ -31,9 +31,9 @@ spring:
 
 
 api:
-  key: ${MODEL_API_KEY}
-  base-url: ${MODEL_API_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
-  model: ${MODEL_NAME:qwen-turbo-2025-07-15}
+  key: ${LLM_AUTH_TOKEN}
+  base-url: ${LLM_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+  model: ${LLM_MODEL:qwen-turbo-2025-07-15}
   temperature: ${TEMPERATURE:0.7}
   max-tokens: ${MAX_TOKENS:2000}
 
